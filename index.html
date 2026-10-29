@@ -21,8 +21,8 @@
   --primary-bg:#2f6b4f; --primary-fg:#fffdf7; --primary-edge:#1d4634; --secondary-edge:#e4dbc6;
   --wm1:#2f6b4f; --wm2:#1d4634;
   --acc:#2f9e5a;
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-  --display:"Jua","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","Apple SD Gothic Neo","Noto Sans KR Variable","Noto Sans KR",sans-serif;
+  --display:"Jua","Apple SD Gothic Neo","Noto Sans KR Variable","Noto Sans KR",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#131c17; --surface:#1d2a23; --fill:rgba(200,220,200,.1); --fill2:rgba(200,220,200,.18);
@@ -244,7 +244,7 @@ td.name,th.name{text-align:left;font-weight:700}
 .adbanner b{font-size:10px;background:var(--label3);color:var(--surface);border-radius:4px;padding:1px 5px;letter-spacing:.06em}
 
 
-/* v0.18 phone-size pass: 44px touch targets, short / narrow screens, landscape notice */
+/* v0.19 phone-size pass: 44px touch targets, short / narrow screens, landscape notice */
 .circle{width:44px;height:44px}
 .back{min-height:44px;min-width:44px}
 .xbtn{width:36px;height:36px}.xbtn::after{content:"";position:absolute;inset:-6px}
@@ -492,7 +492,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.18</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.19</p>
     </div>
   </section>
   <section class="overlay" id="result" hidden><div class="modal" id="resultPanel"></div></section>
@@ -871,7 +871,19 @@ const $=id=>document.getElementById(id);
 const app=$('app'),cv=$('cv'),ctx=cv.getContext('2d'),stage=$('stage'),toast=$('toast'),hint=$('hint');
 const result=$('result'),resultPanel=$('resultPanel'),pauseEl=$('pause'),settingsEl=$('settings');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const FONT='-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif',FONTD='"Jua",'+FONT;
+const FONT='-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR Variable","Noto Sans KR",sans-serif',FONTD='"Jua",'+FONT;
+// ---------------- Toss mini-app bridge (v0.19) ----------------
+// The Toss build (minigolf/toss) sets window.__TOSS__ before this script and loads toss/src/main.js, which exposes window.AIT:
+// real Apps-in-Toss ads, back button, iOS swipe-back, saving files, analytics. The web/artifact build has neither, so the
+// prototype fakes (test ad overlay, test purchase) keep working there.
+const TOSS=!!window.__TOSS__,AIT=()=>window.AIT||null;
+// analytics → Apps-in-Toss console > 분석 > 이벤트. Queued until window.AIT is ready (it loads after this script). Event list: toss/README.md
+const trackQ=[];
+function track(type,name,p){if(!TOSS)return;const a=AIT();if(a&&a.ready&&a.track){a.track(type,name,p||{});return;}if(trackQ.length<50)trackQ.push([type,name,p||{}]);}
+// iOS swipe-back is on only where back means "leave the mini app" (title, lobby); elsewhere it would cut a putt drag short
+function swipeBack(on){if(!TOSS)return;const a=AIT();if(a&&a.swipeBack)a.swipeBack(on);}
+// Toss: in-app purchase is not connected yet, so the paid packs (coins, 광고 제거) are hidden; coins come from play and rewarded ads
+const PAID_ITEMS=!TOSS;
 const store={read(){try{return JSON.parse(localStorage.getItem('holecup.v3')||'{}')}catch(e){return{}}},write(v){try{localStorage.setItem('holecup.v3',JSON.stringify(v))}catch(e){}}};
 const freshSave=()=>({stars:{},sound:true,unlockAll:false,trophies:0,pvpW:0,pvpL:0,coins:0,owned:{hat:['bucket'],outfit:['blue'],ball:['white']},equip:{hat:'bucket',outfit:'blue',ball:'white'},noAds:false,cleared:0,daily:null,ta:null,tour:{},adCoinAt:0,pendingTa:null,caddie:3,adCaddieAt:0,hio:0});
 let SAVE=Object.assign(freshSave(),store.read());
@@ -971,14 +983,16 @@ function nextDemo(){clearTimeout(G.demoTimer);if(G.mode!=='attract')return;
 
 // ---------------- screens ----------------
 const SCREENS=['title','home','world','holes','pvp','shop','ta'];
+let shownScreen='';
 function show(name){app.dataset.screen=name;SCREENS.forEach(s=>$('scr-'+s).hidden=s!==name);pauseEl.hidden=true;syncBanner(name);syncTabbar(name);syncCoins();
-  if(name!=='game'&&name!=='title')G.paused=true;}
+  if(name!=='game'&&name!=='title')G.paused=true;
+  swipeBack(name==='home'||name==='title');if(name!==shownScreen){shownScreen=name;track('screen',name+'_screen',name==='game'?{mode:G.mode}:{});}}
 function enterTitle(){G.mode='attract';G.paused=false;show('title');result.hidden=true;requestAnimationFrame(()=>{resize();nextDemo();});}
 function goHome(){clearTimeout(G.demoTimer);if(!SAVE.onboarded||SAVE.fr!==undefined){SAVE.onboarded=true;delete SAVE.fr;save();}G.firstRun=false;G.mode='menu';result.hidden=true;show('home');renderHome();taEnsure();if(SAVE.pendingTa)claimPendingTa();}
 function goWorld(){show('world');renderWorld();}
 function goHoles(ci){G.sel=ci;show('holes');renderHoles();}
-// v0.18: a brand-new player goes straight from the title into hole 1 (마당 첫 퍼트); the lobby appears when they step out of play
-// v0.18: a first run in progress (SAVE.fr = hole index) resumes where the player left off, even if they already earned stars
+// v0.19: a brand-new player goes straight from the title into hole 1 (마당 첫 퍼트); the lobby appears when they step out of play
+// v0.19: a first run in progress (SAVE.fr = hole index) resumes where the player left off, even if they already earned stars
 const isNewPlayer=()=>!SAVE.onboarded&&(SAVE.fr!==undefined||!Object.keys(SAVE.stars||{}).length);
 function finishFirstRun(){goHome();setTimeout(()=>showToast('로비에 왔어요! 월드·미션·상점은 여기서',1800),250);}
 $('scr-title').addEventListener('click',()=>{sfx.tap();if(isNewPlayer()){const hi=SAVE.fr||0;G.firstRun=true;SAVE.fr=hi;save();newSolo(0,hi);if(hi>0)setTimeout(()=>{if(G.firstRun)showToast('이어서 쳐요 · '+(G.holeIdx+1)+'홀',1600);},400);}else goHome();});
@@ -1071,7 +1085,7 @@ function vsCard(opp){$('vsCard').innerHTML=`<div class="player"><span class="ava
   ${opp?`<div class="player"><span class="avatar" style="background:color-mix(in srgb,${opp.color} 30%,var(--surface))"><canvas id="avOpp"></canvas></span><b>${opp.name}</b><span>${league(opp.trophies).name} · ${opp.trophies}</span></div>`
     :`<div class="player"><span class="avatar wait">?</span><b>찾는 중</b><span>비슷한 실력</span></div>`}`;
   drawAvatarCanvas($('avMe'),myLook(),'idle');if(opp)drawAvatarCanvas($('avOpp'),opp.look,'idle');}
-// v0.18 retention: PVP holes come from holes the player has already cleared (familiar maps), leaning to the newest country,
+// v0.19 retention: PVP holes come from holes the player has already cleared (familiar maps), leaning to the newest country,
 // easier holes first, and avoiding the previous match's holes; only if fewer than 3 are cleared do open/Korea holes fill in
 function pvpPick(){const cleared=[],open=[],last=new Set(SAVE.pvpLast||[]);
   CHAPTERS.forEach((ch,ci)=>ch.holes.forEach((h,hi)=>{if(!holeOpen(ci,hi))return;((starsOf(ci,hi)||0)>=1?cleared:open).push([ci,hi]);}));
@@ -1084,7 +1098,7 @@ function pvpPick(){const cleared=[],open=[],last=new Set(SAVE.pvpLast||[]);
 function startPvp(){clearTimeout(G.demoTimer);if(G.match)G.match.cancel=true;G.mode='menu';result.hidden=true;show('pvp');leagueCard();vsCard(null);
   const picks=pvpPick(),ot=Math.max(0,SAVE.trophies+Math.round(Math.random()*100-40));SAVE.pvpLast=picks.map(([ci,hi])=>key(ci,hi));save();
   const opp={name:NICKS[Math.random()*NICKS.length|0],trophies:ot,color:AV[Math.random()*AV.length|0],look:{hat:oppPick(HATS),outfit:oppPick(OUTFITS)}};
-  // v0.18 retention: the first 3 matches and a 2-loss streak get a gentler ghost
+  // v0.19 retention: the first 3 matches and a 2-loss streak get a gentler ghost
   const played=(SAVE.pvpW||0)+(SAVE.pvpL||0),soft=played<3?.6:(SAVE.pvpStreak||0)<=-2?.75:1,skill=Math.min(1,(.15+.8*ot/1400)*soft);
   const m=G.match={opp,holes:picks.map(([ci,hi])=>({ci,hi,ghost:null})),idx:0,my:[],op:[],cancel:false,ready:false};
   $('matchHoles').innerHTML=m.holes.map((x,i)=>{const ch=CHAPTERS[x.ci],h=ch.holes[x.hi];
@@ -1713,7 +1727,7 @@ function drawBallTrail(c,trail,s,R){const n=trail.length,t=nowS();if(!n)return;
     if(s.trail==='star'&&i%3===0){c.globalAlpha=k;star4(c,q[0]+Math.sin(i*2.3)*5,q[1]+Math.cos(i*1.7)*5,2.6*k+.8,'#ffffff');}
     if(s.trail==='ice'&&i%4===0){c.globalAlpha=k*.9;star4(c,q[0]+Math.cos(i)*5,q[1]+Math.sin(i)*5,1.8,'#ffffff');}}
   c.globalAlpha=1;}
-// v0.18: cuter explorer. CHAR_STYLE picks proportions (classic = up to v0.13).
+// v0.19: cuter explorer. CHAR_STYLE picks proportions (classic = up to v0.13).
 const CHAR_STYLES={classic:{hr:8.6,hy:-8,bs:1,by:0,ex:1.35,ey:1.35,gap:3,eyeY:-.2,bl:1.9,blY:2.6,bx:5,shine:false,hands:false},
   chibi:{hr:10.6,hy:-9.4,bs:.82,by:2.4,ex:1.55,ey:2.05,gap:3.5,eyeY:.6,bl:2.3,blY:3.4,bx:6.2,shine:true,hands:true},
   mochi:{hr:11.4,hy:-6.8,bs:.7,by:4.6,ex:1.3,ey:1.6,gap:4.4,eyeY:2,bl:2.7,blY:4.6,bx:7,shine:true,hands:true},
@@ -1721,7 +1735,7 @@ const CHAR_STYLES={classic:{hr:8.6,hy:-8,bs:1,by:0,ex:1.35,ey:1.35,gap:3,eyeY:-.
   sparkleA:{hr:9.8,hy:-8.8,bs:.9,by:1,ex:2,ey:2.6,gap:3.7,eyeY:.8,bl:2.1,blY:3.7,bx:6,shine:true,hands:true,big:true,iris:'#6b3e22',bangs:'#5a3420',lash:true},
   sparkleB:{hr:9.8,hy:-8.8,bs:.9,by:1,ex:2,ey:2.6,gap:3.7,eyeY:.8,bl:2.1,blY:3.7,bx:6,shine:true,hands:true,big:true,iris:'#6b3e22',bangs:'#5a3420',lash:true,line:'#7a4e30',glint:true},
   sparkleC:{hr:10.4,hy:-9.2,bs:.86,by:1.6,ex:2.1,ey:2.75,gap:3.9,eyeY:1,bl:2.3,blY:3.9,bx:6.4,shine:true,hands:true,big:true,iris:'#6b3e22',bangs:'#5a3420',side:true,lash:true,line:'#7a4e30',glint:true}};
-let CHAR_STYLE='sparkleA';  // v0.18: 반짝눈 A안 (앞머리·갈색 눈동자·부드러운 속눈썹)
+let CHAR_STYLE='sparkleA';  // v0.19: 반짝눈 A안 (앞머리·갈색 눈동자·부드러운 속눈썹)
 function drawFigure(c,mood,focus,blink,look){const o=look.outfit,P=CHAR_STYLES[CHAR_STYLE]||CHAR_STYLES.classic,hy=P.hy,hr=P.hr;
   c.fillStyle='#6b4228';c.beginPath();c.ellipse(-4,10,3.4,2.3,0,0,7);c.ellipse(4.2,10,3.4,2.3,0,0,7);c.fill();
   c.save();c.translate(0,P.by);c.translate(0,3);c.scale(P.bs,P.bs);c.translate(0,-3);
@@ -1754,7 +1768,7 @@ function drawFigure(c,mood,focus,blink,look){const o=look.outfit,P=CHAR_STYLES[C
   c.save();c.translate(0,hy);c.scale(hr/8.6,hr/8.6);c.translate(0,8);drawHat(c,look.hat);c.restore();}
 function drawAvatarCanvas(cnv,look,mood,stage){const w=cnv.clientWidth||80,h=cnv.clientHeight||80,d=Math.min(3,window.devicePixelRatio||1);cnv.width=Math.round(w*d);cnv.height=Math.round(h*d);
   const c=cnv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);const tall=['wizard','chef','tophat','halo','rainbowcloud'].includes(look.hat&&look.hat.id),big=(CHAR_STYLES[CHAR_STYLE]||{}).hr>9.7,s=Math.min(w,h)/((tall?46:38)+(big?5:0));const oy=h*((tall?.7:.6)+(big?.04:0));if(stage)drawStage(c,w,h,oy+10*s,s);c.translate(w/2,oy);c.scale(s,s);drawFigure(c,mood||'idle',false,false,look);}
-// v0.18: a soft sky-and-grass stage behind shop avatars so white hats/outfits do not vanish on white cards
+// v0.19: a soft sky-and-grass stage behind shop avatars so white hats/outfits do not vanish on white cards
 function drawStage(c,w,h,gy,s){const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#cfe3f6');g.addColorStop(1,'#e8f2fb');c.fillStyle=g;rr(c,0,0,w,h,Math.min(16,w*.18));c.fill();
   c.save();rr(c,0,0,w,h,Math.min(16,w*.18));c.clip();c.fillStyle='#9fd27f';c.beginPath();c.moveTo(0,gy-2*s);c.quadraticCurveTo(w/2,gy-6*s,w,gy-2*s);c.lineTo(w,h);c.lineTo(0,h);c.closePath();c.fill();
   c.fillStyle='#8cc56c';c.beginPath();c.moveTo(0,gy+5*s);c.quadraticCurveTo(w/2,gy+2*s,w,gy+5*s);c.lineTo(w,h);c.lineTo(0,h);c.closePath();c.fill();c.restore();
@@ -1792,7 +1806,7 @@ function drawGhostChar(c,gs,name,look){const now=performance.now()/1000,done=gs.
   c.translate(GC.x,GC.y+jy);c.scale(CS*f,CS);drawFigure(c,done?'happy':'idle',false,false,look);c.restore();
   c.font=`700 11px ${FONT}`;const tw=c.measureText(name).width+12;rr(c,GC.x-tw/2,GC.y-48,tw,17,8.5);c.fillStyle='rgba(10,132,255,.9)';c.fill();
   c.fillStyle='#fff';c.textAlign='center';c.fillText(name,GC.x,GC.y-36);c.textAlign='left';}
-// v0.18: first-hole tutorial - a cartoon hand presses near the ball, pulls back and lets go, looping until the first shot
+// v0.19: first-hole tutorial - a cartoon hand presses near the ball, pulls back and lets go, looping until the first shot
 const tutorOn=()=>G.firstRun&&G.ci===0&&G.holeIdx===0&&G.strokes===0&&G.state==='aim'&&!G.aim&&!G.paused&&app.dataset.screen==='game';
 function drawHand(c,x,y,press,a){c.save();c.globalAlpha=a;c.translate(x,y);const k=press?.92:1;c.scale(k,k);c.rotate(-.35);
   c.lineJoin='round';c.lineWidth=2.4;c.strokeStyle='#2a2a22';c.fillStyle='#fffdf7';
@@ -1852,7 +1866,7 @@ function addCoins(n){SAVE.coins=(SAVE.coins||0)+n;save();syncCoins();}
 const ADS={inter:0,rew:0};
 const XSVG='<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
 const xb=(act,extra='')=>`<button class="xbtn" aria-label="닫기" ${act?`data-act="${act}"`:''} ${extra}>${XSVG}</button>`;
-function adShow(kind,placement,cb){const ov=$('adOv'),secs=kind==='rewarded'?3:2;let done=false;
+function adShow(kind,placement,cb){if(TOSS){tossAd(kind,placement,cb);return;}const ov=$('adOv'),secs=kind==='rewarded'?3:2;let done=false;
   ov.innerHTML=`<div class="modal adcard">${xb('',kind==='rewarded'?'id="adX"':'id="adX" disabled')}<p class="adtag">AD · 테스트</p>
     <svg class="adring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="#2c2c30" stroke-width="8"/><circle id="adArc" cx="50" cy="50" r="42" fill="none" stroke="#ffd257" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" transform="rotate(-90 50 50)"/><text id="adNum" x="50" y="61" text-anchor="middle" font-size="30" fill="#fff">${secs}</text></svg>
     <b class="adtitle">${kind==='rewarded'?'보상형 광고':'전면 광고'}</b><p class="adnote">${placement}<br>출시 때 이 자리에서 광고 SDK 영상이 재생돼요.</p>
@@ -1862,6 +1876,19 @@ function adShow(kind,placement,cb){const ov=$('adOv'),secs=kind==='rewarded'?3:2
     arc.setAttribute('stroke-dashoffset',264*(1-k));$('adNum').textContent=Math.max(0,Math.ceil(secs-el));if(k>=1){clearInterval(timer);$('adClose').disabled=false;$('adX').disabled=false;}},100);
   const finish=ok=>{if(done)return;done=true;clearInterval(timer);ov.hidden=true;G.paused=wasPaused;if(kind==='rewarded')ADS.rew=Date.now();else ADS.inter=Date.now();if(cb)cb(ok);};
   $('adClose').onclick=()=>finish(true);const sk=$('adSkip');if(sk)sk.onclick=()=>finish(false);$('adX').onclick=()=>finish(kind!=='rewarded');}
+// Toss build: the real ad (preloaded by toss/src/main.js) instead of the test overlay. Same contract as the overlay: cb(true) after a
+// rewarded ad was watched to the end (the reward is granted once the ad has closed), and an interstitial always calls cb so play goes on.
+function tossAd(kind,placement,cb){const a=AIT(),k=kind==='rewarded'?'rewarded':'interstitial',ready=!!a&&a.ads.ready(k);
+  track('event','ad_request',{kind:k,where:placement,ready});
+  const fail=()=>{track('event','ad_result',{kind:k,where:placement,result:'failed'});if(k==='interstitial'){if(cb)cb(false);}else showToast('광고를 불러오고 있어요. 잠시 후 다시 눌러 주세요',1600);};
+  if(!ready){if(a)a.ads.load(k);if(k==='interstitial'){if(cb)cb(false);}else showToast(a&&a.ads.available(k)?'광고를 불러오고 있어요. 잠시 후 다시 눌러 주세요':'지금은 광고를 볼 수 없어요',1600);return;}
+  const wasPaused=G.paused;G.paused=true;
+  const shown=a.ads.show(k,{onClose:(earned,failed)=>{G.paused=wasPaused;if(k==='rewarded')ADS.rew=Date.now();else ADS.inter=Date.now();
+    track('event','ad_result',{kind:k,where:placement,result:failed?'failed':k==='interstitial'?'closed':earned?'rewarded':'closed_early'});
+    if(k==='interstitial'){if(cb)cb(true);return;}
+    if(earned){if(cb)cb(true);return;}
+    showToast(failed?'광고를 불러오지 못했어요. 잠시 후 다시 눌러 주세요':'광고를 끝까지 보면 보상을 받아요',1600);if(cb)cb(false);}});
+  if(!shown){G.paused=wasPaused;fail();}}
 function showRewarded(placement,onReward){adShow('rewarded',placement,ok=>{if(ok)onReward();});}
 function maybeInter(placement,then){const now=Date.now();if(SAVE.noAds||now-ADS.inter<150000||now-ADS.rew<45000){then();return;}adShow('inter',placement,()=>then());}
 // v0.12: banner ad slot removed for now. Set BANNER_ON=true to bring it back on these screens.
@@ -1910,8 +1937,8 @@ function renderShop(){syncCoins();const L=myLook();drawAvatarCanvas($('shopPrevi
       <p class="note">PVP와 타임어택에서는 공정한 경쟁을 위해 쓸 수 없어요.</p>`;body.querySelectorAll('[data-cadav]').forEach(cv2=>drawAvatarCanvas(cv2,CADDIE_LOOK,'happy',true));return;}
   if(shopTab==='coin'){const cd=Math.max(0,(SAVE.adCoinAt||0)+10*60000-Date.now());
     body.innerHTML=`<div class="card packs"><div class="pack"><span class="coinbig">${COIN}</span><div><b>무료 코인 100</b><span>${cd?`${Math.ceil(cd/60000)}분 뒤 다시 받을 수 있어요`:'광고를 보면 바로 받아요 · 10분마다'}</span></div><button class="pill press" data-free="1" ${cd?'disabled':''}>광고 보기</button></div>
-      ${PACKS.map(p=>`<div class="pack"><span class="coinbig">${p.id==='noads'?NOADS:COIN}</span><div><b>${p.name}</b><span>${p.desc||'바로 지급'}</span></div>${p.id==='noads'&&SAVE.noAds?'<span class="pill alt off">구매함</span>':`<button class="pill press" data-iap="${p.id}">${p.price}</button>`}</div>`).join('')}</div>
-      <p class="note">결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.</p>`;
+      ${(PAID_ITEMS?PACKS:[]).map(p=>`<div class="pack"><span class="coinbig">${p.id==='noads'?NOADS:COIN}</span><div><b>${p.name}</b><span>${p.desc||'바로 지급'}</span></div>${p.id==='noads'&&SAVE.noAds?'<span class="pill alt off">구매함</span>':`<button class="pill press" data-iap="${p.id}">${p.price}</button>`}</div>`).join('')}</div>
+      ${PAID_ITEMS?'<p class="note">결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.</p>':'<p class="note">코인은 홀을 클리어하거나 미션·광고 보상으로 모아요.</p>'}`;
     return;}
   const list=COSMETIC[shopTab],slot=shopTab,owned=SAVE.owned[slot],have=list.filter(i=>owned.includes(i.id)).length;
   body.innerHTML=`<p class="rarline">${['common','fine','rare','epic','legend'].map(k=>`<span style="color:${RAR[k].c}">●</span> ${RAR[k].n}`).join(' &nbsp;')}<span class="have">${have} / ${list.length} 보유</span></p>
@@ -1961,7 +1988,7 @@ function tourNext(){const tr=G.tour;if(tr.idx<8){tr.idx++;loadHole(tr.ci,tr.idx)
 
 // ---------- daily time attack ----------
 const TA_FREE=3,TA_AD_MAX=3;
-// v0.18 retention: the same 3 holes for everyone each day, shaped as warm-up -> middle -> taste of a farther country.
+// v0.19 retention: the same 3 holes for everyone each day, shaped as warm-up -> middle -> taste of a farther country.
 // 1) holes 1-3 of the first two countries  2) holes 3-6 of the first six countries  3) holes 1-5 of a country from the 3rd on
 // (no hole 7-9 'boss' holes, so a new player can finish the run)
 function taHoles(date){const r=rng(hashStr('ta-holes2'+date)),out=[],n=CHAPTERS.length;
@@ -2136,7 +2163,9 @@ function drawReplayBadge(c){if(!G.rec||!RP.tok||RP.tok!==G.turnId||!(G.state==='
 
 // ---------- replay → video file (canvas capture + MediaRecorder, saved through the downloads capability) ----------
 const VR={on:false,rec:null,chunks:[],mime:'',
-  ok(){return !!(cv.captureStream&&window.MediaRecorder&&VR.pick());},
+  // Toss: <a download> does nothing in the web view, so the video button shows only when the app can save it (SDK) or share files
+  ok(){return !!(cv.captureStream&&window.MediaRecorder&&VR.pick())&&(!TOSS||VR.tossOut());},
+  tossOut(){const a=AIT();if(a&&a.canSaveFile&&a.canSaveFile())return true;try{return !!(navigator.canShare&&navigator.canShare({files:[new File([new Blob(['x'])],'t.mp4',{type:'video/mp4'})]}));}catch(e){return false;}},
   pick(){const c=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];for(const m of c){try{if(MediaRecorder.isTypeSupported(m))return m;}catch(e){}}return '';},
   record(){if(VR.on||!G.rec)return;const mime=VR.pick();if(!mime){showToast('이 기기에서는 영상 저장을 지원하지 않아요',1400);result.hidden=false;return;}
     let st;try{st=cv.captureStream(30);VR.rec=new MediaRecorder(st,{mimeType:mime,videoBitsPerSecond:6e6});}catch(e){showToast('영상 녹화를 시작하지 못했어요',1400);result.hidden=false;return;}
@@ -2164,6 +2193,9 @@ const VR={on:false,rec:null,chunks:[],mime:'',
   async saveLast(){const L=VR.last;if(!L)return;sfx.tap();const res=await VR.save(L.blob,L.name,true);
     if(res==='saved')showToast('영상을 저장했어요',1200);else if(res==='declined')showToast('저장을 취소했어요',1000);else if(res==='fail')showToast('영상을 저장하지 못했어요',1400);},
   async save(blob,name,noShare){
+    if(TOSS){const a=AIT();if(a&&a.canSaveFile&&a.canSaveFile()){showToast('영상을 저장하는 중…',4000);return (await a.saveFile(blob,name))==='saved'?'saved':'fail';}
+      if(!noShare)try{const f=new File([blob],name,{type:blob.type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'홀컵 원정대'});return 'saved';}}catch(e){if(e&&e.name==='AbortError')return 'declined';}
+      return 'fail';}
     try{const dl=window.claude&&window.claude.use?await window.claude.use('downloads'):null;
       if(dl){try{await dl.save({filename:name,data:blob});return 'saved';}catch(e){if(e&&e.code==='declined')return 'declined';if(e&&e.code==='rate_limited'){showToast('잠시 후 다시 눌러 주세요',1200);return 'busy';}}}}catch(e){}
     if(!noShare)try{const f=new File([blob],name,{type:blob.type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'홀컵 원정대'});return 'saved';}}catch(e){if(e&&e.name==='AbortError')return 'declined';}
@@ -2199,6 +2231,29 @@ function drawWater(c,h,now){const sp=reduce?.25:1,t=now*sp;
         c.strokeStyle=`rgba(255,255,255,${al.toFixed(3)})`;c.lineWidth=1.4;c.beginPath();c.ellipse(px,py,r,r*.42,0,0,7);c.stroke();
         if(life<.5){c.beginPath();c.ellipse(px,py,r*.5,r*.21,0,0,7);c.stroke();}}
       c.restore();}}}
+
+// ---------------- Toss mini app: back button and startup ----------------
+if(TOSS){
+  /* Toss top-bar back (‹) and Android back. Returns true when the game handled it. On the lobby and the title screen it returns
+     false and toss/src/main.js closes the mini app (back on the first screen exits). Order: popups (result · video sheet ·
+     settings · missions · pause) close first → in play it opens the pause sheet → other screens use their own ‹ button. */
+  window.__hcBack=()=>{
+    if(!$('adOv').hidden)return true;
+    if(!result.hidden){const x=resultPanel.querySelector('.xbtn[data-act]');if(x&&!x.disabled)x.click();return true;}
+    if(!settingsEl.hidden){$('settingsX').click();return true;}
+    if(!$('missions').hidden){const x=$('missionX');if(x)x.click();else $('missions').hidden=true;return true;}
+    if(!pauseEl.hidden){pauseEl.hidden=true;G.paused=false;return true;}
+    const scr=app.dataset.screen;
+    if(scr==='game'){if(G.state==='replay'){if(!VR.on)endReplay(true);return true;}$('pauseBtn').click();return true;}
+    if(scr==='home'||scr==='title')return false;
+    const back=document.querySelector(`#scr-${scr} .navbar .back`);if(back)back.click();else goHome();return true;};
+  const onReady=()=>{const a=AIT();if(!a)return;trackQ.splice(0).forEach(e=>a.track(...e));
+    if(!SAVE.noAds)a.ads.load('interstitial');
+    a.swipeBack(app.dataset.screen==='home'||app.dataset.screen==='title');
+    // release build (real ad IDs): hide the test-only switches and the coin cheat
+    if(!a.testAds){['unlockSw','unlockSw2'].forEach(id=>{const r=$(id).closest('.test-row');if(r)r.hidden=true;});$('coinTest').hidden=true;}};
+  if(window.AIT&&window.AIT.ready)onReady();else addEventListener('ait:ready',onReady,{once:true});
+}
 
 // ---------------- boot ----------------
 readTok();syncSwitches();syncCoins();dailyEnsure();taEnsure();resize();enterTitle();requestAnimationFrame(frame);
