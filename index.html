@@ -462,7 +462,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
     <div class="navbar"><button class="back" data-go="home"><svg viewBox="0 0 12 20"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>홈</button><span class="coin"><i class="cg"></i><span class="coinval">0</span></span></div>
     <h1 class="large">상점</h1>
     <div class="card shop-preview"><canvas id="shopPreview"></canvas><div><p class="eyebrow">내 원정대원</p><b class="adtitle" id="shopLook">버킷햇 · 하늘 티</b><p class="sub" style="font-size:13px">모자와 옷은 플레이할 때도 보여요.</p></div></div>
-    <div class="seg" id="shopTabs"><button data-tab="hat" aria-pressed="true">모자</button><button data-tab="outfit" aria-pressed="false">옷</button><button data-tab="ball" aria-pressed="false">공</button><button data-tab="item" aria-pressed="false">아이템</button><button data-tab="coin" aria-pressed="false">코인</button></div>
+    <div class="seg" id="shopTabs"><button data-tab="char" aria-pressed="false">캐릭터</button><button data-tab="hat" aria-pressed="true">모자</button><button data-tab="outfit" aria-pressed="false">옷</button><button data-tab="ball" aria-pressed="false">공</button><button data-tab="item" aria-pressed="false">아이템</button><button data-tab="coin" aria-pressed="false">코인</button></div>
     <div id="shopBody"></div>
   </section>
 
@@ -488,7 +488,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.25</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.27</p>
     </div>
   </section>
   <section class="overlay bottom" id="exitAsk" hidden>
@@ -888,6 +888,11 @@ const FONT='-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR
 // real Apps-in-Toss ads, back button, iOS swipe-back, saving files, analytics. The web/artifact build has neither, so the
 // prototype fakes (test ad overlay, test purchase) keep working there.
 const TOSS=!!window.__TOSS__,AIT=()=>window.AIT||null;
+// ---------------- Android app bridge (v0.26) ----------------
+// The Android build (minigolf/android, Google Play) sets window.__ANDROID__ before this script and android/web/src/main.js adds
+// window.HCApp: close the app, save or share a replay video through the Java side. That build has no ad SDK and no Play billing
+// yet, so ads and paid packs are off there (the same switches the Toss build uses without its ad keys).
+const ANDROID=!TOSS&&!!window.__ANDROID__,HCApp=()=>window.HCApp||null;
 // analytics → Apps-in-Toss console > 분석 > 이벤트. Queued until window.AIT is ready (it loads after this script). Event list: toss/README.md
 const trackQ=[];
 function track(type,name,p){if(!TOSS)return;const a=AIT();if(a&&a.ready&&a.track){a.track(type,name,p||{});return;}if(trackQ.length<50)trackQ.push([type,name,p||{}]);}
@@ -895,28 +900,31 @@ function track(type,name,p){if(!TOSS)return;const a=AIT();if(a&&a.ready&&a.track
 function swipeBack(on){if(!TOSS)return;const a=AIT();if(a&&a.swipeBack)a.swipeBack(on);}
 // paid packs (coins, 광고 제거). Web: test purchase popup. Toss (v0.22): Apps-in-Toss in-app purchase, and only the packs
 // registered in the console show up. Set false to hide them everywhere (already-bought goods, restore and refunds keep working)
-const PAID_ITEMS=true;
+// Android (v0.26): off until Google Play billing is connected
+const PAID_ITEMS=!ANDROID;
 // v0.23: ads on/off. Web build: always on (test overlay). Toss build: ADS_ENABLED in toss/src/config.js, which vite puts in
 // window.__TOSS_ADS__ (off until the ad keys exist). Off → no rewarded-ad button anywhere (mulligan, result x2, missions x2, caddie,
 // time attack, shop), no interstitials, nothing preloaded, and the '광고 제거' pack is not sold (there is nothing to remove).
-const ADS_ON=!TOSS||!!window.__TOSS_ADS__;
+// Android (v0.26): off, no ad SDK in that build yet
+const ADS_ON=TOSS?!!window.__TOSS_ADS__:!ANDROID;
 document.documentElement.classList.toggle('ads-off',!ADS_ON);
 // v0.22: the shop's ad-reward items (무료 코인 100, 캐디 가이드 1개) stay hidden in the Toss build even with ads on. true brings them back.
 const SHOP_AD_ITEMS=!TOSS&&ADS_ON;
 const store={read(){try{return JSON.parse(localStorage.getItem('holecup.v3')||'{}')}catch(e){return{}}},write(v){try{localStorage.setItem('holecup.v3',JSON.stringify(v))}catch(e){}}};
-const freshSave=()=>({stars:{},sound:true,unlockAll:false,trophies:0,pvpW:0,pvpL:0,coins:0,owned:{hat:['bucket'],outfit:['blue'],ball:['white']},equip:{hat:'bucket',outfit:'blue',ball:'white'},noAds:false,cleared:0,daily:null,ta:null,tour:{},adCoinAt:0,pendingTa:null,caddie:3,adCaddieAt:0,hio:0,iap:{}});
+const freshSave=()=>({stars:{},sound:true,unlockAll:false,trophies:0,pvpW:0,pvpL:0,coins:0,owned:{hat:['bucket','none'],outfit:['blue'],ball:['white'],char:['kid']},equip:{hat:'bucket',outfit:'blue',ball:'white',char:'kid'},noAds:false,cleared:0,daily:null,ta:null,tour:{},adCoinAt:0,pendingTa:null,caddie:3,adCaddieAt:0,hio:0,iap:{}});
 let SAVE=Object.assign(freshSave(),store.read());
 // v0.22: repair broken or old save fields instead of crashing on boot (each field falls back to its fresh value)
 (function fixSave(){const F=freshSave(),obj=v=>v&&typeof v==='object'&&!Array.isArray(v),num=v=>typeof v==='number'&&isFinite(v);
   try{if(!obj(SAVE.stars))SAVE.stars={};for(const k in SAVE.stars)if(!num(SAVE.stars[k]))delete SAVE.stars[k];
     ['coins','trophies','pvpW','pvpL','cleared','caddie','hio','adCoinAt','adCaddieAt'].forEach(k=>{if(!num(SAVE[k])){const n=Number(SAVE[k]);SAVE[k]=isFinite(n)?n:F[k];}});
     if(!obj(SAVE.owned))SAVE.owned=F.owned;if(!obj(SAVE.equip))SAVE.equip=F.equip;
-    ['hat','outfit','ball'].forEach(k=>{if(!Array.isArray(SAVE.owned[k]))SAVE.owned[k]=F.owned[k].slice();if(!SAVE.owned[k].includes(F.owned[k][0]))SAVE.owned[k].unshift(F.owned[k][0]);
+    ['hat','outfit','ball','char'].forEach(k=>{if(!Array.isArray(SAVE.owned[k]))SAVE.owned[k]=F.owned[k].slice();if(!SAVE.owned[k].includes(F.owned[k][0]))SAVE.owned[k].unshift(F.owned[k][0]);
       if(typeof SAVE.equip[k]!=='string'||!SAVE.owned[k].includes(SAVE.equip[k]))SAVE.equip[k]=F.equip[k];});
     if(SAVE.daily&&!(obj(SAVE.daily)&&typeof SAVE.daily.date==='string'&&Array.isArray(SAVE.daily.list)))SAVE.daily=null;
     if(SAVE.ta&&!(obj(SAVE.ta)&&typeof SAVE.ta.date==='string'&&num(SAVE.ta.used)&&num(SAVE.ta.ad)))SAVE.ta=null;
     if(SAVE.ta&&SAVE.ta.best&&!(num(SAVE.ta.best.s)&&num(SAVE.ta.best.t)))SAVE.ta.best=null;
     if(SAVE.pendingTa&&!(obj(SAVE.pendingTa)&&num(SAVE.pendingTa.reward)&&num(SAVE.pendingTa.rank)&&obj(SAVE.pendingTa.best)))SAVE.pendingTa=null;
+    if(!SAVE.owned.hat.includes('none'))SAVE.owned.hat.push('none');
     if(!obj(SAVE.tour))SAVE.tour={};
   }catch(e){try{localStorage.setItem('holecup.backup',JSON.stringify(SAVE));}catch(_){}SAVE=freshSave();}})();
 const save=()=>store.write(SAVE);
@@ -1041,7 +1049,7 @@ function renderHome(){const ci=nextChapter(),ch=CHAPTERS[ci];setAcc(ci);
   const lg=league(SAVE.trophies);$('leagueV').textContent=lg.name;$('trophyV').textContent=SAVE.trophies||0;
   const rc=CHAPTERS.findIndex((_,k)=>tourOpen(k)&&k===ci)>=0?ci:[...CHAPTERS.keys()].reverse().find(k=>tourOpen(k));
   const best=rc!=null&&rc>=0&&SAVE.tour[CHAPTERS[rc].id];$('roundV').textContent=rc==null||rc<0?'잠김':best?`${best.s}타`:'도전';$('roundBtn').dataset.ci=rc==null?-1:rc;
-  const L=myLook();$('dressV').textContent=`꾸미기 · ${L.hat.name}`;$('pvpSub').textContent=`${lg.name} · 3홀 대결`;
+  const L=myLook();$('dressV').textContent=`꾸미기 · ${L.char.id!=='kid'?L.char.name:L.hat.id!=='none'?L.hat.name:L.outfit.name}`;$('pvpSub').textContent=`${lg.name} · 3홀 대결`;
   syncCoins();homeAvatarDraw();homeAnimStart();}
 function homeAvatarDraw(){drawAvatarCanvas($('homeAvatar'),myLook(),'idle');}
 let homeRaf=0;function homeAnimStart(){if(homeRaf||reduce)return;const L=myLook();if(![L.hat,L.outfit].some(i=>RAR[i.r].o>=4))return;
@@ -1601,6 +1609,7 @@ function draw(dt){const c=ctx,h=hole,t=G.ht;
 const RAR={basic:{n:'기본',c:'#8e8e93',o:0},common:{n:'일반',c:'#8e8e93',o:1},fine:{n:'고급',c:'#2e9e5b',o:2},rare:{n:'희귀',c:'#2f7fe0',o:3},epic:{n:'영웅',c:'#9b51e0',o:4},legend:{n:'전설',c:'#e0a000',o:5}};
 const HATS=[
   {id:'bucket',name:'버킷햇',r:'basic',price:0,col:'#e9792e',col2:'#f59a4c'},
+  {id:'none',name:'모자 없음',r:'basic',price:0},
   {id:'headband',name:'땀 밴드',r:'common',price:300,col:'#e04555',col2:'#ffffff'},
   {id:'cap',name:'야구 모자',r:'common',price:400,col:'#c8283a',col2:'#e04555'},
   {id:'beanie',name:'비니',r:'common',price:500,col:'#3f7fd6',col2:'#5b9ae6'},
@@ -1618,7 +1627,13 @@ const HATS=[
   {id:'dino',name:'공룡 모자',r:'epic',price:5500,col:'#5fbf6a',col2:'#ffb02e'},
   {id:'crown',name:'왕관',r:'legend',price:9000,col:'#e0a91f',col2:'#f5cf55'},
   {id:'halo',name:'천사 고리',r:'legend',price:12000,col:'#ffd84a',col2:'#fff3b0'},
-  {id:'rainbowcloud',name:'무지개 구름',r:'legend',price:15000,col:'#ffffff',col2:'#e8f2ff'}];
+  {id:'rainbowcloud',name:'무지개 구름',r:'legend',price:15000,col:'#ffffff',col2:'#e8f2ff'},
+  // v0.27: soft animal hoods (originals) - they frame the face like a onesie hood
+  {id:'chickhood',name:'병아리 후드',r:'fine',price:1200,col:'#ffd84d',col2:'#ff9f2e',hood:true},
+  {id:'bearhood',name:'아기곰 후드',r:'rare',price:2000,col:'#b07a4f',col2:'#f2d3b0',hood:true},
+  {id:'bunnyhood',name:'라벤더 토끼 후드',r:'rare',price:2400,col:'#c9b6ff',col2:'#ffd1e6',hood:true},
+  {id:'penguinhood',name:'펭귄 후드',r:'epic',price:4800,col:'#2f3e6b',col2:'#ffffff',hood:true},
+  {id:'sheephood',name:'몽글 양 후드',r:'epic',price:5200,col:'#fff7ee',col2:'#e9b98a',hood:true}];
 const OUTFITS=[
   {id:'blue',name:'하늘 티',r:'basic',price:0,col:'#5b9ae6'},
   {id:'green',name:'숲 티',r:'common',price:300,col:'#4caf6e'},
@@ -1637,7 +1652,23 @@ const OUTFITS=[
   {id:'armor',name:'기사 갑옷',r:'epic',price:6000,col:'#aab4c0',pat:'armor'},
   {id:'galaxy',name:'은하수 옷',r:'legend',price:10000,col:'#2a1b5c',pat:'galaxy'},
   {id:'rainbow',name:'무지개 옷',r:'legend',price:12000,col:'#ff4d5e',pat:'rainbow'},
-  {id:'gold',name:'황금 슈트',r:'legend',price:15000,col:'#e0a91f',pat:'gold'}];
+  {id:'gold',name:'황금 슈트',r:'legend',price:15000,col:'#e0a91f',pat:'gold'},
+  // v0.27: cozy animal onesies (originals) - pair with the matching hood
+  {id:'chicksuit',name:'병아리 우비',r:'fine',price:1100,col:'#ffd84d',pat:'chick'},
+  {id:'bearsuit',name:'아기곰 잠옷',r:'rare',price:2000,col:'#b07a4f',pat:'bear'},
+  {id:'bunnysuit',name:'라벤더 토끼 잠옷',r:'rare',price:2400,col:'#c9b6ff',pat:'bunny'},
+  {id:'dinosuit',name:'민트 공룡 잠옷',r:'epic',price:4500,col:'#8fe0b0',pat:'dino'},
+  {id:'penguinsuit',name:'펭귄 잠옷',r:'epic',price:4800,col:'#2f3e6b',pat:'penguin'},
+  {id:'sheepsuit',name:'몽글 양 잠옷',r:'epic',price:5200,col:'#fff7ee',pat:'sheep'}];
+// v0.27: playable characters (originals). 'kid' is the explorer; the others swap the head, hands and add ears/tail.
+const CHARS=[
+  {id:'kid',name:'원정대원',r:'basic',price:0},
+  {id:'bear',name:'꿀단지 곰',r:'rare',price:2200,skin:'#c8925e',muzzle:'#f3dcc0',ear:'round',earIn:'#e6b48a',tail:'stub'},
+  {id:'frog',name:'꽁꽁 개구리',r:'rare',price:2600,skin:'#7fd36e',muzzle:'#d9f5c6',ear:'frog',tail:null,cheek:'rgba(255,140,140,.55)'},
+  {id:'chipmunk',name:'도토리 다람',r:'rare',price:2800,skin:'#e39a55',muzzle:'#fbe6cc',ear:'tuft',earIn:'#f7c99a',tail:'bushy',stripes:true},
+  {id:'penguin',name:'펭펭',r:'epic',price:4800,skin:'#2f3e6b',face:'#ffffff',ear:null,beak:true,tail:null,hand:'#2f3e6b'},
+  {id:'fox',name:'노을 여우',r:'epic',price:5500,skin:'#f08a3c',muzzle:'#fff3e6',ear:'point',earIn:'#3a2a24',tail:'fox'},
+  {id:'dragon',name:'아기 구름용',r:'legend',price:12000,skin:'#a8d8ff',muzzle:'#e8f6ff',ear:'horn',earIn:'#fff3b0',tail:'dragon',wings:true}];
 const BALLS=[
   {id:'white',name:'기본 공',r:'basic',price:0,col:'#ffffff',col2:'#dcdfe4'},
   {id:'lemon',name:'레몬 공',r:'common',price:300,col:'#fff6a8',col2:'#f2d23e'},
@@ -1652,14 +1683,15 @@ const BALLS=[
   {id:'ice',name:'얼음 공',r:'epic',price:5000,col:'#ffffff',col2:'#8fd8f5',pat:'ice',trail:'ice'},
   {id:'star',name:'별똥별 공',r:'legend',price:10000,col:'#fff3b0',col2:'#e0a91f',pat:'star',trail:'star'},
   {id:'prism',name:'무지개 공',r:'legend',price:14000,col:'#ffffff',col2:'#ff8fc0',pat:'prism',trail:'prism'}];
-const COSMETIC={hat:HATS,outfit:OUTFITS,ball:BALLS};
+const COSMETIC={char:CHARS,hat:HATS,outfit:OUTFITS,ball:BALLS};
 const oppPick=list=>{const w=list.map(i=>[6,6,4,2,1,.4][RAR[i.r].o]),tot=w.reduce((a,b)=>a+b,0);let r=Math.random()*tot;for(let k=0;k<list.length;k++){r-=w[k];if(r<=0)return list[k];}return list[0];};
 const itemOf=(list,id)=>list.find(i=>i.id===id)||list[0];
-function myLook(){return{hat:itemOf(HATS,SAVE.equip.hat),outfit:itemOf(OUTFITS,SAVE.equip.outfit),ball:itemOf(BALLS,SAVE.equip.ball)};}
+function myLook(){return{hat:itemOf(HATS,SAVE.equip.hat),outfit:itemOf(OUTFITS,SAVE.equip.outfit),ball:itemOf(BALLS,SAVE.equip.ball),char:itemOf(CHARS,SAVE.equip.char)};}
 const nowS=()=>performance.now()/1000;
 function star4(c,x,y,r,col){c.beginPath();c.moveTo(x,y-r);c.quadraticCurveTo(x,y,x+r,y);c.quadraticCurveTo(x,y,x,y+r);c.quadraticCurveTo(x,y,x-r,y);c.quadraticCurveTo(x,y,x,y-r);c.fillStyle=col;c.fill();}
 function drawHat(c,h){const t=nowS();
   switch(h.id){
+   case'none':break;
    case'headband':rr(c,-8.9,-14.2,17.8,3.2,1.6);c.fillStyle=h.col;c.fill();c.fillStyle=h.col2;c.fillRect(-8.9,-13.1,17.8,1);
      c.beginPath();c.ellipse(-9.6,-11.8,1.6,3,.5,0,7);c.ellipse(-10.6,-10.4,1.4,2.6,.9,0,7);c.fillStyle=h.col;c.fill();break;
    case'cap':c.beginPath();c.ellipse(0,-14.6,8.4,6.6,0,Math.PI,0);c.fillStyle=h.col2;c.fill();c.beginPath();c.ellipse(6.6,-13.6,6.4,2.3,0,0,7);c.fillStyle=h.col;c.fill();
@@ -1703,6 +1735,22 @@ function drawHat(c,h){const t=nowS();
      cols.forEach((col,i)=>{c.strokeStyle=col;c.lineWidth=1.3;c.beginPath();c.arc(0,y+3,9.6-i*1.2,Math.PI,0);c.stroke();});
      [[-9.6,y+3.4,3.4],[-7,y+2,3],[9.6,y+3.4,3.4],[7,y+2,3]].forEach(([x,yy,r])=>circ(c,x,yy,r,h.col));
      for(let i=0;i<3;i++){const ph=(t*1.4+i/3)%1;c.fillStyle=`rgba(120,190,255,${(1-ph).toFixed(2)})`;c.beginPath();c.ellipse(-8.6+i*1.6,y+7+ph*6,.6,1.1,0,0,7);c.fill();}break;}
+   case'chickhood':case'bearhood':case'bunnyhood':case'penguinhood':case'sheephood':{
+     const hood=()=>{c.beginPath();c.ellipse(0,-8.6,11,11.2,0,Math.PI*.92,Math.PI*2.08);c.lineTo(9.6,-3.6);c.quadraticCurveTo(10.6,-1,8.2,.4);
+       c.ellipse(0,-7.8,7.9,8.1,0,Math.PI*.12,Math.PI*.88,true);c.quadraticCurveTo(-10.6,-1,-9.6,-3.6);c.closePath();};
+     if(h.id==='bunnyhood'){[-1,1].forEach(s2=>{const sw=Math.sin(t*2.4+s2)*.12;c.save();c.translate(s2*4.2,-17.6);c.rotate(s2*(.32+sw));
+       c.beginPath();c.ellipse(0,-6.4,3,7.2,0,0,7);c.fillStyle=h.col;c.fill();c.beginPath();c.ellipse(0,-6,1.6,5.4,0,0,7);c.fillStyle=h.col2;c.fill();c.restore();});}
+     if(h.id==='bearhood'){[-1,1].forEach(s2=>{circ(c,s2*7.4,-17.4,3.4,h.col);circ(c,s2*7.4,-17.4,1.9,h.col2);});}
+     if(h.id==='sheephood'){[-1,1].forEach(s2=>{c.strokeStyle=h.col2;c.lineWidth=2.2;c.beginPath();c.arc(s2*9.6,-10.4,3,s2>0?-.6*Math.PI:1.6*Math.PI,s2>0?.9*Math.PI:.1*Math.PI,s2<0);c.stroke();});}
+     hood();c.fillStyle=h.col;c.fill();
+     if(h.id==='sheephood'){for(let i=0;i<9;i++){const a=Math.PI*(1+i/8),x=Math.cos(a)*10.4,y=-8.6+Math.sin(a)*10.4;circ(c,x,y,2.6+Math.sin(t*2+i)*.2,'#ffffff');}}
+     if(h.id==='penguinhood'){c.beginPath();c.ellipse(0,-7.8,9.1,9.3,0,Math.PI*1.05,Math.PI*1.95);c.lineWidth=1.6;c.strokeStyle=h.col2;c.stroke();
+       c.beginPath();c.moveTo(-2.2,-17.2);c.lineTo(2.2,-17.2);c.lineTo(0,-14.6);c.closePath();c.fillStyle='#ff9f2e';c.fill();}
+     if(h.id==='chickhood'){[[-1.4,-21.6,.4],[0,-22.6,0],[1.4,-21.6,-.4]].forEach(([x,y,r2])=>{c.save();c.translate(x,y);c.rotate(r2);c.beginPath();c.ellipse(0,0,.9,2.4,0,0,7);c.fillStyle=h.col;c.fill();c.restore();});
+       c.beginPath();c.moveTo(-1.8,-17.6);c.lineTo(1.8,-17.6);c.lineTo(0,-15.4);c.closePath();c.fillStyle=h.col2;c.fill();
+       [-5.4,5.4].forEach(x=>circ(c,x,-15.6,.9,'#2b2620'));}
+     if(h.id==='bearhood'){[-4.6,4.6].forEach(x=>circ(c,x,-16.2,.8,'#3a2a24'));}
+     c.fillStyle='rgba(255,255,255,.22)';c.beginPath();c.ellipse(-5,-15,3.2,1.3,-.5,0,7);c.fill();break;}
    default:c.beginPath();c.ellipse(0,-14.2,11.6,3.7,0,0,7);c.fillStyle=h.col;c.fill();c.beginPath();c.ellipse(0,-15.4,7.2,5.6,0,Math.PI,0);c.fillStyle=h.col2;c.fill();
      c.fillStyle='rgba(0,0,0,.22)';c.fillRect(-7.2,-16.4,14.4,2);c.fillStyle='#fff3c4';c.beginPath();c.arc(4.6,-15.4,1.4,0,7);c.fill();}}
 // body: ellipse(0,3,8.6,8.8)
@@ -1731,10 +1779,22 @@ function drawOutfit(c,o){const t=nowS();
      c.beginPath();c.moveTo(0,-5);c.lineTo(0,12);c.stroke();[[-5,-1],[5,-1],[-5,6],[5,6]].forEach(([x,y])=>circ(c,x,y,.8,'#e0b23a'));break;
    case'galaxy':{const pts=[[-5,-2],[3,-3],[6,3],[-2,5],[1,9],[-6,7],[4,8],[-3,0],[0,2]];pts.forEach(([x,y],i)=>{const a=.35+.65*Math.max(0,Math.sin(t*2.2+i*1.7));if(i%3===0)star4(c,x,y,1.3*a,'rgba(255,255,255,'+a.toFixed(2)+')');else circ(c,x,y,.55,'rgba(255,240,200,'+a.toFixed(2)+')');});
      c.fillStyle='rgba(180,140,255,.22)';c.beginPath();c.ellipse(0,3,9,2.6,-.5,0,7);c.fill();break;}
+   case'chick':c.fillStyle='#ffffff';[-1,3.6,8.2].forEach(y=>circ(c,0,y,.9,'#ffffff'));c.fillStyle='rgba(0,0,0,.08)';c.fillRect(-.3,-5,.6,18);
+     c.fillStyle='#ff9f2e';rr(c,-9,9.6,18,2.6,1.2);c.fill();break;
+   case'bear':c.beginPath();c.ellipse(0,5,5.2,5.6,0,0,7);c.fillStyle='#f2d3b0';c.fill();c.fillStyle='#8f5e38';rr(c,-2.6,-4.6,5.2,2.2,1);c.fill();circ(c,0,4,1,'#c08a60');break;
+   case'bunny':c.beginPath();c.ellipse(0,5,5,5.4,0,0,7);c.fillStyle='#ffffff';c.fill();[0,3.4].forEach(y=>circ(c,0,y+1.4,.8,'#ff8fb6'));
+     c.fillStyle='#ffd1e6';c.beginPath();c.moveTo(-2.4,-4.6);c.lineTo(0,-3);c.lineTo(2.4,-4.6);c.lineTo(2.4,-2.6);c.lineTo(0,-1.6);c.lineTo(-2.4,-2.6);c.closePath();c.fill();break;
+   case'dino':c.beginPath();c.ellipse(0,5,5,5.8,0,0,7);c.fillStyle='#fff1a8';c.fill();c.strokeStyle='rgba(200,160,40,.45)';c.lineWidth=.7;
+     [1.2,3.8,6.4,9].forEach(y=>{c.beginPath();c.moveTo(-4,y);c.quadraticCurveTo(0,y+1.1,4,y);c.stroke();});break;
+   case'penguin':c.beginPath();c.ellipse(0,4.6,5.6,6.6,0,0,7);c.fillStyle='#ffffff';c.fill();
+     c.fillStyle='#ff6b81';c.beginPath();c.moveTo(0,-3.4);c.lineTo(-2.6,-4.8);c.lineTo(-2.6,-2);c.closePath();c.moveTo(0,-3.4);c.lineTo(2.6,-4.8);c.lineTo(2.6,-2);c.closePath();c.fill();circ(c,0,-3.4,.8,'#ff4d6d');break;
+   case'sheep':for(let y=-4;y<13;y+=3.2)for(let x=-9+(Math.round(y)%2?1.6:0);x<10;x+=3.2)circ(c,x,y,1.9,y%6<3?'#fffaf3':'#f6ecdf');
+     c.fillStyle='#ffb3c7';c.beginPath();c.moveTo(-2.2,-4);c.lineTo(0,-2.6);c.lineTo(2.2,-4);c.lineTo(0,-1.2);c.closePath();c.fill();break;
    case'gold':{const p=((t*.5)%1.6)-.3,gx=-12+p*24;const g=c.createLinearGradient(gx-3,0,gx+3,0);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(.5,'rgba(255,255,255,.75)');g.addColorStop(1,'rgba(255,255,255,0)');
      c.fillStyle=g;c.save();c.translate(gx,3);c.rotate(.5);c.fillRect(-3,-12,6,24);c.restore();[[0,0],[0,4]].forEach(([x,y])=>circ(c,x,y,.8,'#8a5d00'));break;}}
   if(o.stripe){c.fillStyle=o.stripe;for(let y=-4;y<12;y+=4)c.fillRect(-9,y,18,1.8);}
   c.restore();
+  if(o.pat==='dino'){for(let i=0;i<3;i++){const y=-1+i*4;c.beginPath();c.moveTo(8.2,y);c.lineTo(10.6,y+1.4);c.lineTo(8.4,y+2.8);c.closePath();c.fillStyle='#4fbf86';c.fill();}}
   if(o.tux){c.beginPath();c.moveTo(0,-4);c.lineTo(-3.4,8);c.lineTo(3.4,8);c.closePath();c.fillStyle='#ffffff';c.fill();c.fillStyle='#d6283c';c.beginPath();c.moveTo(0,-2.6);c.lineTo(-2.6,-4);c.lineTo(-2.6,-1.2);c.closePath();c.moveTo(0,-2.6);c.lineTo(2.6,-4);c.lineTo(2.6,-1.2);c.closePath();c.fill();}}
 function drawBallSkin(c,x,y,rad,s,t,spin){t=t??nowS();spin=spin||0;
   let a=s.col,b=s.col2;if(s.pat==='prism'){const h=(t*90)%360;a=`hsl(${h},100%,88%)`;b=`hsl(${(h+60)%360},90%,62%)`;}
@@ -1774,18 +1834,45 @@ const CHAR_STYLES={classic:{hr:8.6,hy:-8,bs:1,by:0,ex:1.35,ey:1.35,gap:3,eyeY:-.
   sparkleB:{hr:9.8,hy:-8.8,bs:.9,by:1,ex:2,ey:2.6,gap:3.7,eyeY:.8,bl:2.1,blY:3.7,bx:6,shine:true,hands:true,big:true,iris:'#6b3e22',bangs:'#5a3420',lash:true,line:'#7a4e30',glint:true},
   sparkleC:{hr:10.4,hy:-9.2,bs:.86,by:1.6,ex:2.1,ey:2.75,gap:3.9,eyeY:1,bl:2.3,blY:3.9,bx:6.4,shine:true,hands:true,big:true,iris:'#6b3e22',bangs:'#5a3420',side:true,lash:true,line:'#7a4e30',glint:true}};
 let CHAR_STYLE='sparkleA';  // v0.22: 반짝눈 A안 (앞머리·갈색 눈동자·부드러운 속눈썹)
-function drawFigure(c,mood,focus,blink,look){const o=look.outfit,P=CHAR_STYLES[CHAR_STYLE]||CHAR_STYLES.classic,hy=P.hy,hr=P.hr;
+// v0.27: character extras drawn behind the body (tail, wings) and around the head (ears, face)
+function charBack(c,ch,P,t){if(!ch||ch.id==='kid')return;
+  if(ch.wings){const f=Math.sin(t*6)*.25;[-1,1].forEach(s2=>{c.save();c.translate(s2*6.4,P.by+1);c.rotate(s2*(.5+f));c.beginPath();c.moveTo(0,0);c.quadraticCurveTo(s2*7,-6,s2*9,-1);c.quadraticCurveTo(s2*6,-1,s2*7,2);c.quadraticCurveTo(s2*4,1,0,3);c.closePath();c.fillStyle='#fff3b0';c.fill();c.restore();});}
+  const tx=7.2,ty=P.by+7;
+  if(ch.tail==='stub')circ(c,tx-1,ty,2.4,ch.skin);
+  else if(ch.tail==='bushy'){const w=Math.sin(t*2.2)*.12;c.save();c.translate(tx,ty);c.rotate(-.4+w);c.beginPath();c.ellipse(2,-6,4.2,8.4,.25,0,7);c.fillStyle=ch.skin;c.fill();
+    c.strokeStyle='#7a4a24';c.lineWidth=1;c.beginPath();c.moveTo(1,1);c.quadraticCurveTo(3.6,-6,1.6,-13);c.stroke();c.restore();}
+  else if(ch.tail==='fox'){const w=Math.sin(t*2.6)*.15;c.save();c.translate(tx,ty);c.rotate(-.7+w);c.beginPath();c.ellipse(1,-5.6,3.6,7.6,.2,0,7);c.fillStyle=ch.skin;c.fill();c.beginPath();c.ellipse(1.8,-11.2,2.2,2.6,.2,0,7);c.fillStyle='#ffffff';c.fill();c.restore();}
+  else if(ch.tail==='dragon'){c.save();c.translate(tx,ty);c.rotate(-.2+Math.sin(t*2)*.1);c.beginPath();c.moveTo(-1,0);c.quadraticCurveTo(6,-1,8,-6);c.quadraticCurveTo(5,1,-1,3);c.closePath();c.fillStyle=ch.skin;c.fill();
+    c.beginPath();c.moveTo(7,-5);c.lineTo(10,-8);c.lineTo(8.6,-4);c.closePath();c.fillStyle='#fff3b0';c.fill();c.restore();}}
+function charEars(c,ch,hy,hr,t){if(!ch||ch.id==='kid'||!ch.ear)return;
+  [-1,1].forEach(s2=>{const x=s2*hr*.68,y=hy-hr*.72;
+    if(ch.ear==='round'){circ(c,x,y,hr*.34,ch.skin);circ(c,x,y,hr*.19,ch.earIn);}
+    else if(ch.ear==='tuft'){c.beginPath();c.moveTo(x-s2*hr*.28,y+hr*.2);c.quadraticCurveTo(x+s2*hr*.05,y-hr*.55,x+s2*hr*.32,y+hr*.12);c.closePath();c.fillStyle=ch.skin;c.fill();
+      c.beginPath();c.moveTo(x-s2*hr*.12,y+hr*.12);c.quadraticCurveTo(x+s2*hr*.06,y-hr*.28,x+s2*hr*.2,y+hr*.1);c.closePath();c.fillStyle=ch.earIn;c.fill();}
+    else if(ch.ear==='point'){const w=Math.sin(t*3+s2)*.04;c.save();c.translate(x,y+hr*.1);c.rotate(s2*(.22+w));c.beginPath();c.moveTo(-hr*.3,hr*.12);c.lineTo(0,-hr*.62);c.lineTo(hr*.3,hr*.12);c.closePath();c.fillStyle=ch.skin;c.fill();
+      c.beginPath();c.moveTo(-hr*.14,-hr*.18);c.lineTo(0,-hr*.62);c.lineTo(hr*.14,-hr*.18);c.closePath();c.fillStyle=ch.earIn;c.fill();c.restore();}
+    else if(ch.ear==='frog'){const ex=s2*hr*.5,ey=hy-hr*.78;circ(c,ex,ey,hr*.36,ch.skin);circ(c,ex-s2*hr*.06,ey-hr*.1,hr*.1,'rgba(255,255,255,.55)');}
+    else if(ch.ear==='horn'){c.beginPath();c.moveTo(x-s2*hr*.12,y+hr*.12);c.quadraticCurveTo(x+s2*hr*.1,y-hr*.4,x+s2*hr*.3,y-hr*.36);c.quadraticCurveTo(x+s2*hr*.12,y-hr*.05,x+s2*hr*.16,y+hr*.16);c.closePath();c.fillStyle=ch.earIn;c.fill();}});}
+function charFace(c,ch,hy,hr,P){if(!ch||ch.id==='kid')return;
+  if(ch.face){c.beginPath();c.moveTo(0,hy-hr*.42);c.bezierCurveTo(-hr*.95,hy-hr*.95,-hr*1.05,hy+hr*.5,0,hy+hr*.86);c.bezierCurveTo(hr*1.05,hy+hr*.5,hr*.95,hy-hr*.95,0,hy-hr*.42);c.fillStyle=ch.face;c.fill();}
+  if(ch.muzzle){c.beginPath();c.ellipse(0,hy+hr*.42,hr*.42,hr*.3,0,0,7);c.fillStyle=ch.muzzle;c.fill();if(ch.id!=='frog'){c.beginPath();c.ellipse(0,hy+hr*.26,hr*.11,hr*.08,0,0,7);c.fillStyle='#3a2a24';c.fill();}}
+  if(ch.stripes){c.fillStyle='rgba(120,70,30,.55)';c.beginPath();c.ellipse(0,hy-hr*.62,hr*.09,hr*.3,0,0,7);c.ellipse(-hr*.24,hy-hr*.58,hr*.06,hr*.24,-.2,0,7);c.ellipse(hr*.24,hy-hr*.58,hr*.06,hr*.24,.2,0,7);c.fill();}}
+function charBeak(c,ch,hy,hr){if(!ch||!ch.beak)return;c.beginPath();c.moveTo(-hr*.2,hy+hr*.3);c.lineTo(hr*.2,hy+hr*.3);c.lineTo(0,hy+hr*.52);c.closePath();c.fillStyle='#ffa94d';c.fill();}
+function drawFigure(c,mood,focus,blink,look){const o=look.outfit,P=CHAR_STYLES[CHAR_STYLE]||CHAR_STYLES.classic,hy=P.hy,hr=P.hr,ch=look.char&&look.char.id!=='kid'?look.char:null,tnow=nowS();
+  charBack(c,ch,P,tnow);
   c.fillStyle='#6b4228';c.beginPath();c.ellipse(-4,10,3.4,2.3,0,0,7);c.ellipse(4.2,10,3.4,2.3,0,0,7);c.fill();
   c.save();c.translate(0,P.by);c.translate(0,3);c.scale(P.bs,P.bs);c.translate(0,-3);
   rr(c,-11,-3,6,11,3);c.fillStyle='#c27a3a';c.fill();
   drawOutfit(c,o);
   c.beginPath();c.ellipse(-2,1,4.5,4,0,0,7);c.fillStyle='rgba(255,255,255,.18)';c.fill();
   c.strokeStyle='#9c5d2a';c.lineWidth=1.8;c.beginPath();c.moveTo(-6,-3);c.lineTo(-2,9);c.stroke();
-  if(P.hands){circ(c,-8.4,4.4,2.3,'#ffe2c2');circ(c,8.6,4,2.3,'#ffe2c2');}
+  if(P.hands){const hc=ch?(ch.hand||ch.skin):'#ffe2c2';circ(c,-8.4,4.4,2.3,hc);circ(c,8.6,4,2.3,hc);}
   c.restore();
-  if(P.side){c.fillStyle=P.bangs;c.beginPath();c.ellipse(-hr*.86,hy+hr*.05,hr*.26,hr*.5,.2,0,7);c.ellipse(hr*.86,hy+hr*.05,hr*.26,hr*.5,-.2,0,7);c.fill();}
-  c.beginPath();c.arc(0,hy,hr,0,7);c.fillStyle='#ffe2c2';c.fill();if(P.line){c.lineWidth=.9;c.strokeStyle=P.line;c.stroke();}
-  if(P.bangs){c.save();c.beginPath();c.arc(0,hy,hr,0,7);c.clip();c.fillStyle=P.bangs;c.beginPath();c.moveTo(-hr,hy-hr*.2);
+  charEars(c,ch,hy,hr,tnow);
+  if(P.side&&!ch){c.fillStyle=P.bangs;c.beginPath();c.ellipse(-hr*.86,hy+hr*.05,hr*.26,hr*.5,.2,0,7);c.ellipse(hr*.86,hy+hr*.05,hr*.26,hr*.5,-.2,0,7);c.fill();}
+  c.beginPath();c.arc(0,hy,hr,0,7);c.fillStyle=ch?ch.skin:'#ffe2c2';c.fill();if(P.line){c.lineWidth=.9;c.strokeStyle=P.line;c.stroke();}
+  charFace(c,ch,hy,hr,P);
+  if(P.bangs&&!ch){c.save();c.beginPath();c.arc(0,hy,hr,0,7);c.clip();c.fillStyle=P.bangs;c.beginPath();c.moveTo(-hr,hy-hr*.2);
     const n=5;for(let k=0;k<=n;k++){const x=-hr+2*hr*k/n,y=hy-hr*(k%2?.38:.5)+Math.abs(k-n/2)*.25;c.quadraticCurveTo(x-hr/n,y+hr*.22,x,y);}
     c.lineTo(hr,hy-hr*.2);c.lineTo(hr,hy-hr*1.2);c.lineTo(-hr,hy-hr*1.2);c.closePath();c.fill();c.restore();}
   if(P.shine){c.beginPath();c.ellipse(-hr*.42,hy-hr*.38,hr*.3,hr*.18,-.6,0,7);c.fillStyle='rgba(255,255,255,.35)';c.fill();}
@@ -1803,6 +1890,7 @@ function drawFigure(c,mood,focus,blink,look){const o=look.outfit,P=CHAR_STYLES[C
     c.beginPath();c.arc(ex,my+1,1.8,1.15*Math.PI,1.85*Math.PI);c.stroke();c.fillStyle='#7fc8f0';c.beginPath();c.ellipse(ex+g+2.4,ey+2.6,1.2,1.9,0,0,7);c.fill();}
   else if(mood==='oops'){eye(ex-g,-1);eye(ex+g,1);c.fillStyle='#2b2620';c.beginPath();c.ellipse(ex,my+.4,1.2,1.6,0,0,7);c.fill();}
   else{eye(ex-g,-1);eye(ex+g,1);c.strokeStyle='#2b2620';c.beginPath();if(P.shine)c.arc(ex,my-1.4,1.6,.2*Math.PI,.8*Math.PI);else c.arc(ex,my-1.2,1.8,.15*Math.PI,.85*Math.PI);c.stroke();}
+  charBeak(c,ch,hy,hr);
   c.save();c.translate(0,hy);c.scale(hr/8.6,hr/8.6);c.translate(0,8);drawHat(c,look.hat);c.restore();}
 function drawAvatarCanvas(cnv,look,mood,stage){const w=cnv.clientWidth||80,h=cnv.clientHeight||80,d=Math.min(3,window.devicePixelRatio||1);cnv.width=Math.round(w*d);cnv.height=Math.round(h*d);
   const c=cnv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);const tall=['wizard','chef','tophat','halo','rainbowcloud'].includes(look.hat&&look.hat.id),big=(CHAR_STYLES[CHAR_STYLE]||{}).hr>9.7,s=Math.min(w,h)/((tall?46:38)+(big?5:0));const oy=h*((tall?.7:.6)+(big?.04:0));if(stage)drawStage(c,w,h,oy+10*s,s);c.translate(w/2,oy);c.scale(s,s);drawFigure(c,mood||'idle',false,false,look);}
@@ -2032,7 +2120,7 @@ const shopCd=k=>Math.min(10*60000,Math.max(0,(SAVE[k]||0)+10*60000-Date.now()));
 const cdText=cd=>{if(!cd)return'광고를 보면 바로 받아요 · 10분마다';const t=Math.ceil(cd/1000);return`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')} 뒤 다시 받을 수 있어요`;};
 setInterval(()=>{if(app.dataset.screen!=='shop')return;document.querySelectorAll('[data-cdtext]').forEach(el=>{el.textContent=cdText(shopCd(el.dataset.cdtext));});
   document.querySelectorAll('[data-cdbtn]').forEach(b=>{b.disabled=shopCd(b.dataset.cdbtn)>0;});},1000);
-function renderShop(){syncCoins();const L=myLook();drawAvatarCanvas($('shopPreview'),L,'idle',true);$('shopLook').textContent=`${L.hat.name} · ${L.outfit.name} · ${L.ball.name}`;
+function renderShop(){syncCoins();const L=myLook();drawAvatarCanvas($('shopPreview'),L,'idle',true);$('shopLook').textContent=`${L.char.name} · ${L.hat.name} · ${L.outfit.name} · ${L.ball.name}`;
   [...$('shopTabs').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===shopTab));const body=$('shopBody');
   if(shopTab==='item'){const cd=shopCd('adCaddieAt');
     body.innerHTML=`<div class="card packs"><div class="pack"><canvas class="cadav" data-cadav="1"></canvas><div><b>캐디 가이드 · 보유 ${SAVE.caddie||0}개</b><span>홀컵 근처에서 캐디가 맞은편에서 라인과 세기를 봐 줘요. 솔로·9홀 라운드에서 한 샷에 1개</span></div></div>
@@ -2043,7 +2131,7 @@ function renderShop(){syncCoins();const L=myLook();drawAvatarCanvas($('shopPrevi
     const rows=(SHOP_AD_ITEMS?[`<div class="pack"><span class="coinbig">${COIN}</span><div><b>무료 코인 100</b><span data-cdtext="adCoinAt">${cdText(cd)}</span></div><button class="pill press" data-free="1" data-cdbtn="adCoinAt" ${cd?'disabled':''}>광고 보기</button></div>`]:[])
       .concat(PACKS.filter(p=>sellable(p)||(p.id==='noads'&&SAVE.noAds)).map(p=>`<div class="pack"><span class="coinbig">${p.id==='noads'?NOADS:COIN}</span><div><b>${packName(p)}</b><span>${p.desc||'바로 지급'}</span></div>${p.id==='noads'&&SAVE.noAds?'<span class="pill alt off">구매함</span>':`<button class="pill press" data-iap="${p.id}">${packPrice(p)}</button>`}</div>`));
     body.innerHTML=(rows.length?`<div class="card packs">${rows.join('')}</div>`:'')+
-      (!TOSS?(PAID_ITEMS?'<p class="note">결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.</p>':'')
+      (!TOSS&&!ANDROID?(PAID_ITEMS?'<p class="note">결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.</p>':'')
         :(PACKS.some(sellable)?'':`<p class="note">코인은 홀을 클리어하거나 ${ADS_ON?'미션·광고 보상':'미션 보상'}으로 모아요.</p>`)+((PAID_ITEMS&&tossIapOk())||Object.keys(ledger()).length?'<button class="link" data-hist="1">구매 내역 보기</button>':''));
     return;}
   const list=COSMETIC[shopTab],slot=shopTab,owned=SAVE.owned[slot],have=list.filter(i=>owned.includes(i.id)).length;
@@ -2051,13 +2139,13 @@ function renderShop(){syncCoins();const L=myLook();drawAvatarCanvas($('shopPrevi
     <div class="items">${list.map(it=>{const own=owned.includes(it.id),on=SAVE.equip[slot]===it.id;
     return`<button class="card item press r-${it.r} ${on?'on':''}" data-item="${it.id}"><span class="rar" style="color:${RAR[it.r].c}">${RAR[it.r].n}</span><canvas data-prev="${it.id}"></canvas><b>${it.name}</b>
       ${on?'<span class="tag">장착 중</span>':own?'<span class="tag alt">장착</span>':`<span class="price">${COIN}${it.price.toLocaleString()}</span>`}</button>`;}).join('')}</div>
-    <p class="note">${slot==='ball'?'공 스킨은 솔로·라운드·PVP에서 내 공에 보여요. 실력에는 영향이 없어요.':'특이하고 예쁠수록 희귀해요. 영웅·전설 아이템은 움직여요.'}</p>`;
+    <p class="note">${slot==='ball'?'공 스킨은 솔로·라운드·PVP에서 내 공에 보여요. 실력에는 영향이 없어요.':(slot==='char'?'캐릭터를 바꿔도 실력은 같아요. 모자·옷과 함께 꾸밀 수 있어요.':'특이하고 예쁠수록 희귀해요. 영웅·전설 아이템은 움직여요.')}</p>`;
   drawShopPreviews();shopAnimStart();}
 function drawShopPrev(cv2,slot,it){if(slot==='ball'){const w=cv2.clientWidth||70,h=cv2.clientHeight||74,d=Math.min(3,window.devicePixelRatio||1);cv2.width=Math.round(w*d);cv2.height=Math.round(h*d);
     const c=cv2.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);const t=nowS();{const gg=c.createLinearGradient(0,0,0,h);gg.addColorStop(0,'#b9e19c');gg.addColorStop(1,'#93cc72');c.fillStyle=gg;rr(c,0,0,w,h,Math.min(16,w*.18));c.fill();}
     if(it.trail){const tr=[];for(let i=0;i<12;i++)tr.push([w*.18+i*w*.028,h*.72-i*h*.022]);c.save();c.translate(0,0);drawBallTrail(c,tr,it,7);c.restore();}
     c.beginPath();c.ellipse(w/2+3,h*.52+6,15,11,0,0,7);c.fillStyle='rgba(0,0,0,.12)';c.fill();drawBallSkin(c,w/2,h*.48,16,it,t,t*.5);return;}
-  const look=myLook();look[slot]=it;drawAvatarCanvas(cv2,look,'idle',true);}
+  const look=myLook();look[slot]=it;if(slot==='char'&&it.id!=='kid')look.hat=itemOf(HATS,'none');drawAvatarCanvas(cv2,look,'idle',true);}
 function drawShopPreviews(onlyMoving){const list=COSMETIC[shopTab];if(!list)return;
   $('shopBody').querySelectorAll('[data-prev]').forEach(cv2=>{const it=list.find(i=>i.id===cv2.dataset.prev);if(!onlyMoving||RAR[it.r].o>=4||it.pat==='prism'||it.pat==='earth')drawShopPrev(cv2,shopTab,it);});
   if(onlyMoving){const L=myLook();if([L.hat,L.outfit].some(i=>RAR[i.r].o>=4))drawAvatarCanvas($('shopPreview'),L,'idle',true);}}
@@ -2273,9 +2361,10 @@ function drawReplayBadge(c){if(!G.rec||!RP.tok||RP.tok!==G.turnId||!(G.state==='
 // ---------- replay → video file (canvas capture + MediaRecorder, saved through the downloads capability) ----------
 const VR={on:false,rec:null,chunks:[],mime:'',
   // Toss: <a download> does nothing in the web view, so the video button shows only when the app can save it (SDK) or share files
-  ok(){return !!(cv.captureStream&&window.MediaRecorder&&VR.pick())&&(!TOSS||VR.tossOut());},
+  ok(){return !!(cv.captureStream&&window.MediaRecorder&&VR.pick())&&(!TOSS||VR.tossOut())&&(!ANDROID||!!(HCApp()&&HCApp().canShare()));},
   tossOut(){const a=AIT();if(a&&a.canSaveFile&&a.canSaveFile())return true;try{return !!(navigator.canShare&&navigator.canShare({files:[new File([new Blob(['x'])],'t.mp4',{type:'video/mp4'})]}));}catch(e){return false;}},
-  pick(){const c=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];for(const m of c){try{if(MediaRecorder.isTypeSupported(m))return m;}catch(e){}}return '';},
+  // v0.26 Android app: VP8 before VP9 (the Android 14 emulator's web view records 0 bytes with VP9 and fine with VP8)
+  pick(){const c=ANDROID?['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp8','video/webm;codecs=vp9','video/webm']:['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];for(const m of c){try{if(MediaRecorder.isTypeSupported(m))return m;}catch(e){}}return '';},
   record(){if(VR.on||!G.rec)return;const mime=VR.pick();if(!mime){showToast('이 기기에서는 영상 저장을 지원하지 않아요',1400);result.hidden=false;return;}
     let st;try{st=cv.captureStream(30);VR.rec=new MediaRecorder(st,{mimeType:mime,videoBitsPerSecond:6e6});}catch(e){showToast('영상 녹화를 시작하지 못했어요',1400);result.hidden=false;return;}
     VR.mime=mime;VR.chunks=[];VR.on=true;VR.t0=performance.now();VR.rec.ondataavailable=e=>{if(e.data&&e.data.size)VR.chunks.push(e.data);};
@@ -2283,6 +2372,8 @@ const VR={on:false,rec:null,chunks:[],mime:'',
   stop(){const tok=G.turnId;setTimeout(()=>{if(VR.rec&&VR.rec.state!=='inactive')VR.rec.stop();},300);},
   async finish(){VR.on=false;const ext=VR.mime.includes('mp4')?'mp4':'webm',blob=new Blob(VR.chunks,{type:VR.mime.split(';')[0]});VR.chunks=[];
     G.hio=null;G.state='result';G.paused=true;hint.textContent='';result.hidden=false;
+    // v0.26: some phones (and emulators) hand back an empty recording; say so instead of offering a 0 MB file
+    if(!blob.size){showToast('이 기기에서는 영상을 만들지 못했어요',1800);return;}
     const r=G.rec,name=`holecup-${CHAPTERS[r.ci].id}${r.hi+1}-${r.n===1?'hole-in-one':r.n+'strokes'}.${ext}`;
     if(VR.last&&VR.last.url)URL.revokeObjectURL(VR.last.url);VR.last={blob,name,rec:r,url:URL.createObjectURL(blob)};VR.openSheet();},
   make(){if(VR.last&&VR.last.rec===G.rec){result.hidden=false;VR.openSheet();return;}VR.record();},
@@ -2295,13 +2386,17 @@ const VR={on:false,rec:null,chunks:[],mime:'',
   closeSheet(){if(VR.prev!=null){resultPanel.innerHTML=VR.prev;VR.prev=null;}result.hidden=false;},
   shareText(){const r=VR.last.rec;return `홀컵 원정대 · ${CHAPTERS[r.ci].name} ${CHAPTERS[r.ci].holes[r.hi].name}에서 ${r.n===1?'홀인원!':r.n+'타로 넣었어!'}`;},
   async share(){const L=VR.last;if(!L)return;sfx.tap();
+    // Android (v0.26): the system share sheet (KakaoTalk, messages, save to Drive…); the web view has no navigator.share
+    if(ANDROID){const h=HCApp(),res=h?await h.shareFile(L.blob,L.name,VR.shareText()):'fail';if(res!=='shared')showToast('영상을 보내지 못했어요',1400);return;}
     try{const f=new File([L.blob],L.name,{type:L.blob.type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'홀컵 원정대',text:VR.shareText()});showToast('보냈어요!',1000);return;}}
     catch(e){if(e&&e.name==='AbortError'){showToast('보내기를 취소했어요',1000);return;}}
     const res=await VR.save(L.blob,L.name);
     if(res==='saved')showToast('영상을 저장했어요. 메신저에서 친구에게 보내 주세요',2200);else if(res==='declined')showToast('저장을 취소했어요',1000);else if(res==='fail')showToast('영상을 보내지 못했어요',1400);},
   async saveLast(){const L=VR.last;if(!L)return;sfx.tap();const res=await VR.save(L.blob,L.name,true);
-    if(res==='saved')showToast('영상을 저장했어요',1200);else if(res==='declined')showToast('저장을 취소했어요',1000);else if(res==='fail')showToast('영상을 저장하지 못했어요',1400);},
+    if(res==='saved')showToast('영상을 저장했어요',1200);else if(res==='shared')showToast('공유 창에서 저장할 곳을 골라 주세요',1600);else if(res==='declined')showToast('저장을 취소했어요',1000);else if(res==='fail')showToast('영상을 저장하지 못했어요',1400);},
   async save(blob,name,noShare){
+    // Android (v0.26): Movies/HoleCup in the gallery (Android 10+); older phones get the share sheet ('shared')
+    if(ANDROID){const h=HCApp();if(!h)return 'fail';showToast('영상을 저장하는 중…',4000);const r=await h.saveFile(blob,name);return r==='saved'||r==='shared'?r:'fail';}
     if(TOSS){const a=AIT();if(a&&a.canSaveFile&&a.canSaveFile()){showToast('영상을 저장하는 중…',4000);return (await a.saveFile(blob,name))==='saved'?'saved':'fail';}
       if(!noShare)try{const f=new File([blob],name,{type:blob.type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'홀컵 원정대'});return 'saved';}}catch(e){if(e&&e.name==='AbortError')return 'declined';}
       return 'fail';}
@@ -2341,14 +2436,15 @@ function drawWater(c,h,now){const sp=reduce?.25:1,t=now*sp;
         if(life<.5){c.beginPath();c.ellipse(px,py,r*.5,r*.21,0,0,7);c.stroke();}}
       c.restore();}}}
 
-// ---------------- Toss mini app: back button and startup ----------------
-if(TOSS){
-  /* Toss top-bar back (‹) and Android back. Returns true when the game handled it. On the lobby and the title screen it returns
-     false and toss/src/main.js closes the mini app (back on the first screen exits). Order: popups (result · video sheet ·
-     settings · missions · pause) close first → in play it opens the pause sheet → other screens use their own ‹ button. */
+// ---------------- app builds (Toss mini app, Android app): back button and startup ----------------
+if(TOSS||ANDROID){
+  /* Toss top-bar back (‹) and Android back (Toss: toss/src/main.js, Android app (v0.26): MainActivity calls window.__hcBack()).
+     Returns true when the game handled it; when it returns false the app closes. Order: popups (result · video sheet ·
+     settings · missions · pause) close first → in play it opens the pause sheet → other screens use their own ‹ button →
+     on the lobby and the title screen it asks before closing (exit sheet). */
   const exitAsk=$('exitAsk'),hideExit=()=>{exitAsk.hidden=true;};
   $('exitX').onclick=hideExit;$('exitStay').onclick=hideExit;exitAsk.addEventListener('click',e=>{if(e.target===exitAsk)hideExit();});
-  $('exitGo').onclick=()=>{hideExit();const a=AIT();if(a&&a.close)a.close();};
+  $('exitGo').onclick=()=>{hideExit();if(TOSS){const a=AIT();if(a&&a.close)a.close();}else{const h=HCApp();if(h)h.exit();}};
   window.__hcBack=()=>{
     if(!$('adOv').hidden)return true;
     if(!exitAsk.hidden){hideExit();return true;}
@@ -2361,6 +2457,7 @@ if(TOSS){
     // v0.22: Toss checklist - closing the mini app asks first (back on the lobby/title opens the confirm sheet)
     if(scr==='home'||scr==='title'){$('exitAsk').hidden=false;return true;}
     const back=document.querySelector(`#scr-${scr} .navbar .back`);if(back)back.click();else goHome();return true;};
+  if(TOSS){
   const onReady=()=>{const a=AIT();if(!a)return;trackQ.splice(0).forEach(e=>a.track(...e));
     if(ADS_ON&&!SAVE.noAds)a.ads.load('interstitial');
     a.swipeBack(app.dataset.screen==='home'||app.dataset.screen==='title');
@@ -2369,6 +2466,9 @@ if(TOSS){
     // v0.25 launch: no test hook in any Toss build
     setTimeout(()=>{try{delete window.__golf;}catch(e){window.__golf=undefined;}},0);};
   if(window.AIT&&window.AIT.ready)onReady();else addEventListener('ait:ready',onReady,{once:true});
+  }
+  // Android (v0.26): no test hook in the store build (debug builds keep it for the emulator check in CI)
+  else if(!(window.__ANDROID__&&window.__ANDROID__.debug))setTimeout(()=>{try{delete window.__golf;}catch(e){window.__golf=undefined;}},0);
 }
 
 // v0.22: Toss checklist - sound stops at once when the app goes to the background and comes back on return; play pauses
