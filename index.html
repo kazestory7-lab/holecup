@@ -244,7 +244,7 @@ td.name,th.name{text-align:left;font-weight:700}
 .adbanner b{font-size:10px;background:var(--label3);color:var(--surface);border-radius:4px;padding:1px 5px;letter-spacing:.06em}
 
 
-/* v0.19 phone-size pass: 44px touch targets, short / narrow screens, landscape notice */
+/* v0.21 phone-size pass: 44px touch targets, short / narrow screens, landscape notice */
 .circle{width:44px;height:44px}
 .back{min-height:44px;min-width:44px}
 .xbtn{width:36px;height:36px}.xbtn::after{content:"";position:absolute;inset:-6px}
@@ -454,16 +454,16 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
     <div><h1 class="large">PVP 대전</h1><p class="sub">같은 3홀을 쳐서 타수가 적은 쪽이 이겨요.</p></div>
     <div class="card league" id="leagueCard"></div>
     <div class="card vs" id="vsCard"></div>
-    <p class="status" id="pvpStatus">상대를 찾는 중…</p>
+    <p class="status" id="pvpStatus">AI 상대가 코스를 치는 중…</p>
     <div class="card rows" id="matchHoles"></div>
-    <p class="note">서버 연동 전이라 AI가 같은 코스를 먼저 쳐 둔 고스트 기록과 대결합니다.</p>
+    <p class="note">상대는 실제 사람이 아니라, AI가 같은 코스를 먼저 쳐 둔 고스트예요. 내 트로피에 맞춰 실력이 정해져요.</p>
     <button class="btn btn-primary press" id="fightBtn" disabled>대결 시작</button>
   </section>
 
   <section class="screen" id="scr-shop" hidden aria-label="상점">
     <div class="navbar"><button class="back" data-go="home"><svg viewBox="0 0 12 20"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>홈</button><span class="coin"><i class="cg"></i><span class="coinval">0</span></span></div>
     <h1 class="large">상점</h1>
-    <div class="card shop-preview"><canvas id="shopPreview"></canvas><div><p class="eyebrow">내 원정대원</p><b class="adtitle" id="shopLook">버킷햇 · 하늘 티</b><p class="sub" style="font-size:13px">모자와 옷은 PVP 상대에게도 보여요.</p></div></div>
+    <div class="card shop-preview"><canvas id="shopPreview"></canvas><div><p class="eyebrow">내 원정대원</p><b class="adtitle" id="shopLook">버킷햇 · 하늘 티</b><p class="sub" style="font-size:13px">모자와 옷은 플레이할 때도 보여요.</p></div></div>
     <div class="seg" id="shopTabs"><button data-tab="hat" aria-pressed="true">모자</button><button data-tab="outfit" aria-pressed="false">옷</button><button data-tab="ball" aria-pressed="false">공</button><button data-tab="item" aria-pressed="false">아이템</button><button data-tab="coin" aria-pressed="false">코인</button></div>
     <div id="shopBody"></div>
   </section>
@@ -476,7 +476,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
     <button class="btn btn-primary press" id="taStart">도전하기</button>
     <div><p class="eyebrow" style="margin:0 4px 8px">오늘의 랭킹</p><div class="card rows" id="taBoard"></div></div>
     <div class="card reward-row" id="taRewards"></div>
-    <p class="note">서버 연동 전이라 랭킹은 날짜별로 만든 가상 참가자와 비교합니다. 순위 보상은 다음 날 처음 접속할 때 지급돼요.</p>
+    <p class="note">랭킹의 다른 참가자는 실제 사람이 아니라 날짜마다 만든 가상 참가자예요. 순위 보상은 다음 날 처음 접속할 때 지급돼요.</p>
   </section>
 
   <section class="overlay bottom" id="pause" hidden><div class="sheet" id="pauseSheet"></div></section>
@@ -492,7 +492,17 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.19</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.21</p>
+    </div>
+  </section>
+  <section class="overlay bottom" id="exitAsk" hidden>
+    <div class="sheet">
+      <button class="xbtn" aria-label="닫기" id="exitX"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+      <div class="grabber"></div>
+      <h3>홀컵 원정대를 닫을까요?</h3>
+      <p class="note" style="text-align:center;margin:0">진행 기록은 저장돼 있어요. 다음에 이어서 칠 수 있어요.</p>
+      <button class="btn btn-primary press" id="exitStay">계속 치기</button>
+      <button class="btn btn-plain press" id="exitGo">닫기</button>
     </div>
   </section>
   <section class="overlay" id="result" hidden><div class="modal" id="resultPanel"></div></section>
@@ -614,31 +624,31 @@ const CHAPTERS=[
    {name:'자정의 빅벤',par:4,tee:[262,560],cup:[90,115],outline:TEMPLE,movers:[{type:'spin',c:[262,420],len:44,w:1.2,look:'hand'},{type:'spin',c:[262,420],len:26,w:3,look:'hand'}],
     posts:[{c:[262,420],r:8}],surfaces:[{t:'puddle',r:[40,170,100,60]}]},
   ]},
- {id:'us',name:'미국',place:'라스베이거스',gimmick:'핀볼 범퍼 · 룰렛',
+ {id:'us',name:'미국',place:'라스베이거스',gimmick:'핀볼 범퍼 · 회전 원판',
   theme:{grass:'#62c491',grass2:'#5aba89',bump:'#ffffff',blockA:'#f5ba45',blockB:'#e09a22',blockEdge:'#ffffff',post:'pop',mover:'#ff3d9a',flag:'#3c3b6e',acc:'#ff3d9a',boost:'#20c5ff',portal:['#ff3d9a','#20c5ff'],art:'us'},
   holes:[
    {name:'네온 스트립',par:2,demo:[232,.75],tee:[180,545],cup:[180,140],outline:BOX,posts:[{c:[135,330],r:16},{c:[225,330],r:16}]},
    {name:'핀볼 레인',par:3,tee:[180,550],cup:[180,120],outline:BOX,posts:[{c:[180,250],r:16},{c:[128,335],r:16},{c:[232,335],r:16}]},
-   {name:'슬롯머신',par:3,tee:[180,555],cup:[250,125],outline:BOX,blocks:[rect(40,330,320,356)],portals:[{a:[100,430],b:[250,195]},{a:[180,430],b:[95,150]},{a:[260,430],b:[180,260]}]},
-   {name:'벨라지오 분수',par:3,tee:[180,555],cup:[180,125],outline:BOX,surfaces:[{t:'water',r:[135,255,90,100]}],posts:[{c:[100,240],r:14},{c:[260,240],r:14},{c:[100,390],r:14},{c:[260,390],r:14}]},
+   {name:'네온 터널',par:3,tee:[180,555],cup:[250,125],outline:BOX,blocks:[rect(40,330,320,356)],portals:[{a:[100,430],b:[250,195]},{a:[180,430],b:[95,150]},{a:[260,430],b:[180,260]}]},
+   {name:'분수 광장',par:3,tee:[180,555],cup:[180,125],outline:BOX,surfaces:[{t:'water',r:[135,255,90,100]}],posts:[{c:[100,240],r:14},{c:[260,240],r:14},{c:[100,390],r:14},{c:[260,390],r:14}]},
    {name:'그랜드 캐니언',par:3,tee:[240,560],cup:[110,120],outline:[40,60,220,60,220,240,320,240,320,600,150,600,150,400,40,400],posts:[{c:[235,320],r:14}],surfaces:[{t:'sand',r:[40,300,80,90]}]},
-   {name:'룰렛',par:3,tee:[180,555],cup:[180,115],outline:BOX,posts:[{c:[180,330],r:34,kind:'roulette'},{c:[85,200],r:12},{c:[275,200],r:12}]},
+   {name:'회전 원판',par:3,tee:[180,555],cup:[180,115],outline:BOX,posts:[{c:[180,330],r:34,kind:'roulette'},{c:[85,200],r:12},{c:[275,200],r:12}]},
    {name:'루트 66',par:3,tee:[100,555],cup:[100,120],outline:BOX,blocks:[rect(150,200,180,520)],boosts:[{r:[196,260,110,200],dir:-90}],surfaces:[{t:'sand',r:[48,250,94,180]}]},
    {name:'네온 미로',par:3,tee:[180,560],cup:[180,115],outline:BOX,posts:[[110,265],[180,225],[250,265],[110,400],[180,360],[250,400]].map(c=>({c,r:13}))},
-   {name:'잭팟',par:4,tee:[90,560],cup:[90,115],outline:BOX,blocks:[rect(40,340,250,366)],boosts:[{r:[262,380,52,140],dir:-90}],
+   {name:'보너스 레인',par:4,tee:[90,560],cup:[90,115],outline:BOX,blocks:[rect(40,340,250,366)],boosts:[{r:[262,380,52,140],dir:-90}],
     posts:[{c:[120,235],r:14},{c:[250,210],r:14},{c:[185,280],r:24,kind:'roulette',spin:-5}]},
   ]},
  {id:'cn',name:'중국',place:'베이징',gimmick:'달 문 · 용 회전',
   theme:{grass:'#6cc07a',grass2:'#64b672',bump:'#fff4e0',blockA:'#b8323a',blockB:'#8f2229',blockEdge:'#f4c95d',post:'lamp',mover:'#d93a2b',flag:'#d62a2a',acc:'#e0403a',portal:['#e8b030','#d62a2a'],art:'cn'},
   holes:[
-   {name:'홍등 거리',par:2,tee:[180,545],cup:[180,150],outline:rect(70,60,290,600),posts:[{c:[128,330],r:15},{c:[232,330],r:15}]},
+   {name:'등불 거리',par:2,tee:[180,545],cup:[180,150],outline:rect(70,60,290,600),posts:[{c:[128,330],r:15},{c:[232,330],r:15}]},
    {name:'만리장성',par:3,tee:[110,550],cup:[110,140],outline:BOX,blocks:[[40,388,236,258,256,282,40,422]]},
    {name:'달 문',par:2,tee:[180,550],cup:[180,130],outline:BOX,blocks:[rect(40,320,320,346)],portals:[{a:[180,440],b:[180,230]}],posts:[{c:[118,440],r:14},{c:[242,440],r:14}]},
    {name:'용의 꼬리',par:3,tee:[180,555],cup:[180,125],outline:BOX,movers:[{type:'spin',c:[180,340],len:78,w:1.2,look:'dragon'}],posts:[{c:[100,220],r:13},{c:[260,220],r:13}]},
    {name:'이화원 호수',par:3,tee:[100,555],cup:[260,130],outline:BOX,surfaces:[{t:'water',r:[160,250,160,110]}],posts:[{c:[100,300],r:14}]},
    {name:'자금성 문',par:3,tee:[180,560],cup:[180,120],outline:BOX,blocks:[rect(40,390,150,416),rect(210,390,320,416),rect(40,230,130,256),rect(230,230,320,256)],
     movers:[{type:'slide',a:[150,243],b:[210,243],d:[50,0],period:3}]},
-   {name:'홍등 마름모',par:3,tee:[180,560],cup:[180,115],outline:BOX,posts:[[180,200],[120,270],[240,270],[180,340],[100,410],[260,410],[180,470]].map(c=>({c,r:13}))},
+   {name:'등불 마름모',par:3,tee:[180,560],cup:[180,115],outline:BOX,posts:[[180,200],[120,270],[240,270],[180,340],[100,410],[260,410],[180,470]].map(c=>({c,r:13}))},
    {name:'쌍룡',par:3,tee:[180,560],cup:[180,115],outline:BOX,movers:[{type:'spin',c:[118,300],len:52,w:1.5,look:'dragon'},{type:'spin',c:[242,300],len:52,w:-1.5,look:'dragon'}]},
    {name:'천단',par:4,tee:[262,560],cup:[90,115],outline:TEMPLE,portals:[{a:[262,360],b:[110,240]}],movers:[{type:'spin',c:[262,460],len:44,w:1.4,look:'dragon'}],posts:[{c:[165,160],r:14},{c:[235,220],r:14}]},
   ]},
@@ -776,6 +786,8 @@ function collide(s,g,ev){const abx=g.bx-g.ax,aby=g.by-g.ay,L2=abx*abx+aby*aby;
     const [ux,uy]=g.vel?g.vel(qx,qy):[0,0];const vn=(s.vx-ux)*nx+(s.vy-uy)*ny;
     if(vn<0){s.vx-=(1+E)*vn*nx;s.vy-=(1+E)*vn*ny;if(-vn>80)ev.wall=Math.max(ev.wall||0,-vn);}}}
 function step(h,s,t,ev){
+  // v0.21: a ball the wind has pinned against a wall stays at rest until it is hit again (pin is tied to its exact spot)
+  if(s.pin&&s.vx===0&&s.vy===0&&s.x===s.pin[0]&&s.y===s.pin[1])return;
   let sq=surfAt(h,s.x,s.y);const sp=Math.hypot(s.vx,s.vy),st=SURF[sq?sq.t:'grass'];s.tr=(s.tr||0)+sp*DT;
   if(sp>0){const ns=Math.max(0,sp-(st.lin+st.k*sp)*DT),f=ns/sp;s.vx*=f;s.vy*=f;}
   let windy=false;
@@ -808,6 +820,10 @@ function step(h,s,t,ev){
   for(const p of h.portals)if(s.pcd<=0&&Math.hypot(s.x-p.a[0],s.y-p.a[1])<13){s.x=p.b[0];s.y=p.b[1];s.pcd=.6;ev.portal=true;}
   sq=surfAt(h,s.x,s.y);if(sq&&sq.t==='water')ev.water=true;
   if(!windy&&!lip&&cd>=SLOPE_R&&Math.hypot(s.vx,s.vy)<5){s.vx=0;s.vy=0;}
+  // v0.21: wind pushing the ball into a wall used to keep it creeping at ~1 px/s forever (the turn never ended).
+  // If it is slow and has stayed within 1.5 px for 0.4 s inside wind, stop and pin it.
+  if(windy&&!lip&&cd>=SLOPE_R&&Math.hypot(s.vx,s.vy)<40){if(s.wt===undefined||Math.hypot(s.x-s.wx,s.y-s.wy)>1.5){s.wx=s.x;s.wy=s.y;s.wt=0;}
+    else if((s.wt+=DT)>.4){s.vx=0;s.vy=0;s.pin=[s.x,s.y];s.wt=undefined;}}else s.wt=undefined;
 }
 function simulate(h,x,y,ang,pow,t0){const s={x,y,vx:Math.cos(ang)*pow*MAXV,vy:Math.sin(ang)*pow*MAXV,pcd:0};
   let t=t0||0;for(let i=0;i<240*10;i++){const ev={};step(h,s,t,ev);t+=DT;
@@ -872,7 +888,7 @@ const app=$('app'),cv=$('cv'),ctx=cv.getContext('2d'),stage=$('stage'),toast=$('
 const result=$('result'),resultPanel=$('resultPanel'),pauseEl=$('pause'),settingsEl=$('settings');
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FONT='-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR Variable","Noto Sans KR",sans-serif',FONTD='"Jua",'+FONT;
-// ---------------- Toss mini-app bridge (v0.19) ----------------
+// ---------------- Toss mini-app bridge (v0.21) ----------------
 // The Toss build (minigolf/toss) sets window.__TOSS__ before this script and loads toss/src/main.js, which exposes window.AIT:
 // real Apps-in-Toss ads, back button, iOS swipe-back, saving files, analytics. The web/artifact build has neither, so the
 // prototype fakes (test ad overlay, test purchase) keep working there.
@@ -882,11 +898,25 @@ const trackQ=[];
 function track(type,name,p){if(!TOSS)return;const a=AIT();if(a&&a.ready&&a.track){a.track(type,name,p||{});return;}if(trackQ.length<50)trackQ.push([type,name,p||{}]);}
 // iOS swipe-back is on only where back means "leave the mini app" (title, lobby); elsewhere it would cut a putt drag short
 function swipeBack(on){if(!TOSS)return;const a=AIT();if(a&&a.swipeBack)a.swipeBack(on);}
-// Toss: in-app purchase is not connected yet, so the paid packs (coins, 광고 제거) are hidden; coins come from play and rewarded ads
-const PAID_ITEMS=!TOSS;
+// paid packs (coins, 광고 제거). Web: test purchase popup. Toss (v0.21): Apps-in-Toss in-app purchase, and only the packs
+// registered in the console show up. Set false to hide them everywhere (already-bought goods, restore and refunds keep working)
+const PAID_ITEMS=true;
 const store={read(){try{return JSON.parse(localStorage.getItem('holecup.v3')||'{}')}catch(e){return{}}},write(v){try{localStorage.setItem('holecup.v3',JSON.stringify(v))}catch(e){}}};
-const freshSave=()=>({stars:{},sound:true,unlockAll:false,trophies:0,pvpW:0,pvpL:0,coins:0,owned:{hat:['bucket'],outfit:['blue'],ball:['white']},equip:{hat:'bucket',outfit:'blue',ball:'white'},noAds:false,cleared:0,daily:null,ta:null,tour:{},adCoinAt:0,pendingTa:null,caddie:3,adCaddieAt:0,hio:0});
+const freshSave=()=>({stars:{},sound:true,unlockAll:false,trophies:0,pvpW:0,pvpL:0,coins:0,owned:{hat:['bucket'],outfit:['blue'],ball:['white']},equip:{hat:'bucket',outfit:'blue',ball:'white'},noAds:false,cleared:0,daily:null,ta:null,tour:{},adCoinAt:0,pendingTa:null,caddie:3,adCaddieAt:0,hio:0,iap:{}});
 let SAVE=Object.assign(freshSave(),store.read());
+// v0.21: repair broken or old save fields instead of crashing on boot (each field falls back to its fresh value)
+(function fixSave(){const F=freshSave(),obj=v=>v&&typeof v==='object'&&!Array.isArray(v),num=v=>typeof v==='number'&&isFinite(v);
+  try{if(!obj(SAVE.stars))SAVE.stars={};for(const k in SAVE.stars)if(!num(SAVE.stars[k]))delete SAVE.stars[k];
+    ['coins','trophies','pvpW','pvpL','cleared','caddie','hio','adCoinAt','adCaddieAt'].forEach(k=>{if(!num(SAVE[k])){const n=Number(SAVE[k]);SAVE[k]=isFinite(n)?n:F[k];}});
+    if(!obj(SAVE.owned))SAVE.owned=F.owned;if(!obj(SAVE.equip))SAVE.equip=F.equip;
+    ['hat','outfit','ball'].forEach(k=>{if(!Array.isArray(SAVE.owned[k]))SAVE.owned[k]=F.owned[k].slice();if(!SAVE.owned[k].includes(F.owned[k][0]))SAVE.owned[k].unshift(F.owned[k][0]);
+      if(typeof SAVE.equip[k]!=='string'||!SAVE.owned[k].includes(SAVE.equip[k]))SAVE.equip[k]=F.equip[k];});
+    if(SAVE.daily&&!(obj(SAVE.daily)&&typeof SAVE.daily.date==='string'&&Array.isArray(SAVE.daily.list)))SAVE.daily=null;
+    if(SAVE.ta&&!(obj(SAVE.ta)&&typeof SAVE.ta.date==='string'&&num(SAVE.ta.used)&&num(SAVE.ta.ad)))SAVE.ta=null;
+    if(SAVE.ta&&SAVE.ta.best&&!(num(SAVE.ta.best.s)&&num(SAVE.ta.best.t)))SAVE.ta.best=null;
+    if(SAVE.pendingTa&&!(obj(SAVE.pendingTa)&&num(SAVE.pendingTa.reward)&&num(SAVE.pendingTa.rank)&&obj(SAVE.pendingTa.best)))SAVE.pendingTa=null;
+    if(!obj(SAVE.tour))SAVE.tour={};
+  }catch(e){try{localStorage.setItem('holecup.backup',JSON.stringify(SAVE));}catch(_){}SAVE=freshSave();}})();
 const save=()=>store.write(SAVE);
 SAVE.owned.ball=SAVE.owned.ball||['white'];SAVE.equip.ball=SAVE.equip.ball||'white';
 // v0.10: holes were re-ordered — move saved stars to the new hole numbers once
@@ -991,8 +1021,8 @@ function enterTitle(){G.mode='attract';G.paused=false;show('title');result.hidde
 function goHome(){clearTimeout(G.demoTimer);if(!SAVE.onboarded||SAVE.fr!==undefined){SAVE.onboarded=true;delete SAVE.fr;save();}G.firstRun=false;G.mode='menu';result.hidden=true;show('home');renderHome();taEnsure();if(SAVE.pendingTa)claimPendingTa();}
 function goWorld(){show('world');renderWorld();}
 function goHoles(ci){G.sel=ci;show('holes');renderHoles();}
-// v0.19: a brand-new player goes straight from the title into hole 1 (마당 첫 퍼트); the lobby appears when they step out of play
-// v0.19: a first run in progress (SAVE.fr = hole index) resumes where the player left off, even if they already earned stars
+// v0.21: a brand-new player goes straight from the title into hole 1 (마당 첫 퍼트); the lobby appears when they step out of play
+// v0.21: a first run in progress (SAVE.fr = hole index) resumes where the player left off, even if they already earned stars
 const isNewPlayer=()=>!SAVE.onboarded&&(SAVE.fr!==undefined||!Object.keys(SAVE.stars||{}).length);
 function finishFirstRun(){goHome();setTimeout(()=>showToast('로비에 왔어요! 월드·미션·상점은 여기서',1800),250);}
 $('scr-title').addEventListener('click',()=>{sfx.tap();if(isNewPlayer()){const hi=SAVE.fr||0;G.firstRun=true;SAVE.fr=hi;save();newSolo(0,hi);if(hi>0)setTimeout(()=>{if(G.firstRun)showToast('이어서 쳐요 · '+(G.holeIdx+1)+'홀',1600);},400);}else goHome();});
@@ -1072,7 +1102,8 @@ $('settingsClose').onclick=()=>{settingsEl.hidden=true;if(app.dataset.screen==='
 $('coinTest').onclick=()=>{addCoins(1000);showToast('+1,000 코인 (테스트)',900);};
 settingsEl.addEventListener('click',e=>{if(e.target===settingsEl)settingsEl.hidden=true;});
 $('resetBtn').onclick=()=>{const b=$('resetBtn');if(b.dataset.arm!=='1'){b.dataset.arm='1';b.textContent='한 번 더 누르면 별과 트로피가 모두 지워져요';return;}
-  b.dataset.arm='0';SAVE=Object.assign(freshSave(),{sound:SAVE.sound});save();settingsEl.hidden=true;renderHome();showToast('초기화했어요',900);};
+  b.dataset.arm='0';SAVE=Object.assign(freshSave(),{sound:SAVE.sound});save();settingsEl.hidden=true;renderHome();showToast('초기화했어요',900);
+  if(TOSS)setTimeout(restorePurchases,1000);}; // paid goods (광고 제거, 코인 팩) come back from the Toss order history
 
 // ---------------- PVP ----------------
 const NICKS=['퍼팅요정','버디헌터','홀인원장인','새벽라운딩','파세이브','그린위의별','빠따신','이글아이','칩샷마스터','굴러가유','한타만더','미니골프광'];
@@ -1085,7 +1116,7 @@ function vsCard(opp){$('vsCard').innerHTML=`<div class="player"><span class="ava
   ${opp?`<div class="player"><span class="avatar" style="background:color-mix(in srgb,${opp.color} 30%,var(--surface))"><canvas id="avOpp"></canvas></span><b>${opp.name}</b><span>${league(opp.trophies).name} · ${opp.trophies}</span></div>`
     :`<div class="player"><span class="avatar wait">?</span><b>찾는 중</b><span>비슷한 실력</span></div>`}`;
   drawAvatarCanvas($('avMe'),myLook(),'idle');if(opp)drawAvatarCanvas($('avOpp'),opp.look,'idle');}
-// v0.19 retention: PVP holes come from holes the player has already cleared (familiar maps), leaning to the newest country,
+// v0.21 retention: PVP holes come from holes the player has already cleared (familiar maps), leaning to the newest country,
 // easier holes first, and avoiding the previous match's holes; only if fewer than 3 are cleared do open/Korea holes fill in
 function pvpPick(){const cleared=[],open=[],last=new Set(SAVE.pvpLast||[]);
   CHAPTERS.forEach((ch,ci)=>ch.holes.forEach((h,hi)=>{if(!holeOpen(ci,hi))return;((starsOf(ci,hi)||0)>=1?cleared:open).push([ci,hi]);}));
@@ -1098,15 +1129,15 @@ function pvpPick(){const cleared=[],open=[],last=new Set(SAVE.pvpLast||[]);
 function startPvp(){clearTimeout(G.demoTimer);if(G.match)G.match.cancel=true;G.mode='menu';result.hidden=true;show('pvp');leagueCard();vsCard(null);
   const picks=pvpPick(),ot=Math.max(0,SAVE.trophies+Math.round(Math.random()*100-40));SAVE.pvpLast=picks.map(([ci,hi])=>key(ci,hi));save();
   const opp={name:NICKS[Math.random()*NICKS.length|0],trophies:ot,color:AV[Math.random()*AV.length|0],look:{hat:oppPick(HATS),outfit:oppPick(OUTFITS)}};
-  // v0.19 retention: the first 3 matches and a 2-loss streak get a gentler ghost
+  // v0.21 retention: the first 3 matches and a 2-loss streak get a gentler ghost
   const played=(SAVE.pvpW||0)+(SAVE.pvpL||0),soft=played<3?.6:(SAVE.pvpStreak||0)<=-2?.75:1,skill=Math.min(1,(.15+.8*ot/1400)*soft);
   const m=G.match={opp,holes:picks.map(([ci,hi])=>({ci,hi,ghost:null})),idx:0,my:[],op:[],cancel:false,ready:false};
   $('matchHoles').innerHTML=m.holes.map((x,i)=>{const ch=CHAPTERS[x.ci],h=ch.holes[x.hi];
     return`<div class="rowi"><i style="background:${ch.theme.acc}"></i><div><b>${i+1}. ${h.name}</b><span>${ch.name} · ${x.hi+1}홀</span></div><em>파 ${h.par}</em></div>`;}).join('');
-  $('fightBtn').disabled=true;$('pvpStatus').textContent='상대를 찾는 중…';
+  $('fightBtn').disabled=true;$('pvpStatus').textContent='AI 상대가 코스를 치는 중…';
   const t0=performance.now();let k=0;
   const nextGhost=()=>{if(m.cancel)return;if(k>=m.holes.length){const wait=Math.max(0,1500-(performance.now()-t0));
-      setTimeout(()=>{if(m.cancel)return;m.ready=true;vsCard(opp);$('pvpStatus').textContent=`${opp.name} 님의 기록을 찾았어요`;$('fightBtn').disabled=false;sfx.tap();},wait);return;}
+      setTimeout(()=>{if(m.cancel)return;m.ready=true;vsCard(opp);$('pvpStatus').textContent=`AI 상대 ${opp.name}의 기록이 준비됐어요`;$('fightBtn').disabled=false;sfx.tap();},wait);return;}
     const x=m.holes[k];runGen(ghostGen(CHAPTERS[x.ci].holes[x.hi],skill),g=>{x.ghost=g;k++;$('pvpStatus').textContent=`상대 기록 불러오는 중 · ${k} / 3`;nextGhost();},()=>m.cancel);};
   setTimeout(nextGhost,60);}
 function showMul(kind){if(G.mode!=='solo'||G.mulUsed)return;const mb=$('mulBtn');mb.dataset.kind=kind;mb.textContent=kind==='sand'?'광고 보고 벙커 샷 무르기':'광고 보고 벌타 취소';
@@ -1126,7 +1157,7 @@ function pvpFrame(dt){if(G.mode!=='pvp'||!G.ghost||app.dataset.screen!=='game')r
   if(G.myDone&&gs.done&&!G.pvpShown){G.pvpShown=true;G.match.op[G.match.idx]=G.ghost.strokes;const tok=G.turnId;setTimeout(()=>{if(tok===G.turnId&&G.mode==='pvp')showPvpHole();},900);}}
 
 // ---------------- pause ----------------
-$('pauseBtn').onclick=()=>{if(G.mode==='attract'||G.state==='result'||G.state==='replay'||G.state==='replayEnd')return;G.paused=true;G.aim=null;
+$('pauseBtn').onclick=()=>{if(G.mode==='attract'||G.state==='result'||G.state==='sunk'||G.state==='replay'||G.state==='replayEnd')return;G.paused=true;G.aim=null;
   $('pauseSheet').innerHTML=xb('resume')+`<div class="grabber"></div><h3>일시정지</h3>
     <button class="btn btn-primary press" data-act="resume">이어서 치기</button>
     ${G.mode==='solo'?`<div class="row2"><button class="btn btn-plain press" data-act="restart">이 홀 다시</button><button class="btn btn-plain press" data-act="holes">${G.firstRun?'로비로':'코스 선택'}</button></div>
@@ -1190,7 +1221,7 @@ result.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b
   if(a==='replay'){startReplay();return;}
   if(a==='vidmake'){VR.make();return;}
   if(a==='iapOk'){const pk=G.iap;if(pk.id==='noads'){SAVE.noAds=true;save();syncBanner(app.dataset.screen);}else addCoins(pk.coins);renderShop();showToast(`${pk.name} 지급 (테스트)`,1000);return;}
-  if(a==='iapCancel')return;
+  if(a==='iapCancel'||a==='histClose')return;
   if(a==='claimTa'){addCoins(SAVE.pendingTa.reward);SAVE.pendingTa=null;save();sfx.win();renderHome();return;}
   const kind=G.resultKind,go=()=>routeResult(a);
   if(a==='next'&&(SAVE.cleared||0)>=5&&SAVE.cleared%4===0)maybeInter('홀 사이 전면 광고 (4홀마다)',go);
@@ -1200,7 +1231,7 @@ function routeResult(a){
   if(G.firstRun&&['holes','world','home','quit'].includes(a)){finishFirstRun();return;}
   if(a==='next'){loadHole(G.ci,G.holeIdx+1);startTurn();}
   else if(a==='tourAgain')startTour(G.tour.ci);
-  else if(a==='taAgain'){if(taLeft()>0)startTaRun();else{goTa();showRewarded('타임어택 추가 도전',()=>{SAVE.ta.ad++;save();renderTa();});}}
+  else if(a==='taAgain'){if(taLeft()>0)startTaRun();else{goTa();if(SAVE.ta.ad>=TA_AD_MAX){showToast('오늘 추가 도전을 다 썼어요',1200);return;}showRewarded('타임어택 추가 도전',()=>{if(SAVE.ta.ad>=TA_AD_MAX)return;SAVE.ta.ad++;save();renderTa();});}}
   else if(a==='taBoard')goTa();
   else if(a==='retry'){G.scores[G.holeIdx]=undefined;loadHole(G.ci,G.holeIdx);startTurn();}
   else if(a==='final')showChapterFinal();
@@ -1472,8 +1503,10 @@ function drawPost(c,p,t){const k=Math.max(0,1-(G.ht-(p.hit??-9))*6),r=p.r*(1+k*.
      c.beginPath();c.ellipse(x-r*.2,y-r*.22,r*.6,r*.45,-.4,0,7);c.fillStyle='#e07a48';c.fill();c.beginPath();c.ellipse(x+r*.3,y+r*.25,r*.2,r*.12,.3,0,7);c.fillStyle='rgba(90,30,10,.35)';c.fill();break;
    case'lotus':{const glow=k>0;for(let i=0;i<8;i++){const a=i/8*Math.PI*2+.2;c.save();c.translate(x+Math.cos(a)*r*.5,y+Math.sin(a)*r*.5);c.rotate(a);c.beginPath();c.ellipse(0,0,r*.5,r*.3,0,0,7);c.fillStyle=i%2?'#f59ac0':'#ffc2da';c.fill();c.restore();}
      circ(c,x,y,r*.38,glow?'#fff3a0':'#ffd24a');circ(c,x,y,r*.18,'#f2a23a');break;}
-   case'roulette':wedges(c,x,y,r,Array.from({length:16},(_,i)=>i===0?'#2fa35a':i%2?'#1d1d1f':'#d62d3a'),rot);c.beginPath();c.arc(x,y,r*.42,0,7);c.fillStyle='#c79a3c';c.fill();
-     c.beginPath();c.arc(x,y,r,0,7);c.strokeStyle='#e8c46a';c.lineWidth=3;c.stroke();break;}
+   case'roulette':{c.beginPath();c.arc(x,y,r,0,7);c.fillStyle='#2a2f6b';c.fill();c.beginPath();c.arc(x,y,r*.74,0,7);c.fillStyle='#ff3d9a';c.fill();
+     c.beginPath();c.arc(x,y,r*.5,0,7);c.fillStyle='#20c5ff';c.fill();c.beginPath();c.arc(x,y,r*.26,0,7);c.fillStyle='#ffd23f';c.fill();
+     for(let i=0;i<3;i++){const a=rot+i*Math.PI*2/3;c.beginPath();c.arc(x+Math.cos(a)*r*.87,y+Math.sin(a)*r*.87,Math.max(2,r*.09),0,7);c.fillStyle='#fff';c.fill();}
+     c.beginPath();c.arc(x,y,r,0,7);c.strokeStyle='#e8c46a';c.lineWidth=3;c.stroke();break;}}
   if(k>0){c.beginPath();c.arc(x,y,r+4+k*7,0,7);c.strokeStyle=`rgba(255,255,255,${k*.7})`;c.lineWidth=2;c.stroke();}}
 
 function draw(dt){const c=ctx,h=hole,t=G.ht;
@@ -1727,7 +1760,7 @@ function drawBallTrail(c,trail,s,R){const n=trail.length,t=nowS();if(!n)return;
     if(s.trail==='star'&&i%3===0){c.globalAlpha=k;star4(c,q[0]+Math.sin(i*2.3)*5,q[1]+Math.cos(i*1.7)*5,2.6*k+.8,'#ffffff');}
     if(s.trail==='ice'&&i%4===0){c.globalAlpha=k*.9;star4(c,q[0]+Math.cos(i)*5,q[1]+Math.sin(i)*5,1.8,'#ffffff');}}
   c.globalAlpha=1;}
-// v0.19: cuter explorer. CHAR_STYLE picks proportions (classic = up to v0.13).
+// v0.21: cuter explorer. CHAR_STYLE picks proportions (classic = up to v0.13).
 const CHAR_STYLES={classic:{hr:8.6,hy:-8,bs:1,by:0,ex:1.35,ey:1.35,gap:3,eyeY:-.2,bl:1.9,blY:2.6,bx:5,shine:false,hands:false},
   chibi:{hr:10.6,hy:-9.4,bs:.82,by:2.4,ex:1.55,ey:2.05,gap:3.5,eyeY:.6,bl:2.3,blY:3.4,bx:6.2,shine:true,hands:true},
   mochi:{hr:11.4,hy:-6.8,bs:.7,by:4.6,ex:1.3,ey:1.6,gap:4.4,eyeY:2,bl:2.7,blY:4.6,bx:7,shine:true,hands:true},
@@ -1735,7 +1768,7 @@ const CHAR_STYLES={classic:{hr:8.6,hy:-8,bs:1,by:0,ex:1.35,ey:1.35,gap:3,eyeY:-.
   sparkleA:{hr:9.8,hy:-8.8,bs:.9,by:1,ex:2,ey:2.6,gap:3.7,eyeY:.8,bl:2.1,blY:3.7,bx:6,shine:true,hands:true,big:true,iris:'#6b3e22',bangs:'#5a3420',lash:true},
   sparkleB:{hr:9.8,hy:-8.8,bs:.9,by:1,ex:2,ey:2.6,gap:3.7,eyeY:.8,bl:2.1,blY:3.7,bx:6,shine:true,hands:true,big:true,iris:'#6b3e22',bangs:'#5a3420',lash:true,line:'#7a4e30',glint:true},
   sparkleC:{hr:10.4,hy:-9.2,bs:.86,by:1.6,ex:2.1,ey:2.75,gap:3.9,eyeY:1,bl:2.3,blY:3.9,bx:6.4,shine:true,hands:true,big:true,iris:'#6b3e22',bangs:'#5a3420',side:true,lash:true,line:'#7a4e30',glint:true}};
-let CHAR_STYLE='sparkleA';  // v0.19: 반짝눈 A안 (앞머리·갈색 눈동자·부드러운 속눈썹)
+let CHAR_STYLE='sparkleA';  // v0.21: 반짝눈 A안 (앞머리·갈색 눈동자·부드러운 속눈썹)
 function drawFigure(c,mood,focus,blink,look){const o=look.outfit,P=CHAR_STYLES[CHAR_STYLE]||CHAR_STYLES.classic,hy=P.hy,hr=P.hr;
   c.fillStyle='#6b4228';c.beginPath();c.ellipse(-4,10,3.4,2.3,0,0,7);c.ellipse(4.2,10,3.4,2.3,0,0,7);c.fill();
   c.save();c.translate(0,P.by);c.translate(0,3);c.scale(P.bs,P.bs);c.translate(0,-3);
@@ -1768,7 +1801,7 @@ function drawFigure(c,mood,focus,blink,look){const o=look.outfit,P=CHAR_STYLES[C
   c.save();c.translate(0,hy);c.scale(hr/8.6,hr/8.6);c.translate(0,8);drawHat(c,look.hat);c.restore();}
 function drawAvatarCanvas(cnv,look,mood,stage){const w=cnv.clientWidth||80,h=cnv.clientHeight||80,d=Math.min(3,window.devicePixelRatio||1);cnv.width=Math.round(w*d);cnv.height=Math.round(h*d);
   const c=cnv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);const tall=['wizard','chef','tophat','halo','rainbowcloud'].includes(look.hat&&look.hat.id),big=(CHAR_STYLES[CHAR_STYLE]||{}).hr>9.7,s=Math.min(w,h)/((tall?46:38)+(big?5:0));const oy=h*((tall?.7:.6)+(big?.04:0));if(stage)drawStage(c,w,h,oy+10*s,s);c.translate(w/2,oy);c.scale(s,s);drawFigure(c,mood||'idle',false,false,look);}
-// v0.19: a soft sky-and-grass stage behind shop avatars so white hats/outfits do not vanish on white cards
+// v0.21: a soft sky-and-grass stage behind shop avatars so white hats/outfits do not vanish on white cards
 function drawStage(c,w,h,gy,s){const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#cfe3f6');g.addColorStop(1,'#e8f2fb');c.fillStyle=g;rr(c,0,0,w,h,Math.min(16,w*.18));c.fill();
   c.save();rr(c,0,0,w,h,Math.min(16,w*.18));c.clip();c.fillStyle='#9fd27f';c.beginPath();c.moveTo(0,gy-2*s);c.quadraticCurveTo(w/2,gy-6*s,w,gy-2*s);c.lineTo(w,h);c.lineTo(0,h);c.closePath();c.fill();
   c.fillStyle='#8cc56c';c.beginPath();c.moveTo(0,gy+5*s);c.quadraticCurveTo(w/2,gy+2*s,w,gy+5*s);c.lineTo(w,h);c.lineTo(0,h);c.closePath();c.fill();c.restore();
@@ -1806,7 +1839,7 @@ function drawGhostChar(c,gs,name,look){const now=performance.now()/1000,done=gs.
   c.translate(GC.x,GC.y+jy);c.scale(CS*f,CS);drawFigure(c,done?'happy':'idle',false,false,look);c.restore();
   c.font=`700 11px ${FONT}`;const tw=c.measureText(name).width+12;rr(c,GC.x-tw/2,GC.y-48,tw,17,8.5);c.fillStyle='rgba(10,132,255,.9)';c.fill();
   c.fillStyle='#fff';c.textAlign='center';c.fillText(name,GC.x,GC.y-36);c.textAlign='left';}
-// v0.19: first-hole tutorial - a cartoon hand presses near the ball, pulls back and lets go, looping until the first shot
+// v0.21: first-hole tutorial - a cartoon hand presses near the ball, pulls back and lets go, looping until the first shot
 const tutorOn=()=>G.firstRun&&G.ci===0&&G.holeIdx===0&&G.strokes===0&&G.state==='aim'&&!G.aim&&!G.paused&&app.dataset.screen==='game';
 function drawHand(c,x,y,press,a){c.save();c.globalAlpha=a;c.translate(x,y);const k=press?.92:1;c.scale(k,k);c.rotate(-.35);
   c.lineJoin='round';c.lineWidth=2.4;c.strokeStyle='#2a2a22';c.fillStyle='#fffdf7';
@@ -1890,7 +1923,10 @@ function tossAd(kind,placement,cb){const a=AIT(),k=kind==='rewarded'?'rewarded':
     showToast(failed?'광고를 불러오지 못했어요. 잠시 후 다시 눌러 주세요':'광고를 끝까지 보면 보상을 받아요',1600);if(cb)cb(false);}});
   if(!shown){G.paused=wasPaused;fail();}}
 function showRewarded(placement,onReward){adShow('rewarded',placement,ok=>{if(ok)onReward();});}
-function maybeInter(placement,then){const now=Date.now();if(SAVE.noAds||now-ADS.inter<150000||now-ADS.rew<45000){then();return;}adShow('inter',placement,()=>then());}
+function maybeInter(placement,then){const now=Date.now();if(SAVE.noAds||now-ADS.inter<150000||now-ADS.rew<45000){then();return;}
+  // v0.21: tell the player an ad is coming (Toss checklist: no interstitial at a moment the user cannot expect)
+  const a=AIT();if(TOSS&&!(a&&a.ads.ready('interstitial'))){adShow('inter',placement,()=>then());return;}
+  if(ADS.pending)return;ADS.pending=true;showToast('광고 한 편 보고 이어서 갈게요',900);setTimeout(()=>{ADS.pending=false;adShow('inter',placement,()=>then());},900);}
 // v0.12: banner ad slot removed for now. Set BANNER_ON=true to bring it back on these screens.
 const BANNER_ON=false,BANNER_SCREENS=['home','world','holes','shop','ta'];
 function syncBanner(name){const on=BANNER_ON&&!SAVE.noAds&&BANNER_SCREENS.includes(name);$('adBanner').hidden=!on;app.classList.toggle('banner-on',on);}
@@ -1899,7 +1935,7 @@ function syncBanner(name){const on=BANNER_ON&&!SAVE.noAds&&BANNER_SCREENS.includ
 const MISSIONS={holes:{t:'홀 5개 클리어',n:5,r:60},birdie:{t:'버디 이하 3번',n:3,r:80},par:{t:'파 이하로 4홀 끝내기',n:4,r:60},hio:{t:'홀인원 1번',n:1,r:120,cad:1},
   dry:{t:'물·유사에 안 빠지고 3홀 클리어',n:3,r:70},lip:{t:'홀컵 가장자리 타고 넣기 1번',n:1,r:100,cad:1},pvp:{t:'PVP 1번 이기기',n:1,r:80},ta:{t:'타임어택 1번 도전',n:1,r:50},round:{t:'9홀 라운드 1번 완주',n:1,r:120,cad:1}};
 const BONUS_COINS=150,BONUS_CAD=2;
-function dailyEnsure(){const d=todayKey();if(SAVE.daily&&SAVE.daily.date===d)return;
+function dailyEnsure(){const d=todayKey();if(SAVE.daily&&SAVE.daily.date>=d&&SAVE.daily.list.every(m=>m&&MISSIONS[m.id]))return;
   const r=rng(hashStr('missions'+d)),hasRound=CHAPTERS.some((_,ci)=>chDone(ci)===9);let ids=Object.keys(MISSIONS).filter(k=>k!=='round'||hasRound);const pick=[];
   while(pick.length<3){const k=Math.floor(r()*ids.length);pick.push(ids.splice(k,1)[0]);}
   SAVE.daily={date:d,list:pick.map(id=>({id,p:0,claimed:false})),bonus:false};save();}
@@ -1927,7 +1963,59 @@ $('missions').addEventListener('click',e=>{const ov=$('missions');if(e.target===
 // ---------- shop ----------
 let shopTab='hat';
 const PACKS=[{id:'c1000',name:'코인 1,000',price:'₩1,200',coins:1000},{id:'c6000',name:'코인 6,000 (+20%)',price:'₩5,900',coins:6000},{id:'noads',name:'광고 제거',price:'₩5,900',desc:'전면 광고가 사라져요. 보상형 광고는 원할 때만.'}];
-function goShop(){show('shop');renderShop();}
+function goShop(){show('shop');renderShop();if(TOSS)loadTossProducts();}
+
+// ---------- Toss in-app purchase (v0.21) ----------
+// Products and prices come from the Apps-in-Toss console (SKUs in toss/src/config.js); only registered packs are shown, with the
+// console's name and price. Every granted orderId goes into SAVE.iap so an order is never granted twice. When the ledger is empty
+// (new phone, progress reset) restorePurchases() re-grants the completed orders in the user's Toss order history, and refunded
+// orders take the goods back (coins never go below 0). Same scheme as the 워드팝 Toss build.
+let tossItems={},itemsAt=0,buying=0,restoring=false;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const iapSku=id=>{const a=AIT();return a&&a.iap?a.iap.sku(id):null;};
+const tossIapOk=()=>{const a=AIT();return !!(a&&a.iap&&a.iap.ok());};
+const tossItem=p=>tossItems[iapSku(p.id)]||null;
+const sellable=p=>PAID_ITEMS&&(!TOSS||!!tossItem(p));
+const packName=p=>TOSS&&tossItem(p)?esc(tossItem(p).displayName||p.name):p.name;
+const packPrice=p=>TOSS&&tossItem(p)?esc(tossItem(p).displayAmount):p.price;
+const ledger=()=>SAVE.iap||(SAVE.iap={});
+function applyPack(p,s){if(p.id==='noads')SAVE.noAds=s>0;else SAVE.coins=Math.max(0,(SAVE.coins||0)+s*p.coins);}
+function iapRefresh(){syncCoins();syncBanner(app.dataset.screen);if(app.dataset.screen==='shop')renderShop();}
+function grantOrder(orderId,id){const L=ledger();if(L[orderId])return true;const p=PACKS.find(q=>q.id===id);if(!p)return false;
+  applyPack(p,1);L[orderId]={id,t:Date.now()};save();iapRefresh();return true;}
+function revokeOrder(orderId){const e=ledger()[orderId];if(!e||e.r)return false;const p=PACKS.find(q=>q.id===e.id);if(!p)return false;
+  applyPack(p,-1);e.r=1;save();if(p.id==='noads'){const a=AIT();if(a)a.ads.load('interstitial');}iapRefresh();return true;}
+async function loadTossProducts(force){const a=AIT();if(!PAID_ITEMS||!a||!a.iap||!a.iap.ok()||(!force&&Date.now()-itemsAt<30000))return;itemsAt=Date.now();
+  try{const list=await a.iap.products();tossItems={};list.forEach(x=>{tossItems[x.sku]=x;});if(app.dataset.screen==='shop'&&shopTab==='coin')renderShop();}catch(e){itemsAt=0;}}
+function tossPurchase(p){const a=AIT(),sku=iapSku(p.id);
+  if(!a||!a.iap||!a.iap.ok()){showToast('토스 앱을 최신 버전으로 업데이트하면 구매할 수 있어요',2400);return;}
+  if(!sku||!tossItems[sku]){showToast('지금은 구매할 수 없는 상품이에요',1600);return;}
+  if(buying&&Date.now()-buying<5000)return;buying=Date.now(); // blocks a double tap, never locks the shop for good
+  track('event','iap_start',{product:p.id});
+  a.iap.buy(sku,orderId=>grantOrder(orderId,p.id),r=>{buying=0;track('event','iap_result',{product:p.id,result:r.ok?'ok':r.code||'error'});
+    if(r.ok){sfx.win();showToast(p.id==='noads'?'광고 제거 완료! 이제 전면 광고가 나오지 않아요':`+${p.coins.toLocaleString()} 코인`,1800);}
+    else{if(r.code==='ITEM_ALREADY_OWNED')restorePurchases();if(r.msg)showToast(r.msg,3000);}
+    if(app.dataset.screen==='shop')renderShop();});}
+function reconcile(list){const a=AIT();let n=0;
+  list.forEach(o=>{const id=a.iap.productOf(o.sku);if(!id)return;
+    if(o.status==='COMPLETED'&&!ledger()[o.orderId]){if(grantOrder(o.orderId,id))n++;}
+    else if(o.status==='REFUNDED'&&ledger()[o.orderId])revokeOrder(o.orderId);});
+  return n;}
+async function restorePurchases(){const a=AIT();if(!a||!a.iap||!a.iap.ok()||restoring)return;restoring=true;let n=0;
+  try{for(const o of await a.iap.pending()){const id=a.iap.productOf(o.sku);if(!id)continue;const had=!!ledger()[o.orderId];
+    if(grantOrder(o.orderId,id)){if(!had)n++;await a.iap.complete(o.orderId);}}}catch(e){}
+  try{n+=reconcile(await a.iap.history());}catch(e){}
+  restoring=false;if(n){showToast(`구매한 상품 ${n}개를 지급했어요`,2200);track('event','iap_restore',{count:n});}}
+async function openHistory(){const a=AIT();if(!a||!a.iap)return;sfx.tap();G.resultKind='iap';
+  resultPanel.innerHTML=xb('histClose')+`<h3>구매 내역</h3><div class="card packs" id="histList"><div class="pack"><div><span>불러오는 중…</span></div></div></div>
+    <p class="note center">토스 계정 기준이라 기기를 바꿔도 같아요. 환불된 상품은 회수돼요.</p>`;result.hidden=false;
+  const box=$('histList');
+  try{const list=(await a.iap.history()).slice().sort((x,y)=>String(y.date).localeCompare(String(x.date)));reconcile(list);if(!box.isConnected)return;
+    box.innerHTML=list.length?list.map(o=>{const id=a.iap.productOf(o.sku),p=id&&PACKS.find(q=>q.id===id),it=tossItems[o.sku],ref=o.status==='REFUNDED',
+      name=esc((it&&it.displayName)||(p&&p.name)||o.sku),day=esc(String(o.date||'').slice(0,10).replace(/-/g,'.'));
+      return `<div class="pack"><span class="coinbig">${p&&p.id==='noads'?NOADS:COIN}</span><div><b>${name}</b><span>${day}</span></div><span class="pill alt off">${ref?'환불됨':'구매 완료'}</span></div>`;}).join('')
+      :'<div class="pack"><div><span>구매 내역이 없어요</span></div></div>';}
+  catch(e){if(box.isConnected)box.innerHTML='<div class="pack"><div><span>구매 내역을 불러오지 못했어요. 잠시 후 다시 시도해 주세요</span></div></div>';}}
 function renderShop(){syncCoins();const L=myLook();drawAvatarCanvas($('shopPreview'),L,'idle',true);$('shopLook').textContent=`${L.hat.name} · ${L.outfit.name} · ${L.ball.name}`;
   [...$('shopTabs').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===shopTab));const body=$('shopBody');
   if(shopTab==='item'){const cd=Math.max(0,(SAVE.adCaddieAt||0)+10*60000-Date.now());
@@ -1937,8 +2025,9 @@ function renderShop(){syncCoins();const L=myLook();drawAvatarCanvas($('shopPrevi
       <p class="note">PVP와 타임어택에서는 공정한 경쟁을 위해 쓸 수 없어요.</p>`;body.querySelectorAll('[data-cadav]').forEach(cv2=>drawAvatarCanvas(cv2,CADDIE_LOOK,'happy',true));return;}
   if(shopTab==='coin'){const cd=Math.max(0,(SAVE.adCoinAt||0)+10*60000-Date.now());
     body.innerHTML=`<div class="card packs"><div class="pack"><span class="coinbig">${COIN}</span><div><b>무료 코인 100</b><span>${cd?`${Math.ceil(cd/60000)}분 뒤 다시 받을 수 있어요`:'광고를 보면 바로 받아요 · 10분마다'}</span></div><button class="pill press" data-free="1" ${cd?'disabled':''}>광고 보기</button></div>
-      ${(PAID_ITEMS?PACKS:[]).map(p=>`<div class="pack"><span class="coinbig">${p.id==='noads'?NOADS:COIN}</span><div><b>${p.name}</b><span>${p.desc||'바로 지급'}</span></div>${p.id==='noads'&&SAVE.noAds?'<span class="pill alt off">구매함</span>':`<button class="pill press" data-iap="${p.id}">${p.price}</button>`}</div>`).join('')}</div>
-      ${PAID_ITEMS?'<p class="note">결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.</p>':'<p class="note">코인은 홀을 클리어하거나 미션·광고 보상으로 모아요.</p>'}`;
+      ${PACKS.filter(p=>sellable(p)||(p.id==='noads'&&SAVE.noAds)).map(p=>`<div class="pack"><span class="coinbig">${p.id==='noads'?NOADS:COIN}</span><div><b>${packName(p)}</b><span>${p.desc||'바로 지급'}</span></div>${p.id==='noads'&&SAVE.noAds?'<span class="pill alt off">구매함</span>':`<button class="pill press" data-iap="${p.id}">${packPrice(p)}</button>`}</div>`).join('')}</div>
+      ${!TOSS?(PAID_ITEMS?'<p class="note">결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.</p>':'')
+        :(PACKS.some(sellable)?'':'<p class="note">코인은 홀을 클리어하거나 미션·광고 보상으로 모아요.</p>')+((PAID_ITEMS&&tossIapOk())||Object.keys(ledger()).length?'<button class="link" data-hist="1">구매 내역 보기</button>':'')}`;
     return;}
   const list=COSMETIC[shopTab],slot=shopTab,owned=SAVE.owned[slot],have=list.filter(i=>owned.includes(i.id)).length;
   body.innerHTML=`<p class="rarline">${['common','fine','rare','epic','legend'].map(k=>`<span style="color:${RAR[k].c}">●</span> ${RAR[k].n}`).join(' &nbsp;')}<span class="have">${have} / ${list.length} 보유</span></p>
@@ -1958,6 +2047,7 @@ function drawShopPreviews(onlyMoving){const list=COSMETIC[shopTab];if(!list)retu
 let shopRaf=0;function shopAnimStart(){if(shopRaf||reduce)return;const loop=()=>{if(app.dataset.screen!=='shop'||!COSMETIC[shopTab]){shopRaf=0;return;}drawShopPreviews(true);shopRaf=requestAnimationFrame(loop);};shopRaf=requestAnimationFrame(loop);}
 $('shopTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;sfx.tap();shopTab=b.dataset.tab;renderShop();});
 $('shopBody').addEventListener('click',e=>{const it=e.target.closest('[data-item]'),fr=e.target.closest('[data-free]'),ia=e.target.closest('[data-iap]'),cb=e.target.closest('[data-cad]'),ca=e.target.closest('[data-cadad]');
+  if(e.target.closest('[data-hist]')){openHistory();return;}
   if(cb){const x=CADDIE_ITEMS.find(q=>q.id===cb.dataset.cad);if((SAVE.coins||0)<x.price){sfx.aww();showToast(`코인이 ${x.price-(SAVE.coins||0)}개 부족해요`,1100);return;}
     SAVE.coins-=x.price;SAVE.caddie=(SAVE.caddie||0)+x.n;save();sfx.win();renderShop();showToast(`캐디 가이드 +${x.n}`,900);return;}
   if(ca&&!ca.disabled){showRewarded('상점 · 캐디 가이드 1개',()=>{SAVE.adCaddieAt=Date.now();SAVE.caddie=(SAVE.caddie||0)+1;save();renderShop();showToast('캐디 가이드 +1',900);});return;}
@@ -1966,7 +2056,7 @@ $('shopBody').addEventListener('click',e=>{const it=e.target.closest('[data-item
     if((SAVE.coins||0)<item.price){sfx.aww();showToast(`코인이 ${item.price-(SAVE.coins||0)}개 부족해요`,1100);return;}
     SAVE.coins-=item.price;SAVE.owned[slot].push(item.id);SAVE.equip[slot]=item.id;save();sfx.win();renderShop();showToast(`${item.name} 장착!`,900);return;}
   if(fr&&!fr.disabled){showRewarded('상점 무료 코인',()=>{SAVE.adCoinAt=Date.now();addCoins(100);renderShop();showToast('+100 코인',900);});return;}
-  if(ia){const p=PACKS.find(q=>q.id===ia.dataset.iap);G.resultKind='iap';G.iap=p;
+  if(ia){const p=PACKS.find(q=>q.id===ia.dataset.iap);if(TOSS){sfx.tap();tossPurchase(p);return;}G.resultKind='iap';G.iap=p;
     resultPanel.innerHTML=xb('iapCancel')+`<h3>테스트 결제</h3><p class="verdict" style="font-size:24px">${p.name}<small>${p.price} · 실제 결제는 일어나지 않아요. 출시 때 스토어 결제로 연결돼요.</small></p>
       <div class="row2"><button class="btn btn-plain press" data-act="iapCancel">취소</button><button class="btn btn-primary press" data-act="iapOk">결제하기</button></div>`;result.hidden=false;}});
 
@@ -1974,7 +2064,7 @@ $('shopBody').addEventListener('click',e=>{const it=e.target.closest('[data-item
 function tourOpen(ci){return SAVE.unlockAll||chDone(ci)===9;}
 function startTour(ci){clearTimeout(G.demoTimer);G.mode='tour';G.ci=ci;G.tour={ci,idx:0,scores:[]};G.runT=0;result.hidden=true;show('game');
   requestAnimationFrame(()=>{resize();loadHole(ci,0);startTurn();showToast('9홀 라운드 시작',1000);});}
-function tourNext(){const tr=G.tour;if(tr.idx<8){tr.idx++;loadHole(tr.ci,tr.idx);startTurn();showToast(`HOLE ${tr.idx+1} / 9`,800);return;}
+function tourNext(){if(G.mode!=='tour'||app.dataset.screen!=='game')return;const tr=G.tour;if(tr.idx<8){tr.idx++;loadHole(tr.ci,tr.idx);startTurn();showToast(`HOLE ${tr.idx+1} / 9`,800);return;}
   G.state='result';G.paused=true;G.resultKind='tour';const ch=CHAPTERS[tr.ci],tot=tr.scores.reduce((a,b)=>a+b,0),par=ch.holes.reduce((a,h)=>a+h.par,0),t=G.runT;
   SAVE.tour=SAVE.tour||{};const prev=SAVE.tour[ch.id],better=!prev||tot<prev.s||(tot===prev.s&&t<prev.t);if(better)SAVE.tour[ch.id]={s:tot,t};
   const coins=60+Math.max(0,par-tot)*15+(better?40:0);addCoins(coins);G.pendingDouble=coins;missionTrack('round');if(better)sfx.win();
@@ -1988,7 +2078,7 @@ function tourNext(){const tr=G.tour;if(tr.idx<8){tr.idx++;loadHole(tr.ci,tr.idx)
 
 // ---------- daily time attack ----------
 const TA_FREE=3,TA_AD_MAX=3;
-// v0.19 retention: the same 3 holes for everyone each day, shaped as warm-up -> middle -> taste of a farther country.
+// v0.21 retention: the same 3 holes for everyone each day, shaped as warm-up -> middle -> taste of a farther country.
 // 1) holes 1-3 of the first two countries  2) holes 3-6 of the first six countries  3) holes 1-5 of a country from the 3rd on
 // (no hole 7-9 'boss' holes, so a new player can finish the run)
 function taHoles(date){const r=rng(hashStr('ta-holes2'+date)),out=[],n=CHAPTERS.length;
@@ -2001,9 +2091,9 @@ function taBoard(date,best){const r=rng(hashStr('ta-board'+date)),hs=taHoles(dat
   rows.sort((a,b)=>a.s-b.s||a.t-b.t);return{rows,par,myRank:best?rows.findIndex(x=>x.me)+1:0,n:rows.length};}
 const rankReward=k=>k===1?1000:k<=3?500:k<=10?300:k<=30?150:50;
 function taEnsure(){const d=todayKey();SAVE.ta=SAVE.ta||{date:d,best:null,used:0,ad:0};
-  if(SAVE.ta.date!==d){if(SAVE.ta.best){const b=taBoard(SAVE.ta.date,SAVE.ta.best);SAVE.pendingTa={date:SAVE.ta.date,rank:b.myRank,n:b.n,reward:rankReward(b.myRank),best:SAVE.ta.best};}
+  if(SAVE.ta.date<d){if(SAVE.ta.best){const b=taBoard(SAVE.ta.date,SAVE.ta.best);SAVE.pendingTa={date:SAVE.ta.date,rank:b.myRank,n:b.n,reward:rankReward(b.myRank),best:SAVE.ta.best};}
     SAVE.ta={date:d,best:null,used:0,ad:0};save();}
-  const sig=taHoles(d).map(x=>x.ci+'-'+x.hi).join();if(SAVE.ta.sig!==sig){if(SAVE.ta.sig!==undefined||SAVE.ta.best)SAVE.ta.best=null;SAVE.ta.sig=sig;save();}}
+  const sig=taHoles(SAVE.ta.date).map(x=>x.ci+'-'+x.hi).join();if(SAVE.ta.sig!==sig){if(SAVE.ta.sig!==undefined||SAVE.ta.best)SAVE.ta.best=null;SAVE.ta.sig=sig;save();}}
 const taLeft=()=>{taEnsure();return TA_FREE+SAVE.ta.ad-SAVE.ta.used;};
 function goTa(){show('ta');renderTa();}
 function renderTa(){taEnsure();const d=todayKey(),hs=taHoles(d),best=SAVE.ta.best,b=taBoard(d,best),left=taLeft();
@@ -2022,7 +2112,7 @@ function startTaRun(){taEnsure();if(taLeft()<=0){goTa();return;}SAVE.ta.used++;s
   G.mode='ta';G.taRun={holes:taHoles(todayKey()),idx:0,scores:[]};G.runT=0;result.hidden=true;show('game');
   requestAnimationFrame(()=>{resize();const x=G.taRun.holes[0];loadHole(x.ci,x.hi);startTurn();showToast('타임어택 시작!',900);});}
 $('taStart').onclick=()=>{sfx.tap();startTaRun();};
-function taNext(){const run=G.taRun;if(run.idx<2){run.idx++;const x=run.holes[run.idx];loadHole(x.ci,x.hi);startTurn();showToast(`HOLE ${run.idx+1} / 3`,700);return;}
+function taNext(){if(G.mode!=='ta'||app.dataset.screen!=='game')return;const run=G.taRun;if(run.idx<2){run.idx++;const x=run.holes[run.idx];loadHole(x.ci,x.hi);startTurn();showToast(`HOLE ${run.idx+1} / 3`,700);return;}
   G.state='result';G.paused=true;G.resultKind='ta';const tot=run.scores.reduce((a,b)=>a+b,0),t=+G.runT.toFixed(1),prev=SAVE.ta.best,better=!prev||tot<prev.s||(tot===prev.s&&t<prev.t);
   if(better)SAVE.ta.best={s:tot,t};save();addCoins(20);const b=taBoard(todayKey(),SAVE.ta.best),left=taLeft();if(better)sfx.win();
   resultPanel.innerHTML=xb('taBoard')+`<p class="eyebrow center">오늘의 타임어택</p><p class="verdict">${tot}타 · ${fmtT(t)}<small>파 ${b.par} · ${run.scores.join(' / ')}타</small></p>
@@ -2061,6 +2151,8 @@ function tick(){if(G.state!=='aim'&&G.state!=='roll')return;const b=G.ball,ev={}
   if(G.mode!=='attract'&&G.state==='roll'&&v>0&&d<50&&v<560&&(dx*b.vx+dy*b.vy>0||ev.lip))G.slowT=Math.max(G.slowT,.35);
   const moving=b.vx!==0||b.vy!==0;
   if(G.state==='aim'&&moving){G.state='roll';G.aim=null;}
+  if(G.state==='roll'&&moving&&(G.rollT=(G.rollT||0)+DT)>20){b.vx=b.vy=0;b.pin=[b.x,b.y];}
+  if(G.state!=='roll')G.rollT=0;
   if(G.state==='roll'){if(moving){G.rest=0;if(Math.round(G.ht*240)%6===0){G.trail.push([b.x,b.y]);if(G.trail.length>14)G.trail.shift();}}
     else{G.rest+=DT;if(G.trail.length)G.trail.shift();if(G.rest>.2)onRest();}}}
 
@@ -2237,23 +2329,37 @@ if(TOSS){
   /* Toss top-bar back (‹) and Android back. Returns true when the game handled it. On the lobby and the title screen it returns
      false and toss/src/main.js closes the mini app (back on the first screen exits). Order: popups (result · video sheet ·
      settings · missions · pause) close first → in play it opens the pause sheet → other screens use their own ‹ button. */
+  const testRows=h=>{['unlockSw','unlockSw2'].forEach(id=>{const r=$(id)&&$(id).closest('.test-row');if(r)r.hidden=h;});$('coinTest').hidden=h;};testRows(true);
+  const exitAsk=$('exitAsk'),hideExit=()=>{exitAsk.hidden=true;};
+  $('exitX').onclick=hideExit;$('exitStay').onclick=hideExit;exitAsk.addEventListener('click',e=>{if(e.target===exitAsk)hideExit();});
+  $('exitGo').onclick=()=>{hideExit();const a=AIT();if(a&&a.close)a.close();};
   window.__hcBack=()=>{
     if(!$('adOv').hidden)return true;
+    if(!exitAsk.hidden){hideExit();return true;}
     if(!result.hidden){const x=resultPanel.querySelector('.xbtn[data-act]');if(x&&!x.disabled)x.click();return true;}
     if(!settingsEl.hidden){$('settingsX').click();return true;}
     if(!$('missions').hidden){const x=$('missionX');if(x)x.click();else $('missions').hidden=true;return true;}
     if(!pauseEl.hidden){pauseEl.hidden=true;G.paused=false;return true;}
     const scr=app.dataset.screen;
     if(scr==='game'){if(G.state==='replay'){if(!VR.on)endReplay(true);return true;}$('pauseBtn').click();return true;}
-    if(scr==='home'||scr==='title')return false;
+    // v0.21: Toss checklist - closing the mini app asks first (back on the lobby/title opens the confirm sheet)
+    if(scr==='home'||scr==='title'){$('exitAsk').hidden=false;return true;}
     const back=document.querySelector(`#scr-${scr} .navbar .back`);if(back)back.click();else goHome();return true;};
   const onReady=()=>{const a=AIT();if(!a)return;trackQ.splice(0).forEach(e=>a.track(...e));
     if(!SAVE.noAds)a.ads.load('interstitial');
     a.swipeBack(app.dataset.screen==='home'||app.dataset.screen==='title');
+    // in-app purchase: console products, then unfinished orders, new-phone restore and refunds
+    loadTossProducts(true);restorePurchases();
     // release build (real ad IDs): hide the test-only switches and the coin cheat
-    if(!a.testAds){['unlockSw','unlockSw2'].forEach(id=>{const r=$(id).closest('.test-row');if(r)r.hidden=true;});$('coinTest').hidden=true;}};
+    if(a.testAds){testRows(false);}else setTimeout(()=>{try{delete window.__golf;}catch(e){window.__golf=undefined;}},0);};
   if(window.AIT&&window.AIT.ready)onReady();else addEventListener('ait:ready',onReady,{once:true});
 }
+
+// v0.21: Toss checklist - sound stops at once when the app goes to the background and comes back on return; play pauses
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){try{if(AC&&AC.state==='running')AC.suspend();}catch(e){}
+    if(app.dataset.screen==='game'&&!G.paused&&G.mode!=='attract'&&['aim','roll','swing'].includes(G.state)&&result.hidden)$('pauseBtn').click();}
+  else{try{if(AC&&AC.state==='suspended')AC.resume();}catch(e){}}});
 
 // ---------------- boot ----------------
 readTok();syncSwitches();syncCoins();dailyEnsure();taEnsure();resize();enterTitle();requestAnimationFrame(frame);
@@ -2262,6 +2368,7 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{buildStat
 window.__golf={setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,shoot,showHoleResult,showChapterFinal,showPvpFinal,
   toggleUnlock,setStars(ci,n){CHAPTERS[ci].holes.forEach((_,hi)=>SAVE.stars[key(ci,hi)]=n);save();},
   aimVec,startSwing,showMul,VR,MISSIONS,CD,callCaddie,syncCaddieBtn,startReplay,endReplay,RP,hioFx,
+  iap:{restore:restorePurchases,history:openHistory,products:()=>tossItems,ledger:()=>SAVE.iap,save},
   aimDebug(angDeg,pow){const b=G.ball,a=angDeg*Math.PI/180;G.aim={sx:b.x,sy:b.y,cx:b.x-Math.cos(a)*Math.pow(pow,1/POW_EXP)*PULL,cy:b.y-Math.sin(a)*Math.pow(pow,1/POW_EXP)*PULL,id:-1};}};
 })();
 </script>
