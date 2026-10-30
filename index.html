@@ -488,7 +488,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.27</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.28</p>
     </div>
   </section>
   <section class="overlay bottom" id="exitAsk" hidden>
@@ -1663,12 +1663,12 @@ const OUTFITS=[
 // v0.27: playable characters (originals). 'kid' is the explorer; the others swap the head, hands and add ears/tail.
 const CHARS=[
   {id:'kid',name:'원정대원',r:'basic',price:0},
-  {id:'bear',name:'꿀단지 곰',r:'rare',price:2200,skin:'#c8925e',muzzle:'#f3dcc0',ear:'round',earIn:'#e6b48a',tail:'stub'},
-  {id:'frog',name:'꽁꽁 개구리',r:'rare',price:2600,skin:'#7fd36e',muzzle:'#d9f5c6',ear:'frog',tail:null,cheek:'rgba(255,140,140,.55)'},
-  {id:'chipmunk',name:'도토리 다람',r:'rare',price:2800,skin:'#e39a55',muzzle:'#fbe6cc',ear:'tuft',earIn:'#f7c99a',tail:'bushy',stripes:true},
-  {id:'penguin',name:'펭펭',r:'epic',price:4800,skin:'#2f3e6b',face:'#ffffff',ear:null,beak:true,tail:null,hand:'#2f3e6b'},
-  {id:'fox',name:'노을 여우',r:'epic',price:5500,skin:'#f08a3c',muzzle:'#fff3e6',ear:'point',earIn:'#3a2a24',tail:'fox'},
-  {id:'dragon',name:'아기 구름용',r:'legend',price:12000,skin:'#a8d8ff',muzzle:'#e8f6ff',ear:'horn',earIn:'#fff3b0',tail:'dragon',wings:true}];
+  {id:'bear',eye:'dot',name:'꿀단지 곰',r:'rare',price:2200,skin:'#c8925e',muzzle:'#f3dcc0',ear:'round',earIn:'#e6b48a',tail:'stub'},
+  {id:'frog',eye:'frog',name:'꽁꽁 개구리',r:'rare',price:2600,skin:'#7fd36e',muzzle:'#d9f5c6',ear:'frog',tail:null,cheek:'rgba(255,140,140,.55)'},
+  {id:'chipmunk',eye:'bead',name:'도토리 다람',r:'rare',price:2800,skin:'#e39a55',muzzle:'#fbe6cc',ear:'tuft',earIn:'#f7c99a',tail:'bushy',stripes:true},
+  {id:'penguin',eye:'dot',name:'펭펭',r:'epic',price:4800,skin:'#2f3e6b',face:'#ffffff',ear:null,beak:true,tail:null,hand:'#2f3e6b'},
+  {id:'fox',eye:'fox',name:'노을 여우',r:'epic',price:5500,skin:'#f08a3c',muzzle:'#fff3e6',ear:'point',earIn:'#3a2a24',tail:'fox'},
+  {id:'dragon',eye:'gem',name:'아기 구름용',r:'legend',price:12000,skin:'#a8d8ff',muzzle:'#e8f6ff',ear:'horn',earIn:'#fff3b0',tail:'dragon',wings:true}];
 const BALLS=[
   {id:'white',name:'기본 공',r:'basic',price:0,col:'#ffffff',col2:'#dcdfe4'},
   {id:'lemon',name:'레몬 공',r:'common',price:300,col:'#fff6a8',col2:'#f2d23e'},
@@ -1851,7 +1851,7 @@ function charEars(c,ch,hy,hr,t){if(!ch||ch.id==='kid'||!ch.ear)return;
       c.beginPath();c.moveTo(x-s2*hr*.12,y+hr*.12);c.quadraticCurveTo(x+s2*hr*.06,y-hr*.28,x+s2*hr*.2,y+hr*.1);c.closePath();c.fillStyle=ch.earIn;c.fill();}
     else if(ch.ear==='point'){const w=Math.sin(t*3+s2)*.04;c.save();c.translate(x,y+hr*.1);c.rotate(s2*(.22+w));c.beginPath();c.moveTo(-hr*.3,hr*.12);c.lineTo(0,-hr*.62);c.lineTo(hr*.3,hr*.12);c.closePath();c.fillStyle=ch.skin;c.fill();
       c.beginPath();c.moveTo(-hr*.14,-hr*.18);c.lineTo(0,-hr*.62);c.lineTo(hr*.14,-hr*.18);c.closePath();c.fillStyle=ch.earIn;c.fill();c.restore();}
-    else if(ch.ear==='frog'){const ex=s2*hr*.5,ey=hy-hr*.78;circ(c,ex,ey,hr*.36,ch.skin);circ(c,ex-s2*hr*.06,ey-hr*.1,hr*.1,'rgba(255,255,255,.55)');}
+    else if(ch.ear==='frog'){const ex=s2*hr*.5,ey=hy-hr*.74;circ(c,ex,ey,hr*.38,ch.skin);}
     else if(ch.ear==='horn'){c.beginPath();c.moveTo(x-s2*hr*.12,y+hr*.12);c.quadraticCurveTo(x+s2*hr*.1,y-hr*.4,x+s2*hr*.3,y-hr*.36);c.quadraticCurveTo(x+s2*hr*.12,y-hr*.05,x+s2*hr*.16,y+hr*.16);c.closePath();c.fillStyle=ch.earIn;c.fill();}});}
 function charFace(c,ch,hy,hr,P){if(!ch||ch.id==='kid')return;
   if(ch.face){c.beginPath();c.moveTo(0,hy-hr*.42);c.bezierCurveTo(-hr*.95,hy-hr*.95,-hr*1.05,hy+hr*.5,0,hy+hr*.86);c.bezierCurveTo(hr*1.05,hy+hr*.5,hr*.95,hy-hr*.95,0,hy-hr*.42);c.fillStyle=ch.face;c.fill();}
@@ -1862,10 +1862,8 @@ function drawFigure(c,mood,focus,blink,look){const o=look.outfit,P=CHAR_STYLES[C
   charBack(c,ch,P,tnow);
   c.fillStyle='#6b4228';c.beginPath();c.ellipse(-4,10,3.4,2.3,0,0,7);c.ellipse(4.2,10,3.4,2.3,0,0,7);c.fill();
   c.save();c.translate(0,P.by);c.translate(0,3);c.scale(P.bs,P.bs);c.translate(0,-3);
-  rr(c,-11,-3,6,11,3);c.fillStyle='#c27a3a';c.fill();
   drawOutfit(c,o);
   c.beginPath();c.ellipse(-2,1,4.5,4,0,0,7);c.fillStyle='rgba(255,255,255,.18)';c.fill();
-  c.strokeStyle='#9c5d2a';c.lineWidth=1.8;c.beginPath();c.moveTo(-6,-3);c.lineTo(-2,9);c.stroke();
   if(P.hands){const hc=ch?(ch.hand||ch.skin):'#ffe2c2';circ(c,-8.4,4.4,2.3,hc);circ(c,8.6,4,2.3,hc);}
   c.restore();
   charEars(c,ch,hy,hr,tnow);
@@ -1877,8 +1875,18 @@ function drawFigure(c,mood,focus,blink,look){const o=look.outfit,P=CHAR_STYLES[C
     c.lineTo(hr,hy-hr*.2);c.lineTo(hr,hy-hr*1.2);c.lineTo(-hr,hy-hr*1.2);c.closePath();c.fill();c.restore();}
   if(P.shine){c.beginPath();c.ellipse(-hr*.42,hy-hr*.38,hr*.3,hr*.18,-.6,0,7);c.fillStyle='rgba(255,255,255,.35)';c.fill();}
   const cy=hy+P.blY;c.fillStyle='rgba(255,130,130,.5)';c.beginPath();c.ellipse(-P.bx+1,cy,P.bl*1.15,P.bl*.8,0,0,7);c.ellipse(P.bx+1.4,cy,P.bl*1.15,P.bl*.8,0,0,7);c.fill();if(P.glint){circ(c,-P.bx+1.6,cy-.5,.55,'rgba(255,255,255,.9)');circ(c,P.bx+2,cy-.5,.55,'rgba(255,255,255,.9)');}
-  const ex=1.2,ey=hy+P.eyeY,g=P.gap,my=ey+(P.big?4.6:3.8);c.fillStyle='#2b2620';c.strokeStyle='#2b2620';c.lineWidth=P.shine?1.7:1.5;c.lineCap='round';
-  const eye=(x,side)=>{c.beginPath();c.ellipse(x,ey,P.ex,P.ey,0,0,7);c.fillStyle='#2b2620';c.fill();
+  const frogE=ch&&ch.eye==='frog',ex=frogE?0:1.2,ey0=hy+P.eyeY,ey=frogE?hy-hr*.74:ey0,g=frogE?hr*.5:P.gap,my=ey0+(P.big?4.6:3.8);c.fillStyle='#2b2620';c.strokeStyle='#2b2620';c.lineWidth=P.shine?1.7:1.5;c.lineCap='round';
+  // v0.28: each animal has its own eyes (human iris/lashes only on the explorer)
+  const animalEye=(x,side)=>{const k=ch.eye,tt=nowS();
+    if(k==='frog'){circ(c,x,ey,hr*.27,'#ffffff');circ(c,x+side*hr*.03,ey+hr*.03,hr*.15,'#1f2a1c');circ(c,x+hr*.06,ey-hr*.06,hr*.06,'#ffffff');return;}
+    if(k==='fox'){c.save();c.translate(x,ey);c.rotate(side*-.22);c.beginPath();c.ellipse(0,0,P.ex*1.15,P.ey*.62,0,0,7);c.fillStyle='#2b2620';c.fill();
+      c.beginPath();c.ellipse(0,.1,P.ex*.82,P.ey*.44,0,0,7);c.fillStyle='#d9892a';c.fill();c.beginPath();c.ellipse(0,.1,P.ex*.22,P.ey*.4,0,0,7);c.fillStyle='#2b2620';c.fill();
+      circ(c,P.ex*.35,-P.ey*.18,P.ex*.22,'#ffffff');c.restore();return;}
+    if(k==='gem'){const r=P.ex*1.08;circ(c,x,ey,r,'#24427a');c.save();c.beginPath();c.arc(x,ey,r*.84,0,7);c.clip();c.fillStyle='#5fa8ff';c.beginPath();c.ellipse(x,ey+r*.55,r*.95,r*.6,0,0,7);c.fill();c.restore();
+      circ(c,x+r*.35,ey-r*.4,r*.32,'#ffffff');star4(c,x-r*.32,ey+r*.3,r*(.28+.08*Math.sin(tt*4+x)),'#ffffff');return;}
+    const r=(k==='bead'?1.05:.88)*P.ex;c.beginPath();c.ellipse(x,ey,r,r*(k==='bead'?1.12:1),0,0,7);c.fillStyle='#1f1a17';c.fill();
+    circ(c,x+r*.38,ey-r*.38,r*.36,'#ffffff');circ(c,x-r*.3,ey+r*.35,r*.15,'rgba(255,255,255,.85)');};
+  const eye=(x,side)=>{if(ch&&ch.eye)return animalEye(x,side);c.beginPath();c.ellipse(x,ey,P.ex,P.ey,0,0,7);c.fillStyle='#2b2620';c.fill();
     if(P.iris){c.save();c.beginPath();c.ellipse(x,ey,P.ex*.82,P.ey*.86,0,0,7);c.clip();c.fillStyle=P.iris;c.beginPath();c.ellipse(x,ey+P.ey*.55,P.ex*.9,P.ey*.6,0,0,7);c.fill();c.restore();}
     if(P.shine){circ(c,x+P.ex*.35,ey-P.ey*.4,P.ex*.42,'#ffffff');circ(c,x-P.ex*.3,ey+P.ey*.35,P.ex*.2,'rgba(255,255,255,.85)');}
     if(P.glint){const t=nowS(),k=.5+.5*Math.sin(t*3+x);circ(c,x+P.ex*.35,ey-P.ey*.4,P.ex*(.42+.08*k),'#ffffff');}
