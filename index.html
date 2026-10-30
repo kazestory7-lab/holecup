@@ -322,7 +322,7 @@ td.name,th.name{text-align:left;font-weight:700}
 .cadav{width:40px;height:40px;flex:0 0 40px;border-radius:50%;background:#e3f1e8}
 .mul{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:3;font-family:var(--display);font-size:15px;padding:9px 16px;border-radius:999px;background:var(--surface);color:var(--label);box-shadow:0 3px 0 var(--secondary-edge),var(--shadow);white-space:nowrap}
 .shop-preview{display:flex;align-items:center;gap:14px;padding:14px 16px}
-.tryon #tryCv{width:180px;height:190px;align-self:center}.tryon .tryrar{text-align:center;font-size:12px;font-weight:800;margin:0}.tryon h3{margin:0}
+.tryon #tryCv{width:180px;height:190px;align-self:center}.tryon #tryCv.fly{width:100%;max-width:340px;height:190px}.tryon .tryrar{text-align:center;font-size:12px;font-weight:800;margin:0}.tryon h3{margin:0}
 .tryon .trymsg{text-align:center;font-size:14px;color:var(--label2);margin:0}.tryon .trymsg.short{color:#d64545;font-weight:700}
 .shop-preview canvas{width:96px;height:104px;flex:none}
 .shop-preview div{min-width:0}
@@ -490,7 +490,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.30</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.31</p>
     </div>
   </section>
   <section class="overlay bottom" id="tryOnSheet" hidden>
@@ -502,6 +502,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
       <h3 id="tryName"></h3>
       <p class="trymsg" id="tryMsg"></p>
       <button class="btn btn-primary press" id="tryBuy"></button>
+      <button class="btn btn-secondary press" id="tryCoins" hidden>코인 얻으러 가기</button>
       <button class="btn btn-plain press" id="tryClose">닫기</button>
     </div>
   </section>
@@ -1688,15 +1689,15 @@ const CHARS=[
   {id:'fox',eye:'fox',name:'노을 여우',r:'epic',price:5500,skin:'#f08a3c',muzzle:'#fff3e6',ear:'point',earIn:'#3a2a24',tail:'fox'},
   {id:'dragon',eye:'gem',name:'아기 구름용',r:'legend',price:12000,skin:'#a8d8ff',muzzle:'#e8f6ff',ear:'horn',earIn:'#fff3b0',tail:'dragon',wings:true}];
 const BALLS=[
-  {id:'white',name:'기본 공',r:'basic',price:0,col:'#ffffff',col2:'#dcdfe4'},
-  {id:'lemon',name:'레몬 공',r:'common',price:300,col:'#fff6a8',col2:'#f2d23e'},
-  {id:'peach',name:'복숭아 공',r:'common',price:300,col:'#ffd9df',col2:'#f59ab0'},
-  {id:'mint',name:'민트 공',r:'common',price:400,col:'#d8fff0',col2:'#7fd9b8'},
-  {id:'basket',name:'농구공',r:'fine',price:900,col:'#ffa65c',col2:'#e2702a',pat:'basket'},
-  {id:'soccer',name:'축구공',r:'fine',price:1100,col:'#ffffff',col2:'#d8dbe0',pat:'soccer'},
-  {id:'melon',name:'수박 공',r:'rare',price:2000,col:'#7ad36b',col2:'#2f8a3c',pat:'melon'},
-  {id:'panda',name:'판다 공',r:'rare',price:2400,col:'#ffffff',col2:'#e2e4e8',pat:'panda'},
-  {id:'earth',name:'지구 공',r:'rare',price:2600,col:'#6fb8ff',col2:'#2f6fd0',pat:'earth'},
+  {id:'white',name:'기본 공',r:'basic',price:0,col:'#ffffff',col2:'#dcdfe4',trail:'white'},
+  {id:'lemon',name:'레몬 공',r:'common',price:300,col:'#fff6a8',col2:'#f2d23e',trail:'lemon'},
+  {id:'peach',name:'복숭아 공',r:'common',price:300,col:'#ffd9df',col2:'#f59ab0',trail:'peach'},
+  {id:'mint',name:'민트 공',r:'common',price:400,col:'#d8fff0',col2:'#7fd9b8',trail:'mint'},
+  {id:'basket',name:'농구공',r:'fine',price:900,col:'#ffa65c',col2:'#e2702a',pat:'basket',trail:'basket'},
+  {id:'soccer',name:'축구공',r:'fine',price:1100,col:'#ffffff',col2:'#d8dbe0',pat:'soccer',trail:'soccer'},
+  {id:'melon',name:'수박 공',r:'rare',price:2000,col:'#7ad36b',col2:'#2f8a3c',pat:'melon',trail:'melon'},
+  {id:'panda',name:'판다 공',r:'rare',price:2400,col:'#ffffff',col2:'#e2e4e8',pat:'panda',trail:'panda'},
+  {id:'earth',name:'지구 공',r:'rare',price:2600,col:'#6fb8ff',col2:'#2f6fd0',pat:'earth',trail:'earth'},
   {id:'fire',name:'불꽃 공',r:'epic',price:5000,col:'#ffe08a',col2:'#ff5a2a',pat:'fire',trail:'fire'},
   {id:'ice',name:'얼음 공',r:'epic',price:5000,col:'#ffffff',col2:'#8fd8f5',pat:'ice',trail:'ice'},
   {id:'star',name:'별똥별 공',r:'legend',price:10000,col:'#fff3b0',col2:'#e0a91f',pat:'star',trail:'star'},
@@ -1834,16 +1835,42 @@ function drawBallSkin(c,x,y,rad,s,t,spin){t=t??nowS();spin=spin||0;
    case'star':{star4(c,x,y,rad*.62*(1+.12*Math.sin(t*4)),'#ffffff');break;}
    case'prism':c.fillStyle='rgba(255,255,255,.6)';c.beginPath();c.ellipse(x-rad*.3,y-rad*.35,rad*.35,rad*.2,-.5,0,7);c.fill();break;}
   c.restore();}
-function drawBallTrail(c,trail,s,R){const n=trail.length,t=nowS();if(!n)return;
-  for(let i=0;i<n;i++){const q=trail[i],k=i/n;let col='#fff',al=k*.35,rr2=R*(.4+.6*k);
-    if(s.trail==='fire'){col=i%2?'#ffb347':'#ff5a2a';al=k*.6;rr2=R*(.5+.7*k);}
-    else if(s.trail==='ice'){col='#bfefff';al=k*.55;}
-    else if(s.trail==='prism'){col=`hsl(${(i*26+t*120)%360},95%,65%)`;al=k*.7;rr2=R*(.5+.6*k);}
-    else if(s.trail==='star'){col='#ffe066';al=k*.55;}
-    c.globalAlpha=al;c.beginPath();c.arc(q[0],q[1],rr2,0,7);c.fillStyle=col;c.fill();
-    if(s.trail==='star'&&i%3===0){c.globalAlpha=k;star4(c,q[0]+Math.sin(i*2.3)*5,q[1]+Math.cos(i*1.7)*5,2.6*k+.8,'#ffffff');}
-    if(s.trail==='ice'&&i%4===0){c.globalAlpha=k*.9;star4(c,q[0]+Math.cos(i)*5,q[1]+Math.sin(i)*5,1.8,'#ffffff');}}
-  c.globalAlpha=1;}
+// v0.31: every ball leaves its own trail; rarer balls get longer, brighter, busier trails (the reason to buy a ball)
+const TRAIL_LEN={basic:12,common:14,fine:16,rare:20,epic:24,legend:30};
+const trailCap=s=>TRAIL_LEN[s.r]||14;
+function drawBallTrail(c,trail,s,R){const n=trail.length,t=nowS();if(!n)return;const T=s.trail||'white';
+  const glow=s.r==='legend'||s.r==='epic';if(glow){c.save();c.shadowBlur=s.r==='legend'?10:6;c.shadowColor=T==='fire'?'#ff7a2a':T==='ice'?'#9fe6ff':T==='star'?'#ffe066':T==='prism'?'#ff8fd8':'#ffffff';}
+  for(let i=0;i<n;i++){const q=trail[i],k=(i+1)/n,x=q[0],y=q[1];let col='#ffffff',al=k*.35,rr2=R*(.35+.6*k);
+    switch(T){
+     case'lemon':col='#ffe45c';al=k*.5;break;
+     case'peach':col='#ff9fbe';al=k*.5;break;
+     case'mint':col='#7fe0c0';al=k*.45;break;
+     case'basket':col=i%2?'#ffa65c':'#e2702a';al=k*.55;break;
+     case'soccer':col=i%2?'#ffffff':'#2b2b33';al=k*.5;rr2=R*(.3+.5*k);break;
+     case'melon':col=i%3?'#ff6b6b':'#6cc95c';al=k*.6;break;
+     case'panda':col=i%2?'#ffffff':'#24242b';al=k*.5;break;
+     case'earth':col='#5aa8ff';al=k*.5;break;
+     case'fire':col=i%2?'#ffb347':'#ff5a2a';al=k*.7;rr2=R*(.5+.8*k);break;
+     case'ice':col='#bfefff';al=k*.6;rr2=R*(.45+.7*k);break;
+     case'star':col='#ffe066';al=k*.6;rr2=R*(.45+.75*k);break;
+     case'prism':col=`hsl(${(i*24+t*140)%360},95%,64%)`;al=k*.75;rr2=R*(.5+.7*k);break;}
+    c.globalAlpha=al;c.beginPath();c.arc(x,y,rr2,0,7);c.fillStyle=col;c.fill();
+    const ph=t*3+i;c.globalAlpha=Math.min(1,k*1.1);
+    switch(T){
+     case'peach':if(i%4===1){const hx=x+Math.sin(ph)*4,hy=y-3-k*3;c.fillStyle='#ff4f86';c.beginPath();c.arc(hx-1.4,hy,1.6,0,7);c.arc(hx+1.4,hy,1.6,0,7);c.moveTo(hx-3,hy+.5);c.lineTo(hx,hy+3.6);c.lineTo(hx+3,hy+.5);c.fill();}break;
+     case'mint':if(i%3===0){c.strokeStyle='rgba(255,255,255,.9)';c.lineWidth=.8;c.beginPath();c.arc(x+Math.cos(ph)*5,y+Math.sin(ph*.7)*5,1.4+k*1.6,0,7);c.stroke();}break;
+     case'lemon':if(i%4===2)star4(c,x+Math.cos(ph)*4,y+Math.sin(ph)*4,1.6*k+.6,'#fff7b8');break;
+     case'basket':if(i%2===0&&i>n*.4){c.strokeStyle='rgba(255,166,92,.8)';c.lineWidth=1;const j=Math.min(n-1,i+1),dx=trail[j][0]-x,dy=trail[j][1]-y,L=Math.hypot(dx,dy)||1;
+       c.beginPath();c.moveTo(x-dy/L*5,y+dx/L*5);c.lineTo(x-dy/L*5-dx/L*6,y+dx/L*5-dy/L*6);c.moveTo(x+dy/L*5,y-dx/L*5);c.lineTo(x+dy/L*5-dx/L*6,y-dx/L*5-dy/L*6);c.stroke();}break;
+     case'soccer':if(i%4===3){c.fillStyle='#4caf50';c.fillRect(x+Math.sin(ph)*5,y+3+Math.cos(ph)*2,1.4,2.6);}break;
+     case'melon':if(i%2===1){c.fillStyle='#1f1a17';c.beginPath();c.ellipse(x+Math.sin(i*2.1)*5,y+Math.cos(i*1.3)*5,.9,1.5,i,0,7);c.fill();}break;
+     case'panda':if(i%4===0){c.save();c.translate(x+Math.sin(ph)*5,y+Math.cos(ph)*4);c.rotate(ph);c.fillStyle='#2f9e44';c.beginPath();c.ellipse(0,0,1.6,4.2,0,0,7);c.fill();c.restore();}break;
+     case'earth':if(i===n-1){const a=t*4;circ(c,x+Math.cos(a)*R*1.8,y+Math.sin(a)*R*1.8,R*.35,'#e8e8ee');}if(i%5===2){c.fillStyle='rgba(255,255,255,.85)';c.beginPath();c.ellipse(x+3,y-4,3,1.4,0,0,7);c.ellipse(x+5,y-4.6,2,1.3,0,0,7);c.fill();}break;
+     case'fire':if(i%2===0){const up=(t*2+i*.37)%1;c.globalAlpha=(1-up)*k;circ(c,x+Math.sin(i*1.7)*4,y-up*9,1+1.6*(1-up),i%4?'#ffd24a':'#ff7a2a');}break;
+     case'ice':if(i%3===0){c.globalAlpha=k;star4(c,x+Math.cos(i)*6,y+Math.sin(i)*6,2.4*k+.6,'#ffffff');}break;
+     case'star':if(i%2===0){c.globalAlpha=k;star4(c,x+Math.sin(i*2.3)*6,y+Math.cos(i*1.7)*6,(2.8+Math.sin(ph*2))*k+.6,i%4?'#ffffff':'#ffe066');}break;
+     case'prism':if(i%3===0){c.globalAlpha=k;star4(c,x+Math.sin(i*1.9+t)*6,y+Math.cos(i*1.3+t)*6,2.6*k+.6,'#ffffff');}break;}}
+  c.globalAlpha=1;if(glow)c.restore();}
 // v0.22: cuter explorer. CHAR_STYLE picks proportions (classic = up to v0.13).
 const CHAR_STYLES={classic:{hr:8.6,hy:-8,bs:1,by:0,ex:1.35,ey:1.35,gap:3,eyeY:-.2,bl:1.9,blY:2.6,bx:5,shine:false,hands:false},
   chibi:{hr:10.6,hy:-9.4,bs:.82,by:2.4,ex:1.55,ey:2.05,gap:3.5,eyeY:.6,bl:2.3,blY:3.4,bx:6.2,shine:true,hands:true},
@@ -2176,11 +2203,11 @@ function renderShop(){syncCoins();if(app.dataset.screen!=='shop')closeTryOn();co
     <div class="items">${list.map(it=>{const own=owned.includes(it.id),on=SAVE.equip[slot]===it.id;
     return`<button class="card item press r-${it.r} ${on?'on':''}" data-item="${it.id}"><span class="rar" style="color:${RAR[it.r].c}">${RAR[it.r].n}</span><canvas data-prev="${it.id}"></canvas><b>${it.name}</b>
       ${on?'<span class="tag">장착 중</span>':own?'<span class="tag alt">장착</span>':`<span class="price">${COIN}${it.price.toLocaleString()}</span>`}</button>`;}).join('')}</div>
-    ${slot==='hat'&&SAVE.equip.char&&SAVE.equip.char!=='kid'?'<p class="note" style="color:var(--tint);font-weight:700">지금 캐릭터는 동물이라 모자가 보이지 않아요. 모자는 원정대원일 때 보여요.</p>':''}<p class="note">${slot==='ball'?'공 스킨은 솔로·라운드·PVP에서 내 공에 보여요. 실력에는 영향이 없어요.':(slot==='char'?'캐릭터를 바꿔도 실력은 같아요. 모자·옷과 함께 꾸밀 수 있어요.':'특이하고 예쁠수록 희귀해요. 영웅·전설 아이템은 움직여요.')}</p>`;
+    ${slot==='hat'&&SAVE.equip.char&&SAVE.equip.char!=='kid'?'<p class="note" style="color:var(--tint);font-weight:700">지금 캐릭터는 동물이라 모자가 보이지 않아요. 모자는 원정대원일 때 보여요.</p>':''}<p class="note">${slot==='ball'?'공을 누르면 날아가는 궤적을 볼 수 있어요. 희귀할수록 궤적이 길고 화려해요. 실력에는 영향이 없어요.':(slot==='char'?'캐릭터를 바꿔도 실력은 같아요. 모자·옷과 함께 꾸밀 수 있어요.':'특이하고 예쁠수록 희귀해요. 영웅·전설 아이템은 움직여요.')}</p>`;
   drawShopPreviews();shopAnimStart();}
 function drawShopPrev(cv2,slot,it){if(slot==='ball'){const w=cv2.clientWidth||70,h=cv2.clientHeight||74,d=Math.min(3,window.devicePixelRatio||1);cv2.width=Math.round(w*d);cv2.height=Math.round(h*d);
     const c=cv2.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);const t=nowS();{const gg=c.createLinearGradient(0,0,0,h);gg.addColorStop(0,'#b9e19c');gg.addColorStop(1,'#93cc72');c.fillStyle=gg;rr(c,0,0,w,h,Math.min(16,w*.18));c.fill();}
-    if(it.trail){const tr=[];for(let i=0;i<12;i++)tr.push([w*.18+i*w*.028,h*.72-i*h*.022]);c.save();c.translate(0,0);drawBallTrail(c,tr,it,7);c.restore();}
+    {const tr=[],m=trailCap(it);for(let i=0;i<m;i++){const u=i/(m-1);tr.push([w*(.08+u*.36),h*(.82-u*.34-Math.sin(u*Math.PI)*.08)]);}drawBallTrail(c,tr,it,6);}
     c.beginPath();c.ellipse(w/2+3,h*.52+6,15,11,0,0,7);c.fillStyle='rgba(0,0,0,.12)';c.fill();drawBallSkin(c,w/2,h*.48,16,it,t,t*.5);return;}
   const look=myLook();look[slot]=it;if(slot==='hat')look.char=CHARS[0];drawAvatarCanvas(cv2,look,'idle',true);}
 function drawShopPreviews(onlyMoving){const list=COSMETIC[shopTab];if(!list)return;
@@ -2190,25 +2217,40 @@ let shopRaf=0;function shopAnimStart(){if(shopRaf||reduce)return;const loop=()=>
 $('shopTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;sfx.tap();shopTab=b.dataset.tab;renderShop();});
 // v0.29: tapping an item you don't own opens a try-on sheet: your explorer wearing it, then 구매 or how many coins are missing
 let tryItem=null;
-function openTryOn(slot,item){tryItem={slot,item};const sh=$('tryOnSheet');sh.hidden=false;renderTryOn();}
+function openTryOn(slot,item){tryItem={slot,item};const sh=$('tryOnSheet');sh.hidden=false;$('tryCv').classList.toggle('fly',slot==='ball');renderTryOn();if(slot==='ball'&&!ballFly)ballFly=requestAnimationFrame(ballFlight);}
+// v0.31: tapping a ball shows it flying across a green with its own trail (looping)
+let ballFly=0;
+function ballFlight(){const cv=$('tryCv');if(!tryItem||tryItem.slot!=='ball'||$('tryOnSheet').hidden){ballFly=0;return;}
+  const w=cv.clientWidth||300,h=cv.clientHeight||190,d=Math.min(3,window.devicePixelRatio||1);if(cv.width!==Math.round(w*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}
+  const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);const it=tryItem.item,P=1.9,t=nowS(),u=(t%P)/P;
+  const g=c.createLinearGradient(0,0,0,h);g.addColorStop(0,'#86cf6a');g.addColorStop(1,'#6fbf55');c.fillStyle=g;rr(c,0,0,w,h,16);c.fill();
+  c.fillStyle='rgba(255,255,255,.08)';for(let k=0;k<6;k++)c.fillRect(0,k*h/6,w,h/12);
+  const cx=w*.84,cy=h*.3;c.beginPath();c.ellipse(cx,cy,9,6,0,0,7);c.fillStyle='#1f2a1c';c.fill();c.fillStyle='#fff';c.fillRect(cx-.8,cy-26,1.6,26);c.fillStyle='#e2483d';c.beginPath();c.moveTo(cx+.8,cy-26);c.lineTo(cx+13,cy-21);c.lineTo(cx+.8,cy-16);c.fill();
+  const pos=v=>{const e=1-Math.pow(1-Math.min(1,v),2);return[w*.12+e*(cx-w*.12),h*.82+e*(cy-h*.82)-Math.sin(e*Math.PI)*h*.18];};
+  const m=trailCap(it),tr=[];for(let i=m-1;i>=0;i--){const v=u-i*.018;if(v>0&&v<.92)tr.push(pos(v));}
+  if(u<.92){drawBallTrail(c,tr,it,8);const [bx,by]=pos(u);c.beginPath();c.ellipse(bx+2,by+4,7,5,0,0,7);c.fillStyle='rgba(0,0,0,.18)';c.fill();drawBallSkin(c,bx,by,8,it,t,t*3);}
+  ballFly=requestAnimationFrame(ballFlight);}
 function tryLook(){const {slot,item}=tryItem,look=myLook();look[slot]=item;if(slot==='hat')look.char=CHARS[0];return look;}
 function renderTryOn(){if(!tryItem)return;const {slot,item}=tryItem;
-  drawAvatarCanvas($('tryCv'),tryLook(),'happy',true);$('tryRar').textContent=RAR[item.r].n;$('tryRar').style.color=RAR[item.r].c;$('tryName').textContent=item.name;
+  if(slot!=='ball')drawAvatarCanvas($('tryCv'),tryLook(),'happy',true);$('tryRar').textContent=RAR[item.r].n;$('tryRar').style.color=RAR[item.r].c;$('tryName').textContent=item.name;
   const have=SAVE.coins||0,short=item.price-have,b=$('tryBuy'),m=$('tryMsg');
-  if(short>0){m.textContent=`코인이 ${short.toLocaleString()}개 모자라요 (보유 ${have.toLocaleString()})`;m.className='trymsg short';b.hidden=true;}
-  else{m.textContent=`보유 ${have.toLocaleString()} 코인 · 구매하면 ${(have-item.price).toLocaleString()} 남아요`;m.className='trymsg';b.hidden=false;b.textContent=`${item.price.toLocaleString()} 코인으로 구매하고 입기`;}}
+  const own=SAVE.owned[slot].includes(item.id);$('tryCoins').hidden=true;
+  if(own){const on=SAVE.equip[slot]===item.id;m.className='trymsg';m.textContent=on?'장착 중이에요':'가지고 있는 공이에요';b.hidden=on;b.textContent='장착하기';return;}
+  if(short>0){m.textContent=`코인이 ${short.toLocaleString()}개 모자라요 (보유 ${have.toLocaleString()})`;m.className='trymsg short';b.hidden=true;$('tryCoins').hidden=false;}
+  else{m.textContent=`보유 ${have.toLocaleString()} 코인 · 구매하면 ${(have-item.price).toLocaleString()} 남아요`;m.className='trymsg';b.hidden=false;b.textContent=`${item.price.toLocaleString()} 코인으로 구매하고 ${slot==='ball'?'쓰기':'입기'}`;}}
 function closeTryOn(){tryItem=null;$('tryOnSheet').hidden=true;}
 $('tryX').onclick=closeTryOn;$('tryClose').onclick=closeTryOn;$('tryOnSheet').addEventListener('click',e=>{if(e.target.id==='tryOnSheet')closeTryOn();});
-$('tryBuy').onclick=()=>{if(!tryItem)return;const {slot,item}=tryItem;if((SAVE.coins||0)<item.price){renderTryOn();return;}
+$('tryCoins').onclick=()=>{closeTryOn();shopTab='coin';renderShop();window.scrollTo(0,0);const sc=$('scr-shop');if(sc)sc.scrollTop=0;sfx.tap();};
+$('tryBuy').onclick=()=>{if(!tryItem)return;const {slot,item}=tryItem;if(SAVE.owned[slot].includes(item.id)){SAVE.equip[slot]=item.id;save();sfx.tap();closeTryOn();renderShop();showToast(`${item.name} 장착!`,900);return;}if((SAVE.coins||0)<item.price){renderTryOn();return;}
   SAVE.coins-=item.price;if(!SAVE.owned[slot].includes(item.id))SAVE.owned[slot].push(item.id);SAVE.equip[slot]=item.id;save();sfx.win();closeTryOn();renderShop();showToast(`${item.name} 장착!`,900);};
-setInterval(()=>{if(tryItem&&!$('tryOnSheet').hidden&&RAR[tryItem.item.r].o>=4)drawAvatarCanvas($('tryCv'),tryLook(),'happy',true);},120);
+setInterval(()=>{if(tryItem&&tryItem.slot!=='ball'&&!$('tryOnSheet').hidden&&RAR[tryItem.item.r].o>=4)drawAvatarCanvas($('tryCv'),tryLook(),'happy',true);},120);
 $('shopBody').addEventListener('click',e=>{const it=e.target.closest('[data-item]'),fr=e.target.closest('[data-free]'),ia=e.target.closest('[data-iap]'),cb=e.target.closest('[data-cad]'),ca=e.target.closest('[data-cadad]');
   if(e.target.closest('[data-hist]')){openHistory();return;}
-  if(cb){const x=CADDIE_ITEMS.find(q=>q.id===cb.dataset.cad);if((SAVE.coins||0)<x.price){sfx.aww();showToast(`코인이 ${x.price-(SAVE.coins||0)}개 부족해요`,1100);return;}
+  if(cb){const x=CADDIE_ITEMS.find(q=>q.id===cb.dataset.cad);if((SAVE.coins||0)<x.price){sfx.aww();showToast(`코인이 ${x.price-(SAVE.coins||0)}개 모자라요 · 코인 탭으로 갈게요`,1400);shopTab='coin';renderShop();return;}
     SAVE.coins-=x.price;SAVE.caddie=(SAVE.caddie||0)+x.n;save();sfx.win();renderShop();showToast(`캐디 가이드 +${x.n}`,900);return;}
   if(ca&&!ca.disabled){showRewarded('상점 · 캐디 가이드 1개',()=>{SAVE.adCaddieAt=Date.now();SAVE.caddie=(SAVE.caddie||0)+1;save();renderShop();showToast('캐디 가이드 +1',900);});return;}
   if(it){const slot=shopTab,list=COSMETIC[slot],item=list.find(i=>i.id===it.dataset.item);
-    if(SAVE.owned[slot].includes(item.id)){SAVE.equip[slot]=item.id;save();sfx.tap();renderShop();return;}
+    if(slot!=='ball'&&SAVE.owned[slot].includes(item.id)){SAVE.equip[slot]=item.id;save();sfx.tap();renderShop();return;}
     sfx.tap();openTryOn(slot,item);return;}
   if(fr&&!fr.disabled){showRewarded('상점 무료 코인',()=>{SAVE.adCoinAt=Date.now();addCoins(100);renderShop();showToast('+100 코인',900);});return;}
   if(ia){const p=PACKS.find(q=>q.id===ia.dataset.iap);if(TOSS){sfx.tap();tossPurchase(p);return;}G.resultKind='iap';G.iap=p;
@@ -2308,7 +2350,7 @@ function tick(){if(G.state!=='aim'&&G.state!=='roll')return;const b=G.ball,ev={}
   if(G.state==='aim'&&moving){G.state='roll';G.aim=null;}
   if(G.state==='roll'&&moving&&(G.rollT=(G.rollT||0)+DT)>20){b.vx=b.vy=0;b.pin=[b.x,b.y];}
   if(G.state!=='roll')G.rollT=0;
-  if(G.state==='roll'){if(moving){G.rest=0;if(Math.round(G.ht*240)%6===0){G.trail.push([b.x,b.y]);if(G.trail.length>14)G.trail.shift();}}
+  if(G.state==='roll'){if(moving){G.rest=0;if(Math.round(G.ht*240)%6===0){G.trail.push([b.x,b.y]);if(G.trail.length>trailCap(myLook().ball))G.trail.shift();}}
     else{G.rest+=DT;if(G.trail.length)G.trail.shift();if(G.rest>.2)onRest();}}}
 
 // =====================================================================
@@ -2393,7 +2435,7 @@ function replayUpdate(dt){if(G.state!=='replay')return;const r=G.rec,f=r.f,b=G.b
   const px=b.x,py=b.y;b.x=A[1]+(B[1]-A[1])*u;b.y=A[2]+(B[2]-A[2])*u;b.hidden=!!A[3];
   const dx=hole.cup[0]-b.x,dy=hole.cup[1]-b.y,d=Math.hypot(dx,dy),vx=b.x-px,vy=b.y-py;
   if(d<50&&(vx||vy)&&dx*vx+dy*vy>0)G.slowT=Math.max(G.slowT,.35);
-  if((vx||vy)&&Math.round(RP.t*60)%2===0){G.trail.push([b.x,b.y]);if(G.trail.length>14)G.trail.shift();}
+  if((vx||vy)&&Math.round(RP.t*60)%2===0){G.trail.push([b.x,b.y]);if(G.trail.length>trailCap(myLook().ball))G.trail.shift();}
   if(!RP.done&&RP.t>=f[f.length-1][0])endReplay();}
 function endReplay(skip){if(RP.done)return;RP.done=true;const r=G.rec,last=r.f[r.f.length-1],b=G.ball,tok=RP.tok;b.x=last[1];b.y=last[2];G.trail=[];
   let wait=600;
@@ -2538,7 +2580,7 @@ if(SAVE.unlockAll){SAVE.unlockAll=false;save();}
 readTok();syncSwitches();syncCoins();dailyEnsure();taEnsure();resize();enterTitle();requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{buildStatic();refreshScreen();});
 
-window.__golf={setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
+window.__golf={setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
   setStars(ci,n){CHAPTERS[ci].holes.forEach((_,hi)=>SAVE.stars[key(ci,hi)]=n);save();},
   aimVec,startSwing,showMul,VR,MISSIONS,CD,callCaddie,syncCaddieBtn,startReplay,endReplay,RP,hioFx,
   iap:{restore:restorePurchases,history:openHistory,products:()=>tossItems,ledger:()=>SAVE.iap,save,load:loadTossProducts},
