@@ -311,6 +311,7 @@ td.name,th.name{text-align:left;font-weight:700}
 .tabbar button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--label2);padding:4px 0;min-height:48px;justify-content:center}
 .tabbar svg{width:24px;height:24px}
 .tabbar [aria-current="page"]{color:var(--tint)}
+#scr-world>*,#scr-holes>*,#scr-pvp>*,#scr-shop>*,#scr-ta>*{flex-shrink:0}
 #app.tabs-on .screen{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 
 #app.banner-on .screen{padding-bottom:calc(74px + env(safe-area-inset-bottom,0px))}
@@ -467,7 +468,6 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
 
   <section class="screen" id="scr-shop" hidden aria-label="상점">
     <div class="navbar"><button class="back" data-go="home"><svg viewBox="0 0 12 20"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>홈</button><span class="coin"><i class="cg"></i><span class="coinval">0</span></span></div>
-    <h1 class="large">상점</h1>
     <div class="card shop-preview"><canvas id="shopPreview"></canvas><div><p class="eyebrow">내 원정대원</p><b class="adtitle" id="shopLook">버킷햇 · 하늘 티</b><p class="sub" style="font-size:13px">모자와 옷은 플레이할 때도 보여요.</p></div></div>
     <div class="seg" id="shopTabs"><button data-tab="char" aria-pressed="false">캐릭터</button><button data-tab="hat" aria-pressed="true">모자</button><button data-tab="outfit" aria-pressed="false">옷</button><button data-tab="ball" aria-pressed="false">공</button><button data-tab="item" aria-pressed="false">아이템</button><button data-tab="coin" aria-pressed="false">코인</button></div>
     <div id="shopBody"></div>
@@ -495,7 +495,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.33</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.34</p>
     </div>
   </section>
   <section class="overlay bottom" id="tryOnSheet" hidden>
@@ -1181,7 +1181,7 @@ function startPvp(){clearTimeout(G.demoTimer);if(G.match)G.match.cancel=true;G.m
       setTimeout(()=>{if(m.cancel)return;m.ready=true;vsCard(opp);$('pvpStatus').textContent=`AI 상대 ${opp.name}의 기록이 준비됐어요`;$('fightBtn').disabled=false;sfx.tap();},wait);return;}
     const x=m.holes[k];runGen(ghostGen(CHAPTERS[x.ci].holes[x.hi],skill),g=>{x.ghost=g;k++;$('pvpStatus').textContent=`상대 기록 불러오는 중 · ${k} / 3`;nextGhost();},()=>m.cancel);};
   setTimeout(nextGhost,60);}
-function showMul(kind){if(!ADS_ON||G.mode!=='solo'||G.mulUsed)return;const mb=$('mulBtn');mb.dataset.kind=kind;mb.textContent=kind==='sand'?'광고 보고 벙커 샷 무르기':'광고 보고 벌타 취소';
+function showMul(kind){if(!ADS_ON||G.mode!=='solo'||G.mulUsed)return;const mb=$('mulBtn');mb.dataset.kind=kind;mb.textContent=adP()+(kind==='sand'?'벙커 샷 무르기':'벌타 취소');
   mb.hidden=false;clearTimeout(mb.t);mb.t=setTimeout(()=>mb.hidden=true,kind==='sand'?8000:6000);}
 $('mulBtn').onclick=()=>{const mb=$('mulBtn'),kind=mb.dataset.kind||'water';mb.hidden=true;
   if(kind==='sand'){const tok=G.turnId;showRewarded('멀리건 · 벙커 샷 무르기',()=>{if(tok!==G.turnId||G.state!=='aim')return;G.mulUsed=true;const b=G.ball;b.x=G.last[0];b.y=G.last[1];b.vx=b.vy=0;G.trail=[];
@@ -1224,7 +1224,7 @@ function showHoleResult(){if(G.mode!=='solo'||G.scores[G.holeIdx]==null||app.dat
   resultPanel.innerHTML=xb('holes')+`<div class="big-stars">${[0,1,2].map(q=>q<st?'★':'<span class="off">★</span>').join('')}</div>
     <p class="verdict">${verdictText(n,hole.par)}<small>${hole.name} · ${n}타 / 파 ${hole.par}</small></p>
     ${!wasOpen&&nowOpen?`<p class="unlock-note">새 나라가 열렸어요 · ${CHAPTERS[nxt].name}</p>`:''}${i===8&&G.firstClear?'<p class="unlock-note">9홀 라운드가 열렸어요</p>':''}
-    <p class="coin-gain">+${coins} 코인${hb?' <small>(홀인원 보너스 +'+HIO_BONUS+' 포함)</small>':''}</p>${canRp?`<div class="row2"><button class="btn ${n===1?'btn-gold':'btn-plain'} press" data-act="replay">${n===1?'홀인원 리플레이':'리플레이'}</button><button class="btn btn-plain press" data-act="vidmake" ${VR.ok()?'':'hidden'}>${n===1?'홀인원 영상 공유':'영상 공유'}</button></div>`:''}${G.pendingDouble?`<button class="btn btn-secondary press" data-act="double">광고 보고 +${coins} 코인 더</button>`:'<p class="note" style="text-align:center;margin:0">별을 더 모으면 코인을 더 받아요</p>'}
+    <p class="coin-gain">+${coins} 코인${hb?' <small>(홀인원 보너스 +'+HIO_BONUS+' 포함)</small>':''}</p>${canRp?`<div class="row2"><button class="btn ${n===1?'btn-gold':'btn-plain'} press" data-act="replay">${n===1?'홀인원 리플레이':'리플레이'}</button><button class="btn btn-plain press" data-act="vidmake" ${VR.ok()?'':'hidden'}>${n===1?'홀인원 영상 공유':'영상 공유'}</button></div>`:''}${G.pendingDouble?`<button class="btn btn-secondary press" data-act="double">${adP()}+${coins} 코인 더</button>`:'<p class="note" style="text-align:center;margin:0">별을 더 모으면 코인을 더 받아요</p>'}
     <div class="row2"><button class="btn btn-plain press" data-act="retry">다시 치기</button><button class="btn btn-primary press" data-act="${i===8?'final':'next'}">${i===8?'챕터 결과':'다음 홀'}</button></div>
     <button class="link" data-act="holes">${G.firstRun?'로비로':'코스 선택'}</button>`;
   result.hidden=false;}
@@ -1255,7 +1255,7 @@ function showPvpFinal(){const m=G.match,mt=m.my.reduce((a,b)=>a+b,0),ot=m.op.red
     ${m.holes.map((x,i)=>`<tr><td class="name">${CHAPTERS[x.ci].holes[x.hi].name}</td><td>${m.my[i]}</td><td>${m.op[i]}</td></tr>`).join('')}
     </tbody></table></div>
     <p class="note">${league(SAVE.trophies).name} 리그 · 트로피 ${SAVE.trophies}</p>
-    <p class="coin-gain">+${coins} 코인</p><button class="btn btn-secondary press" data-act="double">광고 보고 +${coins} 코인 더</button>
+    <p class="coin-gain">+${coins} 코인</p><button class="btn btn-secondary press" data-act="double">${adP()}+${coins} 코인 더</button>
     <div class="row2"><button class="btn btn-plain press" data-act="home">홈으로</button><button class="btn btn-primary press" data-act="rematch">한 판 더</button></div>`;
   result.hidden=false;}
 result.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const a=b.dataset.act;
@@ -1266,7 +1266,7 @@ result.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b
   result.hidden=true;sfx.tap();
   if(a==='replay'){startReplay();return;}
   if(a==='vidmake'){VR.make();return;}
-  if(a==='iapOk'){const pk=G.iap;if(pk.id==='noads'){SAVE.noAds=true;save();syncBanner(app.dataset.screen);}else addCoins(pk.coins);renderShop();showToast(`${pk.name} 지급 (테스트)`,1000);return;}
+  if(a==='iapOk'){const pk=G.iap;if(pk.id==='noads'){SAVE.noAds=true;save();syncBanner(app.dataset.screen);}if(pk.coins)addCoins(pk.coins);renderShop();showToast(`${pk.name} 지급 (테스트)`,1000);return;}
   if(a==='iapCancel'||a==='histClose')return;
   if(a==='claimTa'){addCoins(SAVE.pendingTa.reward);SAVE.pendingTa=null;save();sfx.win();renderHome();return;}
   const kind=G.resultKind,go=()=>routeResult(a);
@@ -2115,7 +2115,8 @@ function tossAd(kind,placement,cb){const a=AIT(),k=kind==='rewarded'?'rewarded':
     if(earned){if(cb)cb(true);return;}
     showToast(failed?'광고를 불러오지 못했어요. 잠시 후 다시 눌러 주세요':'광고를 끝까지 보면 보상을 받아요',1600);if(cb)cb(false);}});
   if(!shown){G.paused=wasPaused;fail();}}
-function showRewarded(placement,onReward){if(!ADS_ON){showToast('지금은 광고를 볼 수 없어요',1400);return;}adShow('rewarded',placement,ok=>{if(ok)onReward();});}
+const adP=()=>SAVE.noAds?'':'광고 보고 ';
+function showRewarded(placement,onReward){if(SAVE.noAds){track('event','ad_skipped',{where:placement});onReward();return;}if(!ADS_ON){showToast('지금은 광고를 볼 수 없어요',1400);return;}adShow('rewarded',placement,ok=>{if(ok)onReward();});}
 function maybeInter(placement,then){const now=Date.now();if(!ADS_ON||SAVE.noAds||now-ADS.inter<150000||now-ADS.rew<45000){then();return;}
   // v0.21: tell the player an ad is coming (Toss checklist: no interstitial at a moment the user cannot expect)
   const a=AIT();if(TOSS&&!(a&&a.ads.ready('interstitial'))){adShow('inter',placement,()=>then());return;}
@@ -2141,7 +2142,7 @@ function renderMissions(){dailyEnsure();const d=SAVE.daily,all=d.list.every(m=>m
     return`<div class="mission"><div class="mrow"><div><b>${def.t}</b><span>${m.p} / ${def.n} · 보상 ${def.r}코인${def.cad?` + 캐디 가이드 ${def.cad}`:''}</span></div>
       ${m.claimed?'<span class="pill alt off">받음</span>':done?`<button class="pill press" data-claim="${i}">받기</button>`:''}</div>
       <div class="bar"><i style="width:${Math.round(m.p/def.n*100)}%;background:var(--gold)"></i></div>
-      ${done&&!m.claimed?`<button class="link mlink" data-claim2="${i}">광고 보고 코인 2배로 받기 (${def.r*2}코인${def.cad?` + 캐디 ${def.cad}`:''})</button>`:''}</div>`;}).join('')}</div>
+      ${done&&!m.claimed?`<button class="link mlink" data-claim2="${i}">${adP()}코인 2배로 받기 (${def.r*2}코인${def.cad?` + 캐디 ${def.cad}`:''})</button>`:''}</div>`;}).join('')}</div>
   <div class="card mission"><div class="mrow"><div><b>모두 완료 보너스</b><span>세 미션 보상을 모두 받으면 ${BONUS_COINS}코인 + 캐디 가이드 ${BONUS_CAD}개</span></div>
     ${d.bonus?'<span class="pill alt off">받음</span>':`<button class="pill press" data-bonus="1" ${all?'':'disabled'}>받기</button>`}</div></div>
   <button class="btn btn-plain press" id="missionClose">닫기</button>`;}
@@ -2155,7 +2156,7 @@ $('missions').addEventListener('click',e=>{const ov=$('missions');if(e.target===
 
 // ---------- shop ----------
 let shopTab='hat';
-const PACKS=[{id:'c1000',name:'코인 1,000',price:'₩1,200',coins:1000},{id:'c6000',name:'코인 6,000 (+20%)',price:'₩5,900',coins:6000},{id:'noads',name:'광고 제거',price:'₩5,900',desc:'전면 광고가 사라져요. 보상형 광고는 원할 때만.'}];
+const PACKS=[{id:'c1000',name:'코인 1,000',price:'₩1,200',coins:1000},{id:'c6000',name:'코인 6,000 (+20%)',price:'₩5,900',coins:6000},{id:'noads',name:'광고 제거 + 3,000코인',price:'₩5,900',coins:3000,desc:'전면 광고가 사라지고, 광고 보상은 광고 없이 바로 받아요. 3,000코인도 드려요.'}];
 function goShop(){show('shop');renderShop();if(TOSS)loadTossProducts();}
 
 // ---------- Toss in-app purchase (v0.22) ----------
@@ -2172,7 +2173,7 @@ const sellable=p=>PAID_ITEMS&&(p.id!=='noads'||ADS_ON)&&(!TOSS||!!tossItem(p));
 const packName=p=>TOSS&&tossItem(p)?esc(tossItem(p).displayName||p.name):p.name;
 const packPrice=p=>TOSS&&tossItem(p)?esc(tossItem(p).displayAmount):p.price;
 const ledger=()=>SAVE.iap||(SAVE.iap={});
-function applyPack(p,s){if(p.id==='noads')SAVE.noAds=s>0;else SAVE.coins=Math.max(0,(SAVE.coins||0)+s*p.coins);}
+function applyPack(p,s){if(p.id==='noads')SAVE.noAds=s>0;if(p.coins)SAVE.coins=Math.max(0,(SAVE.coins||0)+s*p.coins);}
 function iapRefresh(){syncCoins();syncBanner(app.dataset.screen);if(app.dataset.screen==='shop')renderShop();}
 function grantOrder(orderId,id){const L=ledger();if(L[orderId])return true;const p=PACKS.find(q=>q.id===id);if(!p)return false;
   applyPack(p,1);L[orderId]={id,t:Date.now()};save();iapRefresh();return true;}
@@ -2217,19 +2218,19 @@ async function openHistory(){const a=AIT();if(!a||!a.iap)return;sfx.tap();G.resu
   catch(e){if(box.isConnected)box.innerHTML='<div class="pack"><div><span>구매 내역을 불러오지 못했어요. 잠시 후 다시 시도해 주세요</span></div></div>';}}
 // v0.24: shop ad cooldowns count down live (m:ss) and a clock set back never locks the button for more than 10 minutes
 const shopCd=k=>Math.min(10*60000,Math.max(0,(SAVE[k]||0)+10*60000-Date.now()));
-const cdText=cd=>{if(!cd)return'광고를 보면 바로 받아요 · 10분마다';const t=Math.ceil(cd/1000);return`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')} 뒤 다시 받을 수 있어요`;};
+const cdText=cd=>{if(!cd)return SAVE.noAds?'광고 없이 바로 받아요 · 10분마다':'광고를 보면 바로 받아요 · 10분마다';const t=Math.ceil(cd/1000);return`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')} 뒤 다시 받을 수 있어요`;};
 setInterval(()=>{if(app.dataset.screen!=='shop')return;document.querySelectorAll('[data-cdtext]').forEach(el=>{el.textContent=cdText(shopCd(el.dataset.cdtext));});
   document.querySelectorAll('[data-cdbtn]').forEach(b=>{b.disabled=shopCd(b.dataset.cdbtn)>0;});},1000);
 function renderShop(){syncCoins();if(app.dataset.screen!=='shop')closeTryOn();const L=myLook();drawAvatarCanvas($('shopPreview'),L,'idle',true);$('shopLook').textContent=[L.char.name,L.char.id==='kid'&&L.hat.id!=='none'?L.hat.name:null,L.outfit.name,L.ball.name].filter(Boolean).join(' · ');
   [...$('shopTabs').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===shopTab));const body=$('shopBody');
   if(shopTab==='item'){const cd=shopCd('adCaddieAt');
     body.innerHTML=`<div class="card packs"><div class="pack"><canvas class="cadav" data-cadav="1"></canvas><div><b>캐디 가이드 · 보유 ${SAVE.caddie||0}개</b><span>홀컵 근처에서 캐디가 맞은편에서 라인과 세기를 봐 줘요. 솔로·9홀 라운드에서 한 샷에 1개</span></div></div>
-      ${SHOP_AD_ITEMS?`<div class="pack"><canvas class="cadav" data-cadav="1"></canvas><div><b>캐디 가이드 1개</b><span data-cdtext="adCaddieAt">${cdText(cd)}</span></div><button class="pill press" data-cadad="1" data-cdbtn="adCaddieAt" ${cd?'disabled':''}>광고 보기</button></div>`:''}
+      ${SHOP_AD_ITEMS?`<div class="pack"><canvas class="cadav" data-cadav="1"></canvas><div><b>캐디 가이드 1개</b><span data-cdtext="adCaddieAt">${cdText(cd)}</span></div><button class="pill press" data-cadad="1" data-cdbtn="adCaddieAt" ${cd?'disabled':''}>${SAVE.noAds?'바로 받기':'광고 보기'}</button></div>`:''}
       ${CADDIE_ITEMS.map(it=>`<div class="pack"><canvas class="cadav" data-cadav="1"></canvas><div><b>캐디 가이드 ${it.n}개</b><span>${it.n>1?'1개씩 사는 것보다 100코인 싸요':'바로 지급'}</span></div><button class="pill press" data-cad="${it.id}">${COIN}${it.price}</button></div>`).join('')}</div>
       <p class="note">PVP와 타임어택에서는 공정한 경쟁을 위해 쓸 수 없어요.</p>`;body.querySelectorAll('[data-cadav]').forEach(cv2=>drawAvatarCanvas(cv2,CADDIE_LOOK,'happy',true));return;}
   if(shopTab==='coin'){const cd=shopCd('adCoinAt');
-    const rows=(SHOP_AD_ITEMS?[`<div class="pack"><span class="coinbig">${COIN}</span><div><b>무료 코인 100</b><span data-cdtext="adCoinAt">${cdText(cd)}</span></div><button class="pill press" data-free="1" data-cdbtn="adCoinAt" ${cd?'disabled':''}>광고 보기</button></div>`]:[])
-      .concat(PACKS.filter(p=>sellable(p)||(p.id==='noads'&&SAVE.noAds)).map(p=>`<div class="pack"><span class="coinbig">${p.id==='noads'?NOADS:COIN}</span><div><b>${packName(p)}</b><span>${p.desc||'바로 지급'}</span></div>${p.id==='noads'&&SAVE.noAds?'<span class="pill alt off">구매함</span>':`<button class="pill press" data-iap="${p.id}">${packPrice(p)}</button>`}</div>`));
+    const rows=(SHOP_AD_ITEMS?[`<div class="pack"><span class="coinbig">${COIN}</span><div><b>무료 코인 100</b><span data-cdtext="adCoinAt">${cdText(cd)}</span></div><button class="pill press" data-free="1" data-cdbtn="adCoinAt" ${cd?'disabled':''}>${SAVE.noAds?'바로 받기':'광고 보기'}</button></div>`]:[])
+      .concat(PACKS.filter(p=>sellable(p)||(p.id==='noads'&&SAVE.noAds)).sort((a,b)=>(b.id==='noads')-(a.id==='noads')).map(p=>`<div class="pack"><span class="coinbig">${p.id==='noads'?NOADS:COIN}</span><div><b>${packName(p)}</b><span>${p.desc||'바로 지급'}</span></div>${p.id==='noads'&&SAVE.noAds?'<span class="pill alt off">구매함</span>':`<button class="pill press" data-iap="${p.id}">${packPrice(p)}</button>`}</div>`));
     body.innerHTML=(rows.length?`<div class="card packs">${rows.join('')}</div>`:'')+
       (!TOSS&&!ANDROID?(PAID_ITEMS?'<p class="note">결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.</p>':'')
         :(PACKS.some(sellable)?'':`<p class="note">코인은 홀을 클리어하거나 ${ADS_ON?'미션·광고 보상':'미션 보상'}으로 모아요.</p>`)+((PAID_ITEMS&&tossIapOk())||Object.keys(ledger()).length?'<button class="link" data-hist="1">구매 내역 보기</button>':''));
@@ -2315,7 +2316,7 @@ function tourNext(){if(G.mode!=='tour'||app.dataset.screen!=='game')return;const
     ${better?'<p class="unlock-note">새 최고 기록!</p>':''}
     <div class="tablewrap"><table><thead><tr><th class="name">홀</th>${ch.holes.map((_,i)=>`<th>${i+1}</th>`).join('')}<th>합</th></tr><tr><th class="name">파</th>${ch.holes.map(h=>`<th>${h.par}</th>`).join('')}<th>${par}</th></tr></thead>
     <tbody><tr><td class="name">나</td>${tr.scores.map((s,i)=>`<td class="${s<ch.holes[i].par?'good':s>ch.holes[i].par?'bad':''}">${s}</td>`).join('')}<td>${tot}</td></tr></tbody></table></div>
-    <p class="coin-gain">+${coins} 코인</p><button class="btn btn-secondary press" data-act="double">광고 보고 +${coins} 코인 더</button>
+    <p class="coin-gain">+${coins} 코인</p><button class="btn btn-secondary press" data-act="double">${adP()}+${coins} 코인 더</button>
     <div class="row2"><button class="btn btn-plain press" data-act="holes">${G.firstRun?'로비로':'코스 선택'}</button><button class="btn btn-primary press" data-act="tourAgain">다시 라운드</button></div>`;
   result.hidden=false;}
 
@@ -2361,7 +2362,7 @@ function taNext(){if(G.mode!=='ta'||app.dataset.screen!=='game')return;const run
   resultPanel.innerHTML=xb('taBoard')+`<p class="eyebrow center">오늘의 타임어택</p><p class="verdict">${tot}타 · ${fmtT(t)}<small>파 ${b.par} · ${run.scores.join(' / ')}타</small></p>
     ${better?`<p class="unlock-note">새 최고 기록! 현재 ${b.myRank}위 / ${b.n}명</p>`:`<p class="unlock-note">최고 기록 ${prev.s}타 · ${fmtT(prev.t)} 유지 · ${b.myRank}위</p>`}
     <p class="coin-gain">+20 코인 · 참가 보상</p>
-    <div class="row2"><button class="btn btn-plain press" data-act="taBoard">랭킹 보기</button>${left>0||ADS_ON?`<button class="btn btn-primary press" data-act="taAgain">${left>0?`다시 도전 (${left})`:'광고로 한 번 더'}</button>`:'<button class="btn btn-primary press" data-act="home">홈으로</button>'}</div>`;
+    <div class="row2"><button class="btn btn-plain press" data-act="taBoard">랭킹 보기</button>${left>0||ADS_ON?`<button class="btn btn-primary press" data-act="taAgain">${left>0?`다시 도전 (${left})`:(SAVE.noAds?'한 번 더':'광고로 한 번 더')}</button>`:'<button class="btn btn-primary press" data-act="home">홈으로</button>'}</div>`;
   result.hidden=false;}
 function claimPendingTa(){const p=SAVE.pendingTa;if(!p)return false;G.resultKind='pending';
   resultPanel.innerHTML=xb('claimTa')+`<p class="eyebrow center">어제의 타임어택 결과</p><p class="verdict">${p.rank}위 <span class="dim">/ ${p.n}명</span><small>${p.best.s}타 · ${fmtT(p.best.t)}</small></p>
@@ -2440,7 +2441,7 @@ function drawCaddie(c){if(!CD.on)return;const now=performance.now()/1000,b=G.bal
 let cadLast='';
 function syncCaddieBtn(force){const bt=$('caddieBtn');if(!bt)return;const b=G.ball,near=Math.hypot(hole.cup[0]-b.x,hole.cup[1]-b.y)<GUIDE_R;
   const show=app.dataset.screen==='game'&&caddieAllowed()&&G.state==='aim'&&!b.hidden&&!G.caddieOn&&!G.paused&&near&&(ADS_ON||SAVE.caddie>0);
-  const label=show?(SAVE.caddie>0?`<b>캐디 가이드</b><span class="cnt">${SAVE.caddie}</span>`:'<b>캐디 가이드</b><span class="ad">광고 보고 부르기</span>'):'';
+  const label=show?(SAVE.caddie>0?`<b>캐디 가이드</b><span class="cnt">${SAVE.caddie}</span>`:'<b>캐디 가이드</b><span class="ad">'+(SAVE.noAds?'바로 부르기':'광고 보고 부르기')+'</span>'):'';
   if(bt.hidden!==!show)bt.hidden=!show;if(show&&(force||label!==cadLast)){bt.innerHTML=label;cadLast=label;}}
 $('caddieBtn').onclick=()=>{if(G.caddieOn||G.state!=='aim')return;sfx.tap();
   if(SAVE.caddie>0){SAVE.caddie--;save();callCaddie();}else showRewarded('캐디 가이드 1회',()=>callCaddie());};
@@ -2626,7 +2627,7 @@ if(SAVE.unlockAll){SAVE.unlockAll=false;save();}
 readTok();syncSwitches();syncCoins();dailyEnsure();taEnsure();resize();enterTitle();requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{buildStatic();refreshScreen();});
 
-window.__golf={key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
+window.__golf={applyPack,PACKS,key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
   setStars(ci,n){CHAPTERS[ci].holes.forEach((_,hi)=>SAVE.stars[key(ci,hi)]=n);save();},
   aimVec,startSwing,showMul,VR,MISSIONS,CD,callCaddie,syncCaddieBtn,startReplay,endReplay,RP,hioFx,
   iap:{restore:restorePurchases,history:openHistory,products:()=>tossItems,ledger:()=>SAVE.iap,save,load:loadTossProducts},
