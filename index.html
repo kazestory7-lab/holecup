@@ -292,6 +292,11 @@ td.name,th.name{text-align:left;font-weight:700}
 .sidebtn svg{width:24px;height:24px;color:var(--ic)}
 .sidebtn span{font-size:11px;font-weight:700;color:var(--label2);white-space:nowrap}
 .sidebtn b{font-family:var(--display);font-weight:400;font-size:15px;line-height:1.1}
+.sidebtn .ndot,.lobby-pvp .ndot,.tabbar .ndot{position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#ff3b30;box-shadow:0 0 0 2px var(--surface);pointer-events:none}
+.sidebtn.locked svg{color:var(--label2);opacity:.5}.sidebtn.locked b{font-family:inherit;font-size:11px;font-weight:700;color:var(--label2);display:flex;align-items:center;gap:2px}
+.sidebtn.locked b svg,.lobby-pvp.locked small svg{width:11px;height:11px;opacity:1;color:inherit}
+.lobby-pvp{position:relative}.lobby-pvp.locked{background:#b9b3a6;box-shadow:0 4px 0 #948d7f}.lobby-pvp.locked small{display:flex;align-items:center;gap:3px}
+.tabbar button{position:relative}.tabbar .ndot{top:2px;right:calc(50% - 20px)}.tabbar button.locked{opacity:.45}
 .sidebtn .badge{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;border-radius:10px;background:var(--lose);color:#fff;font-size:11px;font-weight:800;font-style:normal;display:grid;place-items:center;padding:0 5px}
 .dress{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:6px;background:color-mix(in srgb,var(--surface) 94%,transparent);border-radius:999px;padding:0 16px;min-height:44px;font-size:13px;font-weight:700;color:var(--label);box-shadow:0 2px 8px rgba(60,40,10,.14);white-space:nowrap;max-width:80%}
 .dress svg{width:16px;height:16px;color:var(--tint);flex:none}.dress span{overflow:hidden;text-overflow:ellipsis}
@@ -417,19 +422,19 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
       <div class="stage-ground" id="stageGround"></div>
       <canvas id="homeAvatar" aria-hidden="true"></canvas>
       <div class="side side-l">
-        <button class="sidebtn press" id="missionTile" style="--ic:#2f7d5a"><i class="badge" id="mDot" hidden>!</i><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="17" rx="3"/><path d="M8 10l2 2 4-4M8 16h8"/></svg><span>미션</span><b id="mTileV">0/3</b></button>
-        <button class="sidebtn press" id="taTile" style="--ic:#2f7fe0"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg><span>타임어택</span><b id="taTileV">도전</b></button>
+        <button class="sidebtn press" id="missionTile" style="--ic:#2f7d5a"><i class="badge" id="mDot" hidden>!</i><i class="ndot" data-ndot="mission" hidden></i><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="17" rx="3"/><path d="M8 10l2 2 4-4M8 16h8"/></svg><span>미션</span><b id="mTileV">0/3</b></button>
+        <button class="sidebtn press" id="taTile" style="--ic:#2f7fe0"><i class="ndot" data-ndot="ta" hidden></i><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg><span>타임어택</span><b id="taTileV">도전</b></button>
       </div>
       <div class="side side-r">
-        <button class="sidebtn press" id="leagueBtn" style="--ic:#e8890c"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span id="leagueV">브론즈</span><b id="trophyV">0</b></button>
-        <button class="sidebtn press" id="roundBtn" style="--ic:#9b51e0"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4h11l-3 4 3 4H6"/></svg><span>9홀 라운드</span><b id="roundV">잠김</b></button>
+        <button class="sidebtn press" id="leagueBtn" style="--ic:#e8890c"><i class="ndot" data-ndot="pvp" hidden></i><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span id="leagueV">브론즈</span><b id="trophyV">0</b></button>
+        <button class="sidebtn press" id="roundBtn" style="--ic:#9b51e0"><i class="ndot" data-ndot="round" hidden></i><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4h11l-3 4 3 4H6"/></svg><span>9홀 라운드</span><b id="roundV">잠김</b></button>
       </div>
       <button class="dress press" id="dressBtn"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span id="dressV">꾸미기</span></button>
     </div>
     <div class="dest"><span><b id="heroTitle">한국 · 한옥마을</b> · <span id="heroNext">1홀 차례</span></span><span id="heroMeta">★ 0 / 15</span></div>
     <div class="lobby-actions">
       <button class="btn btn-primary press lobby-play" id="playBtn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4l13 8-13 8z" fill="currentColor"/></svg><span>플레이</span></button>
-      <button class="btn press lobby-pvp" id="pvpBtn"><span>PVP</span><small id="pvpSub">3홀 대결</small></button>
+      <button class="btn press lobby-pvp" id="pvpBtn"><i class="ndot" data-ndot="pvp" hidden></i><span>PVP</span><small id="pvpSub">3홀 대결</small></button>
     </div>
   </section>
 
@@ -490,7 +495,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.32</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.33</p>
     </div>
   </section>
   <section class="overlay bottom" id="tryOnSheet" hidden>
@@ -526,7 +531,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
   <nav class="tabbar" id="tabbar" aria-label="메인 메뉴" hidden>
     <button data-tabgo="home"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"/></svg><span>로비</span></button>
     <button data-tabgo="world"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span>월드</span></button>
-    <button data-tabgo="ta"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>랭킹</span></button>
+    <button data-tabgo="ta"><i class="ndot" data-ndot="ta" hidden></i><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>랭킹</span></button>
     <button data-tabgo="shop" id="shopBtn"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg><span>상점</span></button>
   </nav>
   <section class="overlay" id="adOv" hidden style="z-index:20"></section>
@@ -941,6 +946,9 @@ let SAVE=Object.assign(freshSave(),store.read());
     if(SAVE.pendingTa&&!(obj(SAVE.pendingTa)&&num(SAVE.pendingTa.reward)&&num(SAVE.pendingTa.rank)&&obj(SAVE.pendingTa.best)))SAVE.pendingTa=null;
     if(!SAVE.owned.hat.includes('none'))SAVE.owned.hat.push('none');
     if(!obj(SAVE.tour))SAVE.tour={};
+    if(!obj(SAVE.seen)||!obj(SAVE.ann)){const old=!obj(SAVE.seen)&&SAVE.onboarded;SAVE.seen=obj(SAVE.seen)?SAVE.seen:{};SAVE.ann=obj(SAVE.ann)?SAVE.ann:{};
+      if(old){const d=SAVE.daily,t=SAVE.ta;if(d&&d.list.some(m=>m&&(m.claimed||m.p>0)))SAVE.seen.mission=true;if(t&&(t.best||t.used))SAVE.seen.ta=true;
+        if((SAVE.pvpW||0)+(SAVE.pvpL||0)>0)SAVE.seen.pvp=true;if(Object.keys(SAVE.tour).length)SAVE.seen.round=true;SAVE.ann={__mig:1};}}
   }catch(e){try{localStorage.setItem('holecup.backup',JSON.stringify(SAVE));}catch(_){}SAVE=freshSave();}})();
 const save=()=>store.write(SAVE);
 SAVE.owned.ball=SAVE.owned.ball||['white'];SAVE.equip.ball=SAVE.equip.ball||'white';
@@ -1049,7 +1057,7 @@ function goHoles(ci){G.sel=ci;show('holes');renderHoles();}
 // v0.22: a brand-new player goes straight from the title into hole 1 (마당 첫 퍼트); the lobby appears when they step out of play
 // v0.22: a first run in progress (SAVE.fr = hole index) resumes where the player left off, even if they already earned stars
 const isNewPlayer=()=>!SAVE.onboarded&&(SAVE.fr!==undefined||!Object.keys(SAVE.stars||{}).length);
-function finishFirstRun(){goHome();setTimeout(()=>showToast('로비에 왔어요! 월드·미션·상점은 여기서',1800),250);}
+function finishFirstRun(){goHome();setTimeout(()=>showToast(featOpen('mission')?'로비에 왔어요! 월드·미션·상점은 여기서':'로비에 왔어요! 홀을 깰수록 새 메뉴가 열려요',1800),250);}
 $('scr-title').addEventListener('click',()=>{sfx.tap();if(isNewPlayer()){const hi=SAVE.fr||0;G.firstRun=true;SAVE.fr=hi;save();newSolo(0,hi);if(hi>0)setTimeout(()=>{if(G.firstRun)showToast('이어서 쳐요 · '+(G.holeIdx+1)+'홀',1600);},400);}else goHome();});
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{sfx.tap();b.dataset.go==='home'?goHome():goWorld();}));
 
@@ -1065,23 +1073,29 @@ function renderHome(){const ci=nextChapter(),ch=CHAPTERS[ci];setAcc(ci);
   const rc=CHAPTERS.findIndex((_,k)=>tourOpen(k)&&k===ci)>=0?ci:[...CHAPTERS.keys()].reverse().find(k=>tourOpen(k));
   const best=rc!=null&&rc>=0&&SAVE.tour[CHAPTERS[rc].id];$('roundV').textContent=rc==null||rc<0?'잠김':best?`${best.s}타`:'도전';$('roundBtn').dataset.ci=rc==null?-1:rc;
   const L=myLook();$('dressV').textContent=`꾸미기 · ${L.char.id!=='kid'?L.char.name:L.hat.id!=='none'?L.hat.name:L.outfit.name}`;$('pvpSub').textContent=`${lg.name} · 3홀 대결`;
+  const LK='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+  const lockB=(id,k)=>{const el=$(id),on=featOpen(k);el.classList.toggle('locked',!on);if(!on)el.querySelector('b').innerHTML=`${LK}${k==='round'?'9홀 완주':FEAT[k].n+'홀'}`;};
+  lockB('missionTile','mission');lockB('taTile','ta');lockB('leagueBtn','pvp');lockB('roundBtn','round');if(!featOpen('mission'))$('mDot').hidden=true;
+  const pv=featOpen('pvp');$('pvpBtn').classList.toggle('locked',!pv);if(!pv)$('pvpSub').innerHTML=`${LK}${FEAT.pvp.n}홀 클리어 시`;
+  document.querySelector('.tabbar [data-tabgo="ta"]').classList.toggle('locked',!featOpen('ta'));
+  renderDots();announceFeats();
   syncCoins();homeAvatarDraw();homeAnimStart();}
 function homeAvatarDraw(){drawAvatarCanvas($('homeAvatar'),myLook(),'idle');}
 let homeRaf=0;function homeAnimStart(){if(homeRaf||reduce)return;const L=myLook();if(![L.hat,L.outfit].some(i=>RAR[i.r].o>=4))return;
   const loop=()=>{if(app.dataset.screen!=='home'){homeRaf=0;return;}homeAvatarDraw();homeRaf=requestAnimationFrame(loop);};homeRaf=requestAnimationFrame(loop);}
-$('leagueBtn').onclick=()=>{sfx.tap();startPvp();};
-$('roundBtn').onclick=()=>{const ci=+$('roundBtn').dataset.ci;if(ci<0){sfx.aww();showToast('나라 하나의 9홀을 모두 클리어하면 열려요',1300);return;}sfx.tap();goHoles(ci);};
+$('leagueBtn').onclick=()=>{if(!featGate('pvp'))return;sfx.tap();startPvp();};
+$('roundBtn').onclick=()=>{const ci=+$('roundBtn').dataset.ci;if(ci<0||!featGate('round')){if(ci<0)featGate('round');return;}sfx.tap();goHoles(ci);};
 $('dressBtn').onclick=()=>{sfx.tap();shopTab='hat';goShop();};
-$('tabbar').addEventListener('click',e=>{const b=e.target.closest('[data-tabgo]');if(!b||b.getAttribute('aria-current')==='page')return;sfx.tap();
-  const t=b.dataset.tabgo;if(t==='home')goHome();else if(t==='world')goWorld();else if(t==='ta')goTa();else if(t==='shop')goShop();});
+$('tabbar').addEventListener('click',e=>{const b=e.target.closest('[data-tabgo]');if(!b||b.getAttribute('aria-current')==='page')return;const t=b.dataset.tabgo;if(t==='ta'&&!featGate('ta'))return;sfx.tap();
+  if(t==='home')goHome();else if(t==='world')goWorld();else if(t==='ta')goTa();else if(t==='shop')goShop();});
 const TAB_SCREENS=['home','world','shop','ta'];
 $('rotateX').onclick=()=>{$('rotateNote').classList.add('dismissed');};
 function syncTabbar(name){const on=TAB_SCREENS.includes(name);$('tabbar').hidden=!on;app.classList.toggle('tabs-on',on);
   $('tabbar').querySelectorAll('[data-tabgo]').forEach(b=>{if(b.dataset.tabgo===name)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});}
 $('playBtn').onclick=()=>{sfx.tap();goWorld();};
-$('pvpBtn').onclick=()=>{sfx.tap();startPvp();};
-$('missionTile').onclick=()=>{sfx.tap();openMissions();};
-$('taTile').onclick=()=>{sfx.tap();goTa();};
+$('pvpBtn').onclick=()=>{if(!featGate('pvp'))return;sfx.tap();startPvp();};
+$('missionTile').onclick=()=>{if(!featGate('mission'))return;sfx.tap();openMissions();};
+$('taTile').onclick=()=>{if(!featGate('ta'))return;sfx.tap();goTa();};
 $('shopBtn').onclick=()=>{sfx.tap();goShop();};
 
 function renderWorld(){syncSwitches();
@@ -2115,11 +2129,11 @@ const MISSIONS={holes:{t:'홀 5개 클리어',n:5,r:60},birdie:{t:'버디 이하
   dry:{t:'물·유사에 안 빠지고 3홀 클리어',n:3,r:70},lip:{t:'홀컵 가장자리 타고 넣기 1번',n:1,r:100,cad:1},pvp:{t:'PVP 1번 이기기',n:1,r:80},ta:{t:'타임어택 1번 도전',n:1,r:50},round:{t:'9홀 라운드 1번 완주',n:1,r:120,cad:1}};
 const BONUS_COINS=150,BONUS_CAD=2;
 function dailyEnsure(){const d=todayKey();if(SAVE.daily&&SAVE.daily.date>=d&&SAVE.daily.list.every(m=>m&&MISSIONS[m.id]))return;
-  const r=rng(hashStr('missions'+d)),hasRound=CHAPTERS.some((_,ci)=>chDone(ci)===9);let ids=Object.keys(MISSIONS).filter(k=>k!=='round'||hasRound);const pick=[];
+  const r=rng(hashStr('missions'+d)),hasRound=CHAPTERS.some((_,ci)=>chDone(ci)===9);let ids=Object.keys(MISSIONS).filter(k=>(k!=='round'||hasRound)&&(k!=='pvp'||featOpen('pvp'))&&(k!=='ta'||featOpen('ta')));const pick=[];
   while(pick.length<3){const k=Math.floor(r()*ids.length);pick.push(ids.splice(k,1)[0]);}
   SAVE.daily={date:d,list:pick.map(id=>({id,p:0,claimed:false})),bonus:false};save();}
 function missionTrack(id,inc){dailyEnsure();const m=SAVE.daily.list.find(x=>x.id===id);if(!m||m.claimed)return;const def=MISSIONS[id];if(m.p>=def.n)return;
-  m.p=Math.min(def.n,m.p+(inc||1));save();if(m.p>=def.n){if(app.dataset.screen==='game')pop('미션 완료!',hole.cup[0],hole.cup[1]+70);else showToast('미션 완료!',900);}}
+  m.p=Math.min(def.n,m.p+(inc||1));save();if(m.p>=def.n&&featOpen('mission')){if(app.dataset.screen==='game')pop('미션 완료!',hole.cup[0],hole.cup[1]+70);else showToast('미션 완료!',900);}}
 const missionReady=()=>{dailyEnsure();return SAVE.daily.list.filter(m=>!m.claimed&&m.p>=MISSIONS[m.id].n).length+(SAVE.daily.list.every(m=>m.claimed)&&!SAVE.daily.bonus?1:0);};
 function renderMissions(){dailyEnsure();const d=SAVE.daily,all=d.list.every(m=>m.claimed);
   $('missionSheet').innerHTML=`<button class="xbtn" aria-label="닫기" id="missionX">${XSVG}</button><div class="grabber"></div><h3>데일리 미션</h3><p class="note">초기화까지 ${fmtHM(msToMidnight())}</p>
@@ -2282,6 +2296,15 @@ $('shopBody').addEventListener('click',e=>{const it=e.target.closest('[data-item
 
 // ---------- 9-hole round (unlocked after a chapter is fully cleared) ----------
 function tourOpen(ci){return SAVE.unlockAll||chDone(ci)===9;}
+// v0.33 early flow: menus open one by one as the player clears holes; a red dot marks a menu until it is opened once
+const holesDone=()=>CHAPTERS.reduce((a,_,ci)=>a+chDone(ci),0);
+const FEAT={mission:{n:3,name:'미션'},ta:{n:5,name:'타임어택'},pvp:{n:7,name:'PVP'},round:{n:9,name:'9홀 라운드'}};
+function featOpen(k){if(SAVE.unlockAll)return true;return k==='round'?CHAPTERS.some((_,ci)=>chDone(ci)===9):holesDone()>=FEAT[k].n;}
+function featLockMsg(k){return k==='round'?`나라 하나의 9홀을 모두 클리어하면 열려요 (${Math.max(...CHAPTERS.map((_,ci)=>chDone(ci)))}/9)`:`홀 ${FEAT[k].n}개를 클리어하면 ${FEAT[k].name}이(가) 열려요 (${Math.min(holesDone(),FEAT[k].n)}/${FEAT[k].n})`;}
+function featGate(k){if(featOpen(k)){if(!SAVE.seen[k]){SAVE.seen[k]=true;save();renderDots();}return true;}sfx.aww();showToast(featLockMsg(k),1600);return false;}
+function renderDots(){document.querySelectorAll('[data-ndot]').forEach(d=>{const k=d.dataset.ndot;d.hidden=!(featOpen(k)&&!SAVE.seen[k]);});}
+function announceFeats(){if(SAVE.ann.__mig){Object.keys(FEAT).forEach(k=>{if(featOpen(k))SAVE.ann[k]=true;});delete SAVE.ann.__mig;save();}const fresh=Object.keys(FEAT).filter(k=>featOpen(k)&&!SAVE.ann[k]);if(!fresh.length)return;fresh.forEach(k=>SAVE.ann[k]=true);save();
+  setTimeout(()=>{if(app.dataset.screen==='home'){sfx.star&&sfx.star();showToast(`새로 열렸어요 · ${fresh.map(k=>FEAT[k].name).join(', ')}`,2000);}},450);}
 function startTour(ci){clearTimeout(G.demoTimer);G.mode='tour';G.ci=ci;G.tour={ci,idx:0,scores:[]};G.runT=0;result.hidden=true;show('game');
   requestAnimationFrame(()=>{resize();loadHole(ci,0);startTurn();showToast('9홀 라운드 시작',1000);});}
 function tourNext(){if(G.mode!=='tour'||app.dataset.screen!=='game')return;const tr=G.tour;if(tr.idx<8){tr.idx++;loadHole(tr.ci,tr.idx);startTurn();showToast(`HOLE ${tr.idx+1} / 9`,800);return;}
@@ -2603,7 +2626,7 @@ if(SAVE.unlockAll){SAVE.unlockAll=false;save();}
 readTok();syncSwitches();syncCoins();dailyEnsure();taEnsure();resize();enterTitle();requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{buildStatic();refreshScreen();});
 
-window.__golf={setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
+window.__golf={key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
   setStars(ci,n){CHAPTERS[ci].holes.forEach((_,hi)=>SAVE.stars[key(ci,hi)]=n);save();},
   aimVec,startSwing,showMul,VR,MISSIONS,CD,callCaddie,syncCaddieBtn,startReplay,endReplay,RP,hioFx,
   iap:{restore:restorePurchases,history:openHistory,products:()=>tossItems,ledger:()=>SAVE.iap,save,load:loadTossProducts},
