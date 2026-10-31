@@ -350,6 +350,10 @@ td.name,th.name{text-align:left;font-weight:700}
 .rarline{font-size:12px;color:var(--label2);margin:0 2px 10px;display:flex;flex-wrap:wrap;gap:2px;align-items:center}.rarline .have{margin-left:auto;font-weight:700;color:var(--label)}
 .item.on{box-shadow:0 0 0 2.5px var(--tint),var(--shadow)}
 .packs{display:flex;flex-direction:column}
+.card.daily{display:flex;align-items:center;gap:12px;padding:12px 14px;position:relative;overflow:visible;text-align:left;width:100%}.card.daily canvas{width:64px;height:64px;border-radius:14px;flex:none}
+.card.daily>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.card.daily b{font-size:16px}.card.daily span{font-size:12px;color:var(--label2)}.card.daily .ndot{position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#ff3b30;box-shadow:0 0 0 2px var(--surface)}.card.daily .pill{color:#fff;flex:none}.card.daily .pill.alt{color:var(--label2)}
+.card.daily.locked{opacity:.6;padding:14px 16px}.card.daily.locked b{font-size:14px;display:flex;gap:6px;align-items:center}.card.daily.locked svg{width:14px;height:14px}
+.teeline{font-size:12px;color:var(--label2)}.teeline.got{color:var(--tint);font-weight:700}.price.star{color:var(--star);font-weight:800}.unlock-note.tee{background:color-mix(in srgb,var(--star) 18%,var(--fill))}
 .needline{font-size:14px;color:var(--label);background:var(--fill);border-radius:14px;padding:10px 14px;margin:0}.needline b{color:var(--lose)}.needline.ok{color:var(--tint);font-weight:700}
 .ptag{white-space:nowrap;display:inline-block;font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--lose);border-radius:8px;padding:1px 6px;vertical-align:2px;margin-left:4px}
 .pack.rec{background:color-mix(in srgb,var(--gold) 14%,transparent)}.pack.starter{background:color-mix(in srgb,var(--tint) 9%,transparent)}
@@ -445,6 +449,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
   <section class="screen" id="scr-world" hidden aria-label="월드 투어">
     <div class="navbar"><button class="back" data-go="home"><svg viewBox="0 0 12 20"><path d="M10 2 2 10l8 8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>홈</button></div>
     <div><h1 class="large">월드 투어</h1><p class="sub">나라마다 9홀을 모두 클리어하고 ★15개를 모으면 다음 나라가 열려요.</p></div>
+    <div id="dailyCard"></div>
     <div class="list" id="worldList"></div>
   </section>
 
@@ -498,7 +503,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.35</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.36</p>
     </div>
   </section>
   <section class="overlay bottom" id="tryOnSheet" hidden>
@@ -533,7 +538,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
   </div>
   <nav class="tabbar" id="tabbar" aria-label="메인 메뉴" hidden>
     <button data-tabgo="home"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9H3z"/></svg><span>로비</span></button>
-    <button data-tabgo="world"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span>월드</span></button>
+    <button data-tabgo="world"><i class="ndot" data-ndot="daily" hidden></i><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span>월드</span></button>
     <button data-tabgo="ta"><i class="ndot" data-ndot="ta" hidden></i><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>랭킹</span></button>
     <button data-tabgo="shop" id="shopBtn"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8a3 3 0 0 1 6 0"/></svg><span>상점</span></button>
   </nav>
@@ -738,6 +743,20 @@ const CHAPTERS=[
    {name:'무굴 정원',par:3,tee:[180,560],cup:[180,330],outline:BOX,surfaces:[{t:'water',r:[60,180,90,100]},{t:'water',r:[210,180,90,100]},{t:'water',r:[60,380,90,100]},{t:'water',r:[210,380,90,100]}],posts:[{c:[180,460],r:14}]},
    {name:'타지마할',par:4,tee:[262,560],cup:[90,115],outline:TEMPLE,surfaces:[{t:'water',r:[205,330,40,180]}],portals:[{a:[288,360],b:[245,120]}],posts:[{c:[160,190],r:14}]},
   ]},
+ {id:'sw',name:'스위스',place:'알프스',gimmick:'빙하 · 시계 바늘 · 케이블카',
+  theme:{grass:'#70c67a',grass2:'#68bc72',bump:'#ffffff',blockA:'#ece7dd',blockB:'#cfc7b8',blockEdge:'#d6283c',post:'stone',mover:'#d6283c',flag:'#d52b1e',acc:'#d6283c',boost:'#d6283c',portal:['#d6283c','#2f7fe0'],art:'sw'},
+  holes:[
+   {name:'알프스 입구',par:2,tee:[180,545],cup:[180,150],outline:rect(70,60,290,600),blocks:[[180,300,214,360,146,360]]},
+   {name:'빙하 미끄럼',par:3,tee:[180,555],cup:[180,120],outline:BOX,surfaces:[{t:'ice',r:[60,190,240,250]}],posts:[{c:[115,330],r:13},{c:[245,330],r:13},{c:[180,250],r:11}]},
+   {name:'시계탑',par:3,tee:[180,555],cup:[180,125],outline:BOX,movers:[{type:'spin',c:[180,330],len:60,w:.6},{type:'spin',c:[180,330],len:40,w:1.5,ph:1.2}],posts:[{c:[180,330],r:11}]},
+   {name:'케이블카',par:3,tee:[100,555],cup:[100,125],outline:BOX,blocks:[rect(40,320,236,346)],movers:[{type:'slide',a:[250,250],b:[300,250],d:[22,0],period:3,look:'gondola'}]},
+   {name:'치즈 마을',par:3,tee:[180,555],cup:[180,120],outline:BOX,posts:[[118,250],[242,250],[180,330],[118,410],[242,410]].map(c=>({c,r:14,kind:'mound'}))},
+   {name:'레만 호수',par:3,tee:[100,555],cup:[260,125],outline:BOX,surfaces:[{t:'water',r:[150,290,90,70]}],posts:[{c:[290,450],r:12}]},
+   {name:'마테호른',par:3,tee:[180,555],cup:[180,118],outline:BOX,blocks:[[180,210,262,380,98,380]],surfaces:[{t:'sand',r:[40,420,64,70]},{t:'ice',r:[256,180,64,120]}]},
+   {name:'산악 열차',par:3,tee:[95,560],cup:[270,125],outline:LSHAPE,surfaces:[{t:'ice',r:[40,300,110,150]}],boosts:[{r:[62,170,66,60],dir:-90}],posts:[{c:[210,150],r:12}]},
+   {name:'스위스 시계',par:4,tee:[262,560],cup:[90,115],outline:TEMPLE,movers:[{type:'spin',c:[262,420],len:32,w:.9},{type:'spin',c:[150,180],len:36,w:-.8},{type:'spin',c:[150,180],len:36,w:-.8,ph:1.5708}],
+    posts:[{c:[262,420],r:9},{c:[150,180],r:9}]},
+  ]},
 ];
 
 // ---------------- v0.10 balance pass (play-time simulation) ----------------
@@ -754,14 +773,14 @@ const TUNE={
   'us1':h=>{h.tee=[180,480];h.posts.forEach(p=>p.kick=150);},
   'fr1':h=>{h.tee=[180,480];},
  },
- demo:{kr:[234,.75],jp:[250,.75],eg:[235,.75],fr:[247,.75],uk:[231,.75],us:[241,.75],cn:[270,.75],it:[270,.75],nl:[270,.75],gr:[270,.75],au:[235,.75],in:[250,.75]}};
+ demo:{kr:[234,.75],jp:[250,.75],eg:[235,.75],fr:[247,.75],uk:[231,.75],us:[241,.75],cn:[270,.75],it:[270,.75],nl:[270,.75],gr:[270,.75],au:[235,.75],in:[250,.75],sw:[234,.75]}};
 CHAPTERS.forEach(ch=>ch.holes.forEach((h,hi)=>{const n=hi+1,add=(TUNE.hio[ch.id]||{})[n],fs=(TUNE.water[ch.id]||{})[n],fx=TUNE.fix[ch.id+n];
   if(add)h.posts=(h.posts||[]).concat(add.map(([x,y,r])=>({c:[x,y],r})));
   if(fx)fx(h);
   if(fs)fs.forEach(f=>h.surfaces.forEach(q=>{if(q.t!=='water')return;const [x,y,w,hh]=q.r,nw=Math.round(w*f),nh=Math.round(hh*Math.max(f,.8));q.r=[Math.round(x+(w-nw)/2),Math.round(y+(hh-nh)/2),nw,nh];}));
   if(hi===0&&TUNE.demo[ch.id])h.demo=TUNE.demo[ch.id];}));
 // holes sorted by simulated difficulty inside each country (first hole stays the easy tutorial). ORDER[id][new]=old hole number
-const ORDER={kr:[1,2,6,9,5,8,4,3,7],jp:[1,9,6,5,4,7,2,3,8],eg:[1,4,2,6,9,3,7,8,5],fr:[1,8,4,2,6,5,7,3,9],uk:[1,9,2,8,6,5,3,4,7],us:[1,7,9,5,2,6,3,4,8],cn:[1,9,4,8,2,6,3,7,5],it:[1,4,2,7,9,5,3,6,8],nl:[1,4,6,2,5,7,8,9,3],gr:[1,6,9,5,2,4,8,3,7],au:[1,9,8,4,3,7,6,2,5],in:[1,3,6,4,2,9,7,8,5]};
+const ORDER={kr:[1,2,6,9,5,8,4,3,7],jp:[1,9,6,5,4,7,2,3,8],eg:[1,4,2,6,9,3,7,8,5],fr:[1,8,4,2,6,5,7,3,9],uk:[1,9,2,8,6,5,3,4,7],us:[1,7,9,5,2,6,3,4,8],cn:[1,9,4,8,2,6,3,7,5],it:[1,4,2,7,9,5,3,6,8],nl:[1,4,6,2,5,7,8,9,3],gr:[1,6,9,5,2,4,8,3,7],au:[1,9,8,4,3,7,6,2,5],in:[1,3,6,4,2,9,7,8,5],sw:[1,2,3,7,8,4,6,5,9]};
 CHAPTERS.forEach(ch=>{const o=ORDER[ch.id];if(o)ch.holes=o.map(n=>ch.holes[n-1]);});
 
 const LOOK={
@@ -777,6 +796,7 @@ const LOOK={
  gr:{ground:'#ece4d2',ground2:'#e1d7c1',grass:'#9adf84',grass2:'#91d67b',rail:'#ffffff',railSide:'#b9b3a4',canopy:['#6f8f62','#8aa97a'],decor:{tree:1.6,rock:2,bush:1.2,flowers:.8,cypress:.8},desert:true},
  au:{ground:'#dc9160',ground2:'#d18452',grass:'#a2d97c',grass2:'#99d073',rail:'#e8b58c',railSide:'#8f4a26',canopy:['#6f8f52','#8aa86a'],decor:{rock:2.6,bush:1.4,dune:1.2,tree:.6},desert:true},
  in:{ground:'#83c763',ground2:'#78bc59',grass:'#97df77',grass2:'#8ed66e',rail:'#f3ead9',railSide:'#c6a583',canopy:['#367f45','#4f9f55'],decor:{palm:2,tree:1,flowers:1.5,flowerbed:.6,bush:1}},
+ sw:{ground:'#7cc66a',ground2:'#71bb60',grass:'#93dd7e',grass2:'#8ad475',rail:'#f4efe6',railSide:'#a99f8e',canopy:['#2f6f45','#468a55'],decor:{pine:3.2,rock:1.6,flowers:1.2,bush:1}},
 };
 CHAPTERS.forEach(ch=>Object.assign(ch.theme,LOOK[ch.id]));
 function prep(h,T){h.blocks=h.blocks||[];h.surfaces=h.surfaces||[];h.wind=h.wind||[];h.portals=h.portals||[];h.movers=h.movers||[];
@@ -1008,10 +1028,11 @@ function updateHUD(){const ch=CHAPTERS[G.ci];let top;
   if(G.mode==='pvp')top=`PVP · ${G.match.idx+1} / 3 · ${ch.name}`;
   else if(G.mode==='tour'){const sc=G.tour.scores,d=sc.reduce((a,v,i)=>a+v-ch.holes[i].par,0);top=`라운드 · ${G.tour.idx+1} / 9 · 누적 ${fmtD(d)}`;}
   else if(G.mode==='ta')top=`타임어택 · ${G.taRun.idx+1} / 3 · ${ch.name}`;
+  else if(G.mode==='daily')top=`오늘의 홀 · ${ch.name}`;
   else top=`${ch.name} · HOLE ${G.holeIdx+1} / 9`;
   $('holeNo').textContent=top;$('oppChip').hidden=G.mode!=='pvp';$('timeChip').hidden=!(G.mode==='tour'||G.mode==='ta');
   $('holeName').textContent=hole.name;$('par').textContent=hole.par;$('strokes').textContent=G.strokes;}
-function loadHole(ci,hi){G.turnId=(G.turnId||0)+1;G.marks=[];if(G.firstRun&&ci===0&&SAVE.fr!==hi){SAVE.fr=hi;save();}G.ci=ci;G.holeIdx=hi;hole=CHAPTERS[ci].holes[hi];T=CHAPTERS[ci].theme;setAcc(ci);buildStatic();
+function loadHole(ci,hi){G.turnId=(G.turnId||0)+1;G.marks=[];if(G.firstRun&&ci===0&&SAVE.fr!==hi){SAVE.fr=hi;save();}G.ci=ci;G.holeIdx=hi;hole=(G.mode==='daily'&&G.dhHole)||CHAPTERS[ci].holes[hi];T=CHAPTERS[ci].theme;setAcc(ci);buildStatic();
   const b=G.ball;Object.assign(b,{x:hole.tee[0],y:hole.tee[1],vx:0,vy:0,pcd:0,lipT:0,hidden:false});
   G.trail=[];G.sinkT=0;G.aim=null;G.rest=0;G.parts=[];G.pops=[];G.ht=0;G.gt=0;G.slowT=0;G.ts=1;G.cam.z=1;
   hole.posts.forEach(p=>p.hit=-9);charSnap();}
@@ -1026,7 +1047,8 @@ function finishMine(n,sunk){G.myDone=true;const tok=G.turnId;if(G.mode!=='attrac
   if(G.mode==='solo'){G.scores[G.holeIdx]=n;setTimeout(()=>{if(tok===G.turnId)showHoleResult();},n===1&&sunk?3000:1300);}
   else if(G.mode==='pvp'){G.match.my[G.match.idx]=n;}
   else if(G.mode==='tour'){G.tour.scores[G.tour.idx]=n;updateHUD();setTimeout(()=>{if(tok===G.turnId)tourNext();},n===1&&sunk?3000:1300);}
-  else if(G.mode==='ta'){G.taRun.scores[G.taRun.idx]=n;setTimeout(()=>{if(tok===G.turnId)taNext();},n===1&&sunk?2600:1000);}}
+  else if(G.mode==='ta'){G.taRun.scores[G.taRun.idx]=n;setTimeout(()=>{if(tok===G.turnId)taNext();},n===1&&sunk?2600:1000);}
+  else if(G.mode==='daily'){setTimeout(()=>{if(tok===G.turnId)showDailyResult(n,sunk);},n===1&&sunk?3000:1300);}}
 function onSunk(){const b=G.ball,attract=G.mode==='attract',hio=!attract&&G.strokes===1;recEnd('sunk');G.state='sunk';sfx.sink();setMood('happy',2.6);if(!attract)G.slowT=Math.max(G.slowT,.55);
   if(hio){hioFx();SAVE.hio=(SAVE.hio||0)+1;save();}else pop(attract?'홀인원!':verdictText(G.strokes,hole.par),hole.cup[0],hole.cup[1]-34,true);
   if(CD.on){CD.mood='happy';CD.moodT=2.4;if(!hio){CD.say='나이스 퍼트!';CD.sayT=2;}caddieLeave(hio?2600:1800);}G.caddieOn=false;
@@ -1086,7 +1108,7 @@ function renderHome(){const ci=nextChapter(),ch=CHAPTERS[ci];setAcc(ci);
   lockB('missionTile','mission');lockB('taTile','ta');lockB('leagueBtn','pvp');lockB('roundBtn','round');if(!featOpen('mission'))$('mDot').hidden=true;
   const pv=featOpen('pvp');$('pvpBtn').classList.toggle('locked',!pv);if(!pv)$('pvpSub').innerHTML=`${LK}${FEAT.pvp.n}홀 클리어 시`;
   document.querySelector('.tabbar [data-tabgo="ta"]').classList.toggle('locked',!featOpen('ta'));
-  renderDots();announceFeats();
+  renderDots();announceFeats();{const g=starTeeCheck();if(g.length)setTimeout(()=>showToast(`${g[0].name}를 받았어요!`,1800),900);}
   syncCoins();homeAvatarDraw();homeAnimStart();}
 function homeAvatarDraw(){drawAvatarCanvas($('homeAvatar'),myLook(),'idle');}
 let homeRaf=0;function homeAnimStart(){if(homeRaf||reduce)return;const L=myLook();if(![L.hat,L.outfit].some(i=>RAR[i.r].o>=4))return;
@@ -1098,7 +1120,7 @@ $('tabbar').addEventListener('click',e=>{const b=e.target.closest('[data-tabgo]'
   if(t==='home')goHome();else if(t==='world')goWorld();else if(t==='ta')goTa();else if(t==='shop')goShop();});
 const TAB_SCREENS=['home','world','shop','ta'];
 $('rotateX').onclick=()=>{$('rotateNote').classList.add('dismissed');};
-function syncTabbar(name){const on=TAB_SCREENS.includes(name);$('tabbar').hidden=!on;app.classList.toggle('tabs-on',on);
+function syncTabbar(name){const on=TAB_SCREENS.includes(name);if(on)try{renderDots();}catch(e){}$('tabbar').hidden=!on;app.classList.toggle('tabs-on',on);
   $('tabbar').querySelectorAll('[data-tabgo]').forEach(b=>{if(b.dataset.tabgo===name)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current');});}
 $('playBtn').onclick=()=>{sfx.tap();goWorld();};
 $('pvpBtn').onclick=()=>{if(!featGate('pvp'))return;sfx.tap();startPvp();};
@@ -1106,9 +1128,47 @@ $('missionTile').onclick=()=>{if(!featGate('mission'))return;sfx.tap();openMissi
 $('taTile').onclick=()=>{if(!featGate('ta'))return;sfx.tap();goTa();};
 $('shopBtn').onclick=()=>{sfx.tap();goShop();};
 
-function renderWorld(){syncSwitches();
+
+// ---------- v0.36 오늘의 홀: one mirrored hole a day from the countries the player has opened ----------
+// Mirror = flip left/right, so a known hole plays like a new one. Reward once a day (30 / 40 / 60 coins by stars) + a daily streak bonus.
+function mirrorHole(h0,T){const h=JSON.parse(JSON.stringify(h0)),X=x=>W-x,mp=a=>{for(let i=0;i<a.length;i+=2)a[i]=X(a[i]);return a;},R=r=>[W-r[0]-r[2],r[1],r[2],r[3]];
+  h.tee=[X(h.tee[0]),h.tee[1]];h.cup=[X(h.cup[0]),h.cup[1]];mp(h.outline);h.blocks=(h.blocks||[]).map(mp);
+  h.posts=(h.posts||[]).map(q=>Object.assign(q,{c:[X(q.c[0]),q.c[1]]}));
+  h.surfaces=(h.surfaces||[]).map(q=>Object.assign(q,{r:R(q.r)}));h.wind=(h.wind||[]).map(q=>Object.assign(q,{r:R(q.r),f:[-q.f[0],q.f[1]]}));
+  h.portals=(h.portals||[]).map(q=>Object.assign(q,{a:[X(q.a[0]),q.a[1]],b:[X(q.b[0]),q.b[1]]}));
+  h.movers=(h.movers||[]).map(m=>m.type==='slide'?Object.assign(m,{a:[X(m.a[0]),m.a[1]],b:[X(m.b[0]),m.b[1]],d:[-m.d[0],m.d[1]]}):Object.assign(m,{c:[X(m.c[0]),m.c[1]],w:-m.w,ph:Math.PI-(m.ph||0)}));
+  h.boosts=(h.boosts||[]).map(b=>{const o=Object.assign({},b,{r:R(b.r),dir:180-b.dir});delete o.ux;delete o.uy;return o;});
+  delete h.segs;delete h.demo;prep(h,T);return h;}
+function dailyPick(d){d=d||todayKey();const open=CHAPTERS.map((_,ci)=>ci).filter(ci=>unlocked(ci)),r=rng(hashStr('daily-hole'+d));
+  const ci=open[Math.floor(r()*open.length)],hi=1+Math.floor(r()*8);return{ci,hi,d};}
+function dailyHoleObj(){const p=dailyPick();if(!G.dhCache||G.dhCache.d!==p.d||G.dhCache.ci!==p.ci||G.dhCache.hi!==p.hi){
+  const h=mirrorHole(CHAPTERS[p.ci].holes[p.hi],CHAPTERS[p.ci].theme);h.name='거울 '+h.name;h.ci=p.ci;h.hi=p.hi;G.dhCache=Object.assign({h},p);}return G.dhCache;}
+function dailyState(){const d=todayKey();if(!SAVE.dh||SAVE.dh.date!==d)SAVE.dh={date:d,best:null,claimed:0,tries:0};return SAVE.dh;}
+function dailyDone(){try{return !!dailyState().claimed;}catch(e){return false;}}
+function startDaily(){if(!featGate('daily'))return;const c=dailyHoleObj();clearTimeout(G.demoTimer);G.mode='daily';G.dhHole=c.h;G.scores=[];result.hidden=true;show('game');
+  const st=dailyState();st.tries++;save();logEv('daily_start',{ch:CHAPTERS[c.ci].id,hole:c.hi+1,tries:st.tries});
+  requestAnimationFrame(()=>{resize();loadHole(c.ci,c.hi);startTurn();showToast('오늘의 홀 · 좌우가 바뀐 코스',1200);});}
+function showDailyResult(n,sunk){if(G.mode!=='daily'||app.dataset.screen!=='game')return;G.state='result';G.paused=true;G.resultKind='daily';
+  const st=dailyState(),stars=sunk?starsFor(n,hole.par):0,first=sunk&&!st.claimed;if(sunk&&(st.best==null||n<st.best))st.best=n;
+  let coins=0,streak=SAVE.dhStreak||0;
+  if(first){const y=todayKey(new Date(Date.now()-86400000));streak=SAVE.dhLast===y?streak+1:1;SAVE.dhStreak=streak;SAVE.dhLast=st.date;st.claimed=1;
+    coins=(stars>=3?60:stars>=2?40:30)+Math.min(streak,7)*5;addCoins(coins);}
+  save();logEv('daily_end',{strokes:n,par:hole.par,sunk:sunk?1:0,first:first?1:0,streak});if(first)sfx.win();
+  resultPanel.innerHTML=xb('world')+`<p class="eyebrow center">오늘의 홀</p><div class="big-stars">${[0,1,2].map(q=>q<stars?'★':'<span class="off">★</span>').join('')}</div>
+    <p class="verdict">${sunk?verdictText(n,hole.par):'다음엔 꼭!'}<small>${hole.name} · ${n}타 / 파 ${hole.par}</small></p>
+    ${first?`<p class="coin-gain">+${coins} 코인 · 연속 ${streak}일째${streak>1?` (+${Math.min(streak,7)*5})`:''}</p><p class="unlock-note">내일 새 홀이 열려요. 매일 치면 연속 보너스가 커져요 (최대 7일)</p>`
+      :st.claimed?`<p class="unlock-note">오늘 보상은 받았어요 · 최고 ${st.best}타</p>`:''}
+    <div class="row2"><button class="btn btn-plain press" data-act="world">월드로</button><button class="btn btn-primary press" data-act="dailyRetry">다시 치기</button></div>`;
+  result.hidden=false;}
+function renderDailyCard(){const el=$('dailyCard');if(!el)return;if(!featOpen('daily')){el.innerHTML=`<div class="card daily locked"><div><p class="eyebrow">오늘의 홀</p><b>${LOCK}홀 ${FEAT.daily.n}개를 클리어하면 열려요</b></div></div>`;return;}
+  const c=dailyHoleObj(),st=dailyState(),ch=CHAPTERS[c.ci],streak=(SAVE.dhLast===todayKey(new Date(Date.now()-86400000))||SAVE.dhLast===st.date)?SAVE.dhStreak||0:0;
+  el.innerHTML=`<button class="card daily press" id="dailyBtn" style="--acc:${ch.theme.acc}"><i class="ndot" data-ndot="daily" hidden></i><canvas id="dailyArt" aria-hidden="true"></canvas><div><p class="eyebrow">오늘의 홀 · ${ch.name}</p><b>${esc(c.h.name)}</b>
+    <span>${st.claimed?`오늘 완료 · 최고 ${st.best}타 · 내일 새 홀`:`좌우가 바뀐 코스 · 최대 ${60+Math.min(streak+1,7)*5}코인`}${streak?` · 연속 ${streak}일`:''}</span></div>${st.claimed?'<span class="pill alt off">완료</span>':'<span class="pill">도전</span>'}</button>`;
+  drawArt($('dailyArt'),ch.theme.art);renderDots();}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#dailyBtn')){sfx.tap();startDaily();}});
+function renderWorld(){syncSwitches();renderDailyCard();
   $('worldList').innerHTML=CHAPTERS.map((ch,ci)=>{const open=unlocked(ci),s=chStars(ci),d=chDone(ci);
-    const meta=open?`<div class="bar" style="--acc:${ch.theme.acc}"><i style="width:${Math.round(s/27*100)}%"></i></div><div class="cell-meta"><b>★ ${s} / 27</b><span>${d===9?'완주':`${d} / 9홀`}</span></div>`
+    const meta=open?`<div class="bar" style="--acc:${ch.theme.acc}"><i style="width:${Math.round(s/27*100)}%"></i></div><div class="cell-meta"><b>★ ${s} / 27</b><span>${d===9?'완주':`${d} / 9홀`}</span></div><span class="teeline${s>=27?' got':''}">${s>=27?'받음':'★27 보상'} · ${ch.name} 기념 티</span>`
       :`<span class="lock">${LOCK}${lockNote(ci)}</span>`;
     return`<button class="card cell press ${open?'':'locked'}" data-ci="${ci}" ${open?'':'aria-disabled="true"'}>
       <canvas data-art="${ci}"></canvas>
@@ -1211,20 +1271,20 @@ function pvpFrame(dt){if(G.mode!=='pvp'||!G.ghost||app.dataset.screen!=='game')r
 $('pauseBtn').onclick=()=>{if(G.mode==='attract'||G.state==='result'||G.state==='sunk'||G.state==='replay'||G.state==='replayEnd')return;G.paused=true;G.aim=null;
   $('pauseSheet').innerHTML=xb('resume')+`<div class="grabber"></div><h3>일시정지</h3>
     <button class="btn btn-primary press" data-act="resume">이어서 치기</button>
-    ${G.mode==='solo'?`<div class="row2"><button class="btn btn-plain press" data-act="restart">이 홀 다시</button><button class="btn btn-plain press" data-act="holes">${G.firstRun?'로비로':'코스 선택'}</button></div>
+    ${G.mode==='daily'?`<div class="row2"><button class="btn btn-plain press" data-act="restart">다시 치기</button><button class="btn btn-plain press" data-act="world">월드로</button></div>`:G.mode==='solo'?`<div class="row2"><button class="btn btn-plain press" data-act="restart">이 홀 다시</button><button class="btn btn-plain press" data-act="holes">${G.firstRun?'로비로':'코스 선택'}</button></div>
     <button class="btn btn-plain press" data-act="home">홈으로</button>`:G.mode==='pvp'?`<button class="btn btn-plain press" data-act="forfeit">기권하고 나가기</button>`
     :`<p class="note">${G.mode==='ta'?'타임어택 중에는 일시정지해도 시간이 흘러요.':'그만두면 이번 라운드 기록은 남지 않아요.'}</p><button class="btn btn-plain press" data-act="quit">그만두기</button>`}`;
   pauseEl.hidden=false;};
 pauseEl.addEventListener('click',e=>{if(e.target===pauseEl){pauseEl.hidden=true;G.paused=false;return;}const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;pauseEl.hidden=true;sfx.tap();
-  if(['holes','quit','home','forfeit'].includes(a)&&!G.myDone)logEv('hole_quit',{mode:G.mode,ch:CHAPTERS[G.ci].id,hole:G.holeIdx+1,strokes:G.strokes||0,first_run:G.firstRun?1:0});
+  if(['holes','quit','home','forfeit','world'].includes(a)&&!G.myDone)logEv('hole_quit',{mode:G.mode,ch:CHAPTERS[G.ci].id,hole:G.holeIdx+1,strokes:G.strokes||0,first_run:G.firstRun?1:0});
   if(G.firstRun&&['holes','quit','home'].includes(a)){finishFirstRun();return;}
   if(a==='resume')G.paused=false;else if(a==='restart'){G.scores[G.holeIdx]=undefined;loadHole(G.ci,G.holeIdx);startTurn();}
-  else if(a==='holes')goHoles(G.ci);else if(a==='forfeit'){applyPvp(-1);goHome();}else if(a==='quit'){if(G.mode==='ta')goTa();else goHoles(G.ci);}else goHome();});
+  else if(a==='holes')goHoles(G.ci);else if(a==='world')goWorld();else if(a==='forfeit'){applyPvp(-1);goHome();}else if(a==='quit'){if(G.mode==='ta')goTa();else goHoles(G.ci);}else goHome();});
 
 // ---------------- results ----------------
 function showHoleResult(){if(G.mode!=='solo'||G.scores[G.holeIdx]==null||app.dataset.screen!=='game')return;G.state='result';G.paused=true;const i=G.holeIdx,n=G.scores[i],st=starsFor(n,hole.par),k=key(G.ci,i);G.firstClear=SAVE.stars[k]===undefined;const prevSt=SAVE.stars[k];
   const nxt=G.ci+1,wasOpen=nxt<CHAPTERS.length&&unlocked(nxt);
-  if(SAVE.stars[k]===undefined||st>SAVE.stars[k]){SAVE.stars[k]=st;save();}
+  if(SAVE.stars[k]===undefined||st>SAVE.stars[k]){SAVE.stars[k]=st;save();}const newTee=starTeeCheck()[0];
   const nowOpen=nxt<CHAPTERS.length&&unlocked(nxt);G.resultKind=i===8?'chapter':'hole';
   // v0.24: replaying a hole no longer re-pays the full reward - full coins on the first clear, then only for new stars (+10 each);
   // otherwise a small 5. The hole-in-one bonus is paid once per hole. The ad 2x is offered only when real coins were earned.
@@ -1232,7 +1292,7 @@ function showHoleResult(){if(G.mode!=='solo'||G.scores[G.holeIdx]==null||app.dat
   const gain=G.firstClear?5+st*5+10:st>prevSt?(st-prevSt)*10:0,coins=(gain||5)+hb;addCoins(coins);G.pendingDouble=gain+hb>0?coins:0;const canRp=G.rec&&G.rec.end&&G.rec.hi===i;
   resultPanel.innerHTML=xb('holes')+`<div class="big-stars">${[0,1,2].map(q=>q<st?'★':'<span class="off">★</span>').join('')}</div>
     <p class="verdict">${verdictText(n,hole.par)}<small>${hole.name} · ${n}타 / 파 ${hole.par}</small></p>
-    ${!wasOpen&&nowOpen?`<p class="unlock-note">새 나라가 열렸어요 · ${CHAPTERS[nxt].name}</p>`:''}${i===8&&G.firstClear?'<p class="unlock-note">9홀 라운드가 열렸어요</p>':''}
+    ${!wasOpen&&nowOpen?`<p class="unlock-note">새 나라가 열렸어요 · ${CHAPTERS[nxt].name}</p>`:''}${i===8&&G.firstClear?'<p class="unlock-note">9홀 라운드가 열렸어요</p>':''}${newTee?`<p class="unlock-note tee">★27 달성! ${newTee.name}를 받았어요 · 꾸미기에서 입어 보세요</p>`:''}
     <p class="coin-gain">+${coins} 코인${hb?' <small>(홀인원 보너스 +'+HIO_BONUS+' 포함)</small>':''}</p>${canRp?`<div class="row2"><button class="btn ${n===1?'btn-gold':'btn-plain'} press" data-act="replay">${n===1?'홀인원 리플레이':'리플레이'}</button><button class="btn btn-plain press" data-act="vidmake" ${VR.ok()?'':'hidden'}>${n===1?'홀인원 영상 공유':'영상 공유'}</button></div>`:''}${G.pendingDouble?`<button class="btn btn-secondary press" data-act="double">${adP()}+${coins} 코인 더</button>`:'<p class="note" style="text-align:center;margin:0">별을 더 모으면 코인을 더 받아요</p>'}
     <div class="row2"><button class="btn btn-plain press" data-act="retry">다시 치기</button><button class="btn btn-primary press" data-act="${i===8?'final':'next'}">${i===8?'챕터 결과':'다음 홀'}</button></div>
     <button class="link" data-act="holes">${G.firstRun?'로비로':'코스 선택'}</button>`;
@@ -1288,6 +1348,7 @@ function routeResult(a){
   else if(a==='tourAgain')startTour(G.tour.ci);
   else if(a==='taAgain'){if(taLeft()>0)startTaRun();else{goTa();if(SAVE.ta.ad>=TA_AD_MAX){showToast('오늘 추가 도전을 다 썼어요',1200);return;}showRewarded('타임어택 추가 도전',()=>{if(SAVE.ta.ad>=TA_AD_MAX)return;SAVE.ta.ad++;save();renderTa();});}}
   else if(a==='taBoard')goTa();
+  else if(a==='dailyRetry'){loadHole(G.ci,G.holeIdx);startTurn();}
   else if(a==='retry'){G.scores[G.holeIdx]=undefined;loadHole(G.ci,G.holeIdx);startTurn();}
   else if(a==='final')showChapterFinal();
   else if(a==='again'){G.scores=[];loadHole(G.ci,0);startTurn();}
@@ -1410,6 +1471,17 @@ function drawArt(cnv,kind){const w=cnv.clientWidth||300,h=cnv.clientHeight||160,
     c.strokeStyle='#8a6a4a';c.lineWidth=3*S;c.beginPath();c.moveTo(w*.12,h*.86);c.quadraticCurveTo(w*.13,h*.7,w*.1,h*.58);c.stroke();blob(w*.1,h*.54,18*S,'#6f8f52','#8aa86a');
     c.save();c.translate(w*.3,h*.3);c.rotate(-.5);c.strokeStyle='#b5743a';c.lineWidth=5*S;c.lineCap='round';c.beginPath();c.moveTo(-16*S,8*S);c.quadraticCurveTo(0,-10*S,16*S,8*S);c.stroke();c.restore();
     c.fillStyle='#a2d97c';c.beginPath();c.ellipse(w*.82,h*.9,38*S,8*S,0,0,7);c.fill();ground('rgba(0,0,0,0)','rgba(0,0,0,0)','#1f6fc4');}
+  else if(kind==='sw'){sky('#bfe0ff','#f2f8ff');cloud(w*.18,h*.18,.8*S);cloud(w*.7,h*.12,.6*S);
+    const mt=(x,peak,base,wd,col,snow)=>{c.fillStyle=col;c.beginPath();c.moveTo(x-wd,base);c.lineTo(x,peak);c.lineTo(x+wd,base);c.fill();
+      c.fillStyle=snow;c.beginPath();c.moveTo(x-wd*.32,peak+(base-peak)*.32);c.lineTo(x,peak);c.lineTo(x+wd*.32,peak+(base-peak)*.32);c.lineTo(x+wd*.12,peak+(base-peak)*.26);c.lineTo(x-wd*.04,peak+(base-peak)*.34);c.closePath();c.fill();};
+    mt(w*.22,h*.22,h*.72,w*.26,'#8aa3bf','#ffffff');mt(w*.62,h*.08,h*.72,w*.3,'#7891ae','#ffffff');mt(w*.9,h*.3,h*.72,w*.2,'#9bb2cc','#ffffff');
+    hills('#7cc66a',h*.72,8*S,1.2);
+    c.strokeStyle='#4a4a52';c.lineWidth=1.2*S;c.beginPath();c.moveTo(w*.04,h*.36);c.lineTo(w*.5,h*.62);c.stroke();
+    const gx=w*.3,gy=h*.36+(w*.26)*(h*.26)/(w*.46);c.fillStyle='#d6283c';rr(c,gx-9*S,gy+3*S,18*S,12*S,2.5*S);c.fill();c.fillStyle='#e8f2ff';c.fillRect(gx-6*S,gy+6*S,12*S,4*S);c.fillStyle='#4a4a52';c.fillRect(gx-.6*S,gy-1*S,1.2*S,4*S);
+    const cx0=w*.74,cb=h*.82;c.fillStyle='#8a5a36';c.fillRect(cx0-20*S,cb-22*S,40*S,22*S);c.fillStyle='#5c3a22';c.beginPath();c.moveTo(cx0-28*S,cb-20*S);c.lineTo(cx0,cb-40*S);c.lineTo(cx0+28*S,cb-20*S);c.fill();
+    c.fillStyle='#fff7e6';c.fillRect(cx0-12*S,cb-16*S,8*S,7*S);c.fillRect(cx0+4*S,cb-16*S,8*S,7*S);c.fillStyle='#d6283c';c.fillRect(cx0-3*S,cb-10*S,6*S,10*S);
+    [[.08,.86],[.16,.9],[.92,.88]].forEach(([fx,fy])=>{c.fillStyle='#2f6f45';c.beginPath();c.moveTo(w*fx,h*fy-26*S);c.lineTo(w*fx+9*S,h*fy);c.lineTo(w*fx-9*S,h*fy);c.fill();});
+    ground('#93dd7e','#71bb60','#d52b1e');}
   else if(kind==='in'){sky('#ffe0b8','#fff4e2');sun(w*.84,h*.26,13*S,'#ffb36a');
     const tx=w*.5,tb=h*.66;c.fillStyle='#fbf6ec';c.fillRect(tx-44*S,tb-34*S,88*S,34*S);c.beginPath();c.moveTo(tx-22*S,tb-34*S);c.quadraticCurveTo(tx-26*S,tb-70*S,tx,tb-80*S);c.quadraticCurveTo(tx+26*S,tb-70*S,tx+22*S,tb-34*S);c.fill();
     c.fillRect(tx-1*S,tb-90*S,2*S,10*S);[-36,36].forEach(dx=>{c.beginPath();c.arc(tx+dx*S,tb-34*S,9*S,Math.PI,0);c.fill();});
@@ -1678,6 +1750,11 @@ const HATS=[
   {id:'bunnyhood',name:'라벤더 토끼 후드',r:'rare',price:2400,col:'#c9b6ff',col2:'#ffd1e6',hood:true},
   {id:'penguinhood',name:'펭귄 후드',r:'epic',price:4800,col:'#2f3e6b',col2:'#ffffff',hood:true},
   {id:'sheephood',name:'몽글 양 후드',r:'epic',price:5200,col:'#fff7ee',col2:'#e9b98a',hood:true}];
+// v0.36: one souvenir tee per country, earned with all 27 stars there (not sold). emb = small emblem on the chest
+const TOUR_TEES=[['kr','한국','#ffffff','#d6283c','roof'],['jp','일본','#fff4f6','#e8503a','fuji'],['eg','이집트','#f6e2b0','#1d6fb8','pyramid'],['fr','프랑스','#eaf0ff','#2b49c8','tower'],
+  ['uk','영국','#f2f2f2','#c8102e','clock'],['us','미국','#e9f3ff','#3c3b6e','star'],['cn','중국','#fff1d6','#d62a2a','lantern'],['it','이탈리아','#f3fbf3','#1f9d55','pisa'],
+  ['nl','네덜란드','#fff1e3','#f07a1a','mill'],['gr','그리스','#eef6ff','#2f6fd0','column'],['au','호주','#fff2e6','#e0702f','sails'],['in','인도','#fff6e8','#f07a2a','lotus'],['sw','스위스','#ffffff','#d6283c','peak']]
+  .map(([ch,n,col,col2,emb])=>({id:'tee_'+ch,name:`${n} 기념 티`,r:'epic',price:0,col,col2,pat:'tour',emb,starCh:ch}));
 const OUTFITS=[
   {id:'blue',name:'하늘 티',r:'basic',price:0,col:'#5b9ae6'},
   {id:'green',name:'숲 티',r:'common',price:300,col:'#4caf6e'},
@@ -1728,6 +1805,7 @@ const BALLS=[
   {id:'bolt',name:'번개 공',r:'epic',price:5500,col:'#fffbe0',col2:'#ffcf33',pat:'bolt',trail:'bolt',mark:'bolt'},
   {id:'star',name:'별똥별 공',r:'legend',price:10000,col:'#fff3b0',col2:'#e0a91f',pat:'star',trail:'star',mark:'star'},
   {id:'prism',name:'무지개 공',r:'legend',price:14000,col:'#ffffff',col2:'#ff8fc0',pat:'prism',trail:'prism',mark:'prism'}];
+OUTFITS.push(...TOUR_TEES);
 const COSMETIC={char:CHARS,hat:HATS,outfit:OUTFITS,ball:BALLS};
 // v0.29: higher leagues dress fancier (rarer items get more weight as lv goes 0 -> 1)
 const oppPick=(list,lv=0)=>{const w=list.map(i=>[6,6,4,2,1,.4][RAR[i.r].o]*Math.pow(1+6*lv,RAR[i.r].o/4)),tot=w.reduce((a,b)=>a+b,0);let r=Math.random()*tot;for(let k=0;k<list.length;k++){r-=w[k];if(r<=0)return list[k];}return list[0];};
@@ -1810,6 +1888,21 @@ function drawOutfit(c,o){const t=nowS();
   else{body();c.fillStyle=o.col;c.fill();}
   c.save();body();c.clip();
   switch(o.pat){
+   case'tour':{c.fillStyle=o.col2;c.fillRect(-9,-6,18,2.2);c.fillRect(-9,9.5,18,3.5);const e=o.emb,k=o.col2;c.fillStyle=k;c.strokeStyle=k;c.lineWidth=1;c.lineJoin='round';
+     if(e==='roof'){c.beginPath();c.moveTo(-4.6,1.4);c.quadraticCurveTo(0,-2.4,4.6,1.4);c.lineTo(3.4,2.2);c.lineTo(-3.4,2.2);c.closePath();c.fill();c.fillRect(-2.6,2.2,5.2,3.2);}
+     else if(e==='fuji'){c.beginPath();c.moveTo(-5,5.4);c.lineTo(0,-1.4);c.lineTo(5,5.4);c.closePath();c.fill();c.fillStyle='#ffffff';c.beginPath();c.moveTo(-1.6,.8);c.lineTo(0,-1.4);c.lineTo(1.6,.8);c.lineTo(.5,.3);c.lineTo(-.4,1);c.closePath();c.fill();}
+     else if(e==='pyramid'){c.beginPath();c.moveTo(-5,5.4);c.lineTo(0,-1.2);c.lineTo(5,5.4);c.closePath();c.fill();c.strokeStyle='rgba(255,255,255,.6)';c.lineWidth=.5;c.beginPath();c.moveTo(-2.4,2.2);c.lineTo(2.4,2.2);c.stroke();}
+     else if(e==='tower'){c.beginPath();c.moveTo(-3.6,5.6);c.lineTo(0,-2.4);c.lineTo(3.6,5.6);c.stroke();c.beginPath();c.moveTo(-2,2);c.lineTo(2,2);c.stroke();}
+     else if(e==='clock'){c.fillRect(-1.8,-1,3.6,6.6);c.beginPath();c.moveTo(-2.4,-1);c.lineTo(0,-3.4);c.lineTo(2.4,-1);c.fill();circ(c,0,1.2,1.2,'#ffffff');}
+     else if(e==='star'){c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?1.7:4;c.lineTo(Math.cos(a)*r,2+Math.sin(a)*r);}c.closePath();c.fill();}
+     else if(e==='lantern'){c.beginPath();c.ellipse(0,2,3.6,3,0,0,7);c.fill();c.fillStyle='#f4c95d';c.fillRect(-1.6,-1.6,3.2,1);c.fillRect(-1.6,4.6,3.2,1);}
+     else if(e==='pisa'){c.save();c.translate(0,2);c.rotate(.18);c.fillRect(-1.8,-3.8,3.6,7.6);c.fillStyle='rgba(255,255,255,.7)';for(let y=-2.6;y<3.6;y+=1.8)c.fillRect(-1.8,y,3.6,.4);c.restore();}
+     else if(e==='mill'){c.fillRect(-1.4,1,2.8,4.6);c.lineWidth=1.1;c.beginPath();c.moveTo(-3.4,-1.6);c.lineTo(3.4,4.4);c.moveTo(3.4,-1.6);c.lineTo(-3.4,4.4);c.stroke();}
+     else if(e==='column'){c.fillRect(-3.4,-1.2,6.8,1.2);c.fillRect(-2,0,4,4.6);c.fillRect(-3.4,4.6,6.8,1.1);}
+     else if(e==='sails'){c.beginPath();c.moveTo(-4.4,5);c.quadraticCurveTo(-3.6,-1,-.6,-1.4);c.lineTo(-1,5);c.closePath();c.fill();c.beginPath();c.moveTo(0,5);c.quadraticCurveTo(1,0,4,-.4);c.lineTo(4.4,5);c.closePath();c.fill();}
+     else if(e==='lotus'){[-1,0,1].forEach(i=>{c.save();c.translate(0,4.4);c.rotate(i*.6);c.beginPath();c.ellipse(0,-2.6,1.4,2.8,0,0,7);c.fill();c.restore();});}
+     else if(e==='peak'){c.beginPath();c.moveTo(-5,5.4);c.lineTo(-1,-1.6);c.lineTo(1,1);c.lineTo(2.2,-.4);c.lineTo(5,5.4);c.closePath();c.fill();c.fillStyle='#ffffff';c.beginPath();c.moveTo(-2.1,.3);c.lineTo(-1,-1.6);c.lineTo(.1,.3);c.closePath();c.fill();}
+     break;}
    case'plaid':c.fillStyle='rgba(30,20,20,.28)';for(let x=-9;x<10;x+=4)c.fillRect(x,-6,1.4,20);for(let y=-5;y<13;y+=4)c.fillRect(-9,y,18,1.4);c.fillStyle='rgba(255,255,255,.25)';for(let x=-7;x<10;x+=4)c.fillRect(x,-6,.6,20);break;
    case'polka':for(let y=-4;y<13;y+=4)for(let x=-8+(y/4%2?2:0);x<10;x+=4)circ(c,x,y,1,'#ffffff');break;
    case'chef':c.fillStyle='#c9c4b8';[-2.2,2.2].forEach(x=>{for(let y=-1;y<11;y+=3.4)circ(c,x,y,.7,'#bdb7aa');});c.fillRect(-.3,-4,.6,14);break;
@@ -2253,7 +2346,7 @@ function renderShop(){syncCoins();if(shopTab!=='coin')G.coinItem=null;if(app.dat
   body.innerHTML=`<p class="rarline">${['common','fine','rare','epic','legend'].map(k=>`<span style="color:${RAR[k].c}">●</span> ${RAR[k].n}`).join(' &nbsp;')}<span class="have">${have} / ${list.length} 보유</span></p>
     <div class="items">${list.map(it=>{const own=owned.includes(it.id),on=SAVE.equip[slot]===it.id;
     return`<button class="card item press r-${it.r} ${on?'on':''}" data-item="${it.id}"><span class="rar" style="color:${RAR[it.r].c}">${RAR[it.r].n}</span><canvas data-prev="${it.id}"></canvas><b>${it.name}</b>
-      ${on?'<span class="tag">장착 중</span>':own?'<span class="tag alt">장착</span>':`<span class="price">${COIN}${it.price.toLocaleString()}</span>`}</button>`;}).join('')}</div>
+      ${on?'<span class="tag">장착 중</span>':own?'<span class="tag alt">장착</span>':it.starCh?'<span class="price star">★27 보상</span>':`<span class="price">${COIN}${it.price.toLocaleString()}</span>`}</button>`;}).join('')}</div>
     ${slot==='hat'&&SAVE.equip.char&&SAVE.equip.char!=='kid'?'<p class="note" style="color:var(--tint);font-weight:700">지금 캐릭터는 동물이라 모자가 보이지 않아요. 모자는 원정대원일 때 보여요.</p>':''}<p class="note">${slot==='ball'?'공을 누르면 날아가는 궤적을 볼 수 있어요. 희귀할수록 궤적이 길고 화려해요. 불꽃·얼음·번개·별똥별·무지개 공은 지나간 자리에 흔적이 남아요. 실력에는 영향이 없어요.':(slot==='char'?'캐릭터를 바꿔도 실력은 같아요. 모자·옷과 함께 꾸밀 수 있어요.':'특이하고 예쁠수록 희귀해요. 영웅·전설 아이템은 움직여요.')}</p>`;
   drawShopPreviews();shopAnimStart();}
 function drawShopPrev(cv2,slot,it){if(slot==='ball'){const w=cv2.clientWidth||70,h=cv2.clientHeight||74,d=Math.min(3,window.devicePixelRatio||1);cv2.width=Math.round(w*d);cv2.height=Math.round(h*d);
@@ -2268,7 +2361,7 @@ let shopRaf=0;function shopAnimStart(){if(shopRaf||reduce)return;const loop=()=>
 $('shopTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;sfx.tap();shopTab=b.dataset.tab;renderShop();});
 // v0.29: tapping an item you don't own opens a try-on sheet: your explorer wearing it, then 구매 or how many coins are missing
 let tryItem=null;
-function openTryOn(slot,item){tryItem={slot,item};if(!SAVE.owned[slot].includes(item.id))logEv((SAVE.coins||0)<item.price?'item_short':'item_view',{slot,id:item.id,rar:item.r,price:item.price,coins:SAVE.coins||0});const sh=$('tryOnSheet');sh.hidden=false;$('tryCv').classList.toggle('fly',slot==='ball');renderTryOn();if(slot==='ball'&&!ballFly)ballFly=requestAnimationFrame(ballFlight);}
+function openTryOn(slot,item){tryItem={slot,item};if(!SAVE.owned[slot].includes(item.id)&&!item.starCh)logEv((SAVE.coins||0)<item.price?'item_short':'item_view',{slot,id:item.id,rar:item.r,price:item.price,coins:SAVE.coins||0});const sh=$('tryOnSheet');sh.hidden=false;$('tryCv').classList.toggle('fly',slot==='ball');renderTryOn();if(slot==='ball'&&!ballFly)ballFly=requestAnimationFrame(ballFlight);}
 // v0.31: tapping a ball shows it flying across a green with its own trail (looping)
 let ballFly=0;
 function ballFlight(){const cv=$('tryCv');if(!tryItem||tryItem.slot!=='ball'||$('tryOnSheet').hidden){ballFly=0;return;}
@@ -2288,12 +2381,13 @@ function renderTryOn(){if(!tryItem)return;const {slot,item}=tryItem;
   const have=SAVE.coins||0,short=item.price-have,b=$('tryBuy'),m=$('tryMsg');
   const own=SAVE.owned[slot].includes(item.id);$('tryCoins').hidden=true;
   if(own){const on=SAVE.equip[slot]===item.id;m.className='trymsg';m.textContent=on?'장착 중이에요':'가지고 있는 공이에요';b.hidden=on;b.textContent='장착하기';return;}
+  if(item.starCh){const ci=CHAPTERS.findIndex(c=>c.id===item.starCh),st=ci>=0?chStars(ci):0;m.className='trymsg';m.textContent=`${CHAPTERS[ci].name}에서 별 27개를 모두 모으면 받아요 (★${st}/27)`;b.hidden=true;return;}
   if(short>0){m.textContent=`코인이 ${short.toLocaleString()}개 모자라요 (보유 ${have.toLocaleString()})`;m.className='trymsg short';b.hidden=true;$('tryCoins').hidden=false;}
   else{m.textContent=`보유 ${have.toLocaleString()} 코인 · 구매하면 ${(have-item.price).toLocaleString()} 남아요`;m.className='trymsg';b.hidden=false;b.textContent=`${item.price.toLocaleString()} 코인으로 구매하고 ${slot==='ball'?'쓰기':'입기'}`;}}
 function closeTryOn(){tryItem=null;$('tryOnSheet').hidden=true;}
 $('tryX').onclick=closeTryOn;$('tryClose').onclick=closeTryOn;$('tryOnSheet').addEventListener('click',e=>{if(e.target.id==='tryOnSheet')closeTryOn();});
 $('tryCoins').onclick=()=>{if(tryItem){G.coinItem=tryItem.item;logEv('coin_short_to_shop',{id:tryItem.item.id,need:Math.max(0,tryItem.item.price-(SAVE.coins||0))});}closeTryOn();shopTab='coin';renderShop();window.scrollTo(0,0);const sc=$('scr-shop');if(sc)sc.scrollTop=0;sfx.tap();};
-$('tryBuy').onclick=()=>{if(!tryItem)return;const {slot,item}=tryItem;if(SAVE.owned[slot].includes(item.id)){SAVE.equip[slot]=item.id;save();sfx.tap();closeTryOn();renderShop();showToast(`${item.name} 장착!`,900);return;}if((SAVE.coins||0)<item.price){renderTryOn();return;}logEv('item_buy',{slot,id:item.id,rar:item.r,price:item.price});
+$('tryBuy').onclick=()=>{if(!tryItem)return;const {slot,item}=tryItem;if(SAVE.owned[slot].includes(item.id)){SAVE.equip[slot]=item.id;save();sfx.tap();closeTryOn();renderShop();showToast(`${item.name} 장착!`,900);return;}if(item.starCh||(SAVE.coins||0)<item.price){renderTryOn();return;}logEv('item_buy',{slot,id:item.id,rar:item.r,price:item.price});
   SAVE.coins-=item.price;if(!SAVE.owned[slot].includes(item.id))SAVE.owned[slot].push(item.id);SAVE.equip[slot]=item.id;save();sfx.win();closeTryOn();renderShop();showToast(`${item.name} 장착!`,900);};
 setInterval(()=>{if(tryItem&&tryItem.slot!=='ball'&&!$('tryOnSheet').hidden&&RAR[tryItem.item.r].o>=4)drawAvatarCanvas($('tryCv'),tryLook(),'happy',true);},120);
 $('shopBody').addEventListener('click',e=>{const it=e.target.closest('[data-item]'),fr=e.target.closest('[data-free]'),ia=e.target.closest('[data-iap]'),cb=e.target.closest('[data-cad]'),ca=e.target.closest('[data-cadad]');
@@ -2313,11 +2407,13 @@ $('shopBody').addEventListener('click',e=>{const it=e.target.closest('[data-item
 function tourOpen(ci){return SAVE.unlockAll||chDone(ci)===9;}
 // v0.33 early flow: menus open one by one as the player clears holes; a red dot marks a menu until it is opened once
 const holesDone=()=>CHAPTERS.reduce((a,_,ci)=>a+chDone(ci),0);
-const FEAT={mission:{n:3,name:'미션'},ta:{n:5,name:'타임어택'},pvp:{n:7,name:'PVP'},round:{n:9,name:'9홀 라운드'}};
+const FEAT={daily:{n:4,name:'오늘의 홀'},mission:{n:3,name:'미션'},ta:{n:5,name:'타임어택'},pvp:{n:7,name:'PVP'},round:{n:9,name:'9홀 라운드'}};
+function starTeeCheck(){let got=[];TOUR_TEES.forEach(t=>{const ci=CHAPTERS.findIndex(c=>c.id===t.starCh);if(ci<0||SAVE.owned.outfit.includes(t.id))return;
+  if(chStars(ci)>=27){SAVE.owned.outfit.push(t.id);got.push(t);logEv('star_tee',{ch:t.starCh});}});if(got.length)save();return got;}
 function featOpen(k){if(SAVE.unlockAll)return true;return k==='round'?CHAPTERS.some((_,ci)=>chDone(ci)===9):holesDone()>=FEAT[k].n;}
 function featLockMsg(k){return k==='round'?`나라 하나의 9홀을 모두 클리어하면 열려요 (${Math.max(...CHAPTERS.map((_,ci)=>chDone(ci)))}/9)`:`홀 ${FEAT[k].n}개를 클리어하면 ${FEAT[k].name}이(가) 열려요 (${Math.min(holesDone(),FEAT[k].n)}/${FEAT[k].n})`;}
 function featGate(k){if(featOpen(k)){if(!SAVE.seen[k]){SAVE.seen[k]=true;save();renderDots();logEv('feature_first_open',{feat:k,holes:holesDone()});}return true;}logEv('feature_locked_tap',{feat:k,holes:holesDone()});sfx.aww();showToast(featLockMsg(k),1600);return false;}
-function renderDots(){document.querySelectorAll('[data-ndot]').forEach(d=>{const k=d.dataset.ndot;d.hidden=!(featOpen(k)&&!SAVE.seen[k]);});}
+function renderDots(){const tt=document.querySelector('.tabbar [data-tabgo="ta"]');if(tt)tt.classList.toggle('locked',!featOpen('ta'));document.querySelectorAll('[data-ndot]').forEach(d=>{const k=d.dataset.ndot;d.hidden=!(featOpen(k)&&(!SAVE.seen[k]||(k==='daily'&&!dailyDone())));});}
 function announceFeats(){if(SAVE.ann.__mig){Object.keys(FEAT).forEach(k=>{if(featOpen(k))SAVE.ann[k]=true;});delete SAVE.ann.__mig;save();}const fresh=Object.keys(FEAT).filter(k=>featOpen(k)&&!SAVE.ann[k]);if(!fresh.length)return;fresh.forEach(k=>{SAVE.ann[k]=true;logEv('feature_unlock',{feat:k,holes:holesDone()});});save();
   setTimeout(()=>{if(app.dataset.screen==='home'){sfx.star&&sfx.star();showToast(`새로 열렸어요 · ${fresh.map(k=>FEAT[k].name).join(', ')}`,2000);}},450);}
 function startTour(ci){clearTimeout(G.demoTimer);G.mode='tour';G.ci=ci;G.tour={ci,idx:0,scores:[]};G.runT=0;result.hidden=true;show('game');
@@ -2648,7 +2744,7 @@ if(SAVE.unlockAll){SAVE.unlockAll=false;save();}
 readTok();syncSwitches();syncCoins();dailyEnsure();taEnsure();resize();enterTitle();requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{buildStatic();refreshScreen();});
 
-window.__golf={setLowQ,isLowQ:()=>LOWQ,PW,EVLOG,logEv,applyPack,PACKS,key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
+window.__golf={mirrorHole,dailyPick,dailyHoleObj,startDaily,dailyState,setLowQ,isLowQ:()=>LOWQ,PW,EVLOG,logEv,applyPack,PACKS,key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
   setStars(ci,n){CHAPTERS[ci].holes.forEach((_,hi)=>SAVE.stars[key(ci,hi)]=n);save();},
   aimVec,startSwing,showMul,VR,MISSIONS,CD,callCaddie,syncCaddieBtn,startReplay,endReplay,RP,hioFx,
   iap:{restore:restorePurchases,history:openHistory,products:()=>tossItems,ledger:()=>SAVE.iap,save,load:loadTossProducts},
