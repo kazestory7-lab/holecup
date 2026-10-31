@@ -73,7 +73,7 @@ canvas#cv{display:block;touch-action:none}
 #hint{text-align:center;font-size:13px;color:var(--label2);min-height:20px}
 #toast{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);font-size:20px;font-weight:800;
   background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);
-  color:var(--label);border-radius:999px;padding:12px 24px;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow)}
+  color:var(--label);border-radius:24px;padding:12px 22px;pointer-events:none;width:max-content;max-width:calc(100% - 32px);text-align:center;line-height:1.35;word-break:keep-all;box-shadow:var(--shadow)}
 
 /* ---------- sheets ---------- */
 .screen{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;gap:18px;background:var(--bg);overflow-y:auto;touch-action:pan-y;
@@ -350,6 +350,9 @@ td.name,th.name{text-align:left;font-weight:700}
 .rarline{font-size:12px;color:var(--label2);margin:0 2px 10px;display:flex;flex-wrap:wrap;gap:2px;align-items:center}.rarline .have{margin-left:auto;font-weight:700;color:var(--label)}
 .item.on{box-shadow:0 0 0 2.5px var(--tint),var(--shadow)}
 .packs{display:flex;flex-direction:column}
+.needline{font-size:14px;color:var(--label);background:var(--fill);border-radius:14px;padding:10px 14px;margin:0}.needline b{color:var(--lose)}.needline.ok{color:var(--tint);font-weight:700}
+.ptag{white-space:nowrap;display:inline-block;font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--lose);border-radius:8px;padding:1px 6px;vertical-align:2px;margin-left:4px}
+.pack.rec{background:color-mix(in srgb,var(--gold) 14%,transparent)}.pack.starter{background:color-mix(in srgb,var(--tint) 9%,transparent)}
 .pack{display:flex;align-items:center;gap:12px;padding:14px 16px;border-top:1px solid var(--sep)}
 .pack:first-child{border-top:0}
 .pack div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -495,7 +498,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.34</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.35</p>
     </div>
   </section>
   <section class="overlay bottom" id="tryOnSheet" hidden>
@@ -915,6 +918,10 @@ const TOSS=!!window.__TOSS__,AIT=()=>window.AIT||null;
 const ANDROID=!TOSS&&!!window.__ANDROID__,HCApp=()=>window.HCApp||null;
 // analytics → Apps-in-Toss console > 분석 > 이벤트. Queued until window.AIT is ready (it loads after this script). Event list: toss/README.md
 const trackQ=[];
+// v0.35: gameplay events for retention/funnel analysis (Toss analytics). day = days since first launch (D0, D1, D7…)
+const EVLOG=[];
+function logEv(name,p){const q=Object.assign({day:dayIdx()},p||{});if(EVLOG.length>=200)EVLOG.shift();EVLOG.push([name,q]);track('event',name,q);}
+function dayIdx(){try{return Math.max(0,Math.floor((Date.now()-(SAVE.firstAt||Date.now()))/86400000));}catch(e){return 0;}}
 function track(type,name,p){if(!TOSS)return;const a=AIT();if(a&&a.ready&&a.track){a.track(type,name,p||{});return;}if(trackQ.length<50)trackQ.push([type,name,p||{}]);}
 // iOS swipe-back is on only where back means "leave the mini app" (title, lobby); elsewhere it would cut a putt drag short
 function swipeBack(on){if(!TOSS)return;const a=AIT();if(a&&a.swipeBack)a.swipeBack(on);}
@@ -946,6 +953,7 @@ let SAVE=Object.assign(freshSave(),store.read());
     if(SAVE.pendingTa&&!(obj(SAVE.pendingTa)&&num(SAVE.pendingTa.reward)&&num(SAVE.pendingTa.rank)&&obj(SAVE.pendingTa.best)))SAVE.pendingTa=null;
     if(!SAVE.owned.hat.includes('none'))SAVE.owned.hat.push('none');
     if(!obj(SAVE.tour))SAVE.tour={};
+    if(!num(SAVE.firstAt)||SAVE.firstAt>Date.now())SAVE.firstAt=Date.now();
     if(!obj(SAVE.seen)||!obj(SAVE.ann)){const old=!obj(SAVE.seen)&&SAVE.onboarded;SAVE.seen=obj(SAVE.seen)?SAVE.seen:{};SAVE.ann=obj(SAVE.ann)?SAVE.ann:{};
       if(old){const d=SAVE.daily,t=SAVE.ta;if(d&&d.list.some(m=>m&&(m.claimed||m.p>0)))SAVE.seen.mission=true;if(t&&(t.best||t.used))SAVE.seen.ta=true;
         if((SAVE.pvpW||0)+(SAVE.pvpL||0)>0)SAVE.seen.pvp=true;if(Object.keys(SAVE.tour).length)SAVE.seen.round=true;SAVE.ann={__mig:1};}}
@@ -1014,7 +1022,7 @@ function startTurn(){G.turnId=(G.turnId||0)+1;const b=G.ball;Object.assign(b,{x:
 function verdictText(n,par){if(n===1)return'홀인원!';const d=n-par;return d<=-3?'알바트로스!':d===-2?'이글!':d===-1?'버디!':d===0?'파':d===1?'보기':d===2?'더블 보기':`+${d}`;}
 function starsFor(n,par){if(n==null)return 0;const d=n-par;return d<=-1?3:d===0?2:d===1?1:0;}
 
-function finishMine(n,sunk){G.myDone=true;const tok=G.turnId;if(G.mode!=='attract')holeStats(n,sunk);
+function finishMine(n,sunk){G.myDone=true;const tok=G.turnId;if(G.mode!=='attract'){const first=G.mode==='solo'&&sunk&&starsOf(G.ci,G.holeIdx)===undefined;logEv('hole_end',{mode:G.mode,ch:CHAPTERS[G.ci].id,hole:G.holeIdx+1,strokes:n,par:hole.par,sunk:sunk?1:0,first:first?1:0,holes:holesDone()+(first?1:0)});if(first&&G.firstRun&&G.ci===0&&G.holeIdx===0)logEv('tutorial_done');holeStats(n,sunk);}
   if(G.mode==='solo'){G.scores[G.holeIdx]=n;setTimeout(()=>{if(tok===G.turnId)showHoleResult();},n===1&&sunk?3000:1300);}
   else if(G.mode==='pvp'){G.match.my[G.match.idx]=n;}
   else if(G.mode==='tour'){G.tour.scores[G.tour.idx]=n;updateHUD();setTimeout(()=>{if(tok===G.turnId)tourNext();},n===1&&sunk?3000:1300);}
@@ -1058,7 +1066,7 @@ function goHoles(ci){G.sel=ci;show('holes');renderHoles();}
 // v0.22: a first run in progress (SAVE.fr = hole index) resumes where the player left off, even if they already earned stars
 const isNewPlayer=()=>!SAVE.onboarded&&(SAVE.fr!==undefined||!Object.keys(SAVE.stars||{}).length);
 function finishFirstRun(){goHome();setTimeout(()=>showToast(featOpen('mission')?'로비에 왔어요! 월드·미션·상점은 여기서':'로비에 왔어요! 홀을 깰수록 새 메뉴가 열려요',1800),250);}
-$('scr-title').addEventListener('click',()=>{sfx.tap();if(isNewPlayer()){const hi=SAVE.fr||0;G.firstRun=true;SAVE.fr=hi;save();newSolo(0,hi);if(hi>0)setTimeout(()=>{if(G.firstRun)showToast('이어서 쳐요 · '+(G.holeIdx+1)+'홀',1600);},400);}else goHome();});
+$('scr-title').addEventListener('click',()=>{sfx.tap();if(!G.sessLogged){G.sessLogged=true;SAVE.sess=(SAVE.sess||0)+1;save();logEv('session_start',{n:SAVE.sess,holes:holesDone(),coins:SAVE.coins||0,new:isNewPlayer()?1:0});}if(isNewPlayer()){const hi=SAVE.fr||0;G.firstRun=true;SAVE.fr=hi;save();newSolo(0,hi);if(hi>0)setTimeout(()=>{if(G.firstRun)showToast('이어서 쳐요 · '+(G.holeIdx+1)+'홀',1600);},400);}else goHome();});
 document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>{sfx.tap();b.dataset.go==='home'?goHome():goWorld();}));
 
 function starsHTML(n){return`<span class="stars">${[0,1,2].map(i=>i<n?'★':'<span class="off">★</span>').join('')}</span>`;}
@@ -1208,6 +1216,7 @@ $('pauseBtn').onclick=()=>{if(G.mode==='attract'||G.state==='result'||G.state===
     :`<p class="note">${G.mode==='ta'?'타임어택 중에는 일시정지해도 시간이 흘러요.':'그만두면 이번 라운드 기록은 남지 않아요.'}</p><button class="btn btn-plain press" data-act="quit">그만두기</button>`}`;
   pauseEl.hidden=false;};
 pauseEl.addEventListener('click',e=>{if(e.target===pauseEl){pauseEl.hidden=true;G.paused=false;return;}const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;pauseEl.hidden=true;sfx.tap();
+  if(['holes','quit','home','forfeit'].includes(a)&&!G.myDone)logEv('hole_quit',{mode:G.mode,ch:CHAPTERS[G.ci].id,hole:G.holeIdx+1,strokes:G.strokes||0,first_run:G.firstRun?1:0});
   if(G.firstRun&&['holes','quit','home'].includes(a)){finishFirstRun();return;}
   if(a==='resume')G.paused=false;else if(a==='restart'){G.scores[G.holeIdx]=undefined;loadHole(G.ci,G.holeIdx);startTurn();}
   else if(a==='holes')goHoles(G.ci);else if(a==='forfeit'){applyPvp(-1);goHome();}else if(a==='quit'){if(G.mode==='ta')goTa();else goHoles(G.ci);}else goHome();});
@@ -1245,7 +1254,7 @@ function showPvpHole(){G.resultKind='pvphole';G.state='result';G.paused=true;con
     <p class="verdict ${me<op?'win':me>op?'lose':''}" style="font-size:22px">${me<op?'이번 홀 승리':me>op?'이번 홀 패배':'이번 홀 무승부'}<small>합계 ${mt} : ${ot}</small></p>
     <button class="btn btn-primary press" data-act="${i===2?'pvpfinal':'pvpnext'}">${i===2?'최종 결과':'다음 홀'}</button>`;
   result.hidden=false;}
-function applyPvp(res){const d=res>0?30:res<0?-18:5;if(SAVE.pvpEsc){SAVE.trophies+=SAVE.pvpEsc.amt;SAVE.pvpEsc=null;}SAVE.trophies=Math.max(0,SAVE.trophies+d);const st=SAVE.pvpStreak||0;SAVE.pvpStreak=res>0?Math.max(1,st+1):res<0?Math.min(-1,st-1):0;if(res>0)SAVE.pvpW++;else if(res<0)SAVE.pvpL++;save();return d;}
+function applyPvp(res){const d=res>0?30:res<0?-18:5;if(SAVE.pvpEsc){SAVE.trophies+=SAVE.pvpEsc.amt;SAVE.pvpEsc=null;}SAVE.trophies=Math.max(0,SAVE.trophies+d);const st=SAVE.pvpStreak||0;SAVE.pvpStreak=res>0?Math.max(1,st+1):res<0?Math.min(-1,st-1):0;if(res>0)SAVE.pvpW++;else if(res<0)SAVE.pvpL++;save();logEv('pvp_end',{res,trophies:SAVE.trophies,games:SAVE.pvpW+SAVE.pvpL});return d;}
 function showPvpFinal(){const m=G.match,mt=m.my.reduce((a,b)=>a+b,0),ot=m.op.reduce((a,b)=>a+b,0),res=mt<ot?1:mt>ot?-1:0,d=applyPvp(res);G.resultKind='pvp';G.state='result';G.paused=true;
   const coins=res>0?40:res<0?10:20;addCoins(coins);G.pendingDouble=coins;if(res>0)missionTrack('pvp');
   if(res>0)sfx.win();else if(res<0)sfx.lose();else sfx.tap();
@@ -1266,7 +1275,7 @@ result.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b
   result.hidden=true;sfx.tap();
   if(a==='replay'){startReplay();return;}
   if(a==='vidmake'){VR.make();return;}
-  if(a==='iapOk'){const pk=G.iap;if(pk.id==='noads'){SAVE.noAds=true;save();syncBanner(app.dataset.screen);}if(pk.coins)addCoins(pk.coins);renderShop();showToast(`${pk.name} 지급 (테스트)`,1000);return;}
+  if(a==='iapOk'){const pk=G.iap;if(pk.id==='noads'){SAVE.noAds=true;save();syncBanner(app.dataset.screen);}if(pk.once){SAVE['own_'+pk.id]=1;save();}if(pk.cad){SAVE.caddie=(SAVE.caddie||0)+pk.cad;save();}if(pk.coins)addCoins(pk.coins);renderShop();showToast(`${pk.name} 지급 (테스트)`,1000);return;}
   if(a==='iapCancel'||a==='histClose')return;
   if(a==='claimTa'){addCoins(SAVE.pendingTa.reward);SAVE.pendingTa=null;save();sfx.win();renderHome();return;}
   const kind=G.resultKind,go=()=>routeResult(a);
@@ -1423,7 +1432,9 @@ function drawArt(cnv,kind){const w=cnv.clientWidth||300,h=cnv.clientHeight||160,
 // ---------------- course rendering (flat shapes, one light direction, a lived-in world around the course) ----------------
 function rr(c,x,y,w,h,r){c.beginPath();if(c.roundRect)c.roundRect(x,y,w,h,r);else c.rect(x,y,w,h);}
 function polyPath(c,p){c.beginPath();c.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)c.lineTo(p[i],p[i+1]);c.closePath();}
-const SS=1.5,SHADOW='rgba(28,52,22,.24)',SHX=5,SHY=8;
+let LOWQ=false;LOWQ=!!SAVE.lowQ;
+const ssK=()=>LOWQ?1:1.5,dprCap=()=>LOWQ?1.5:3;
+const SS0=1.5,SHADOW='rgba(28,52,22,.24)',SHX=5,SHY=8;
 let offX=0,offY=0,cssW=W,cssH=H;
 const view=()=>({x0:-offX/scale,y0:-offY/scale,x1:(cssW-offX)/scale,y1:(cssH-offY)/scale});
 function hashStr(str){let h=2166136261;for(const ch of str){h^=ch.codePointAt(0);h=Math.imul(h,16777619);}return h>>>0;}
@@ -1461,7 +1472,7 @@ function drawDecor(c,d,shadow){const{x,y,s,k,v}=d,[ca,cb]=T.canopy;
    case'tulips':{rr(c,x-s,y-s*.5,s*2,s,s*.4);c.fillStyle='#4f9a45';c.fill();const cols=['#ff4d5e','#ffd34d','#ff8fc0','#ff7a2e'],cc=cols[Math.floor(v*4)];for(let i=0;i<6;i++)circ(c,x-s*.75+(i%3)*s*.75,y-s*.2+Math.floor(i/3)*s*.4,2.2,cc);break;}
    case'cypress':c.beginPath();c.ellipse(x,y,s*.55,s*1.25,0,0,7);c.fillStyle='#2a5f38';c.fill();c.beginPath();c.ellipse(x-s*.15,y-s*.25,s*.32,s*.85,0,0,7);c.fillStyle='#3c7c4a';c.fill();break;
    case'dune':c.beginPath();c.ellipse(x,y,s*1.4,s*.6,0,0,7);c.fillStyle='rgba(255,240,200,.35)';c.fill();break;}}
-function buildStatic(){readTok();const off=document.createElement('canvas'),k=scale*dpr*SS;off.width=Math.max(1,Math.round(cssW*dpr*SS));off.height=Math.max(1,Math.round(cssH*dpr*SS));
+function buildStatic(){readTok();const off=document.createElement('canvas'),SS=ssK(),k=scale*dpr*SS;off.width=Math.max(1,Math.round(cssW*dpr*SS));off.height=Math.max(1,Math.round(cssH*dpr*SS));
   const c=off.getContext('2d');c.setTransform(k,0,0,k,offX*dpr*SS,offY*dpr*SS);const h=hole,v=view(),gr=rng(hashStr(h.name));
   // ground: meadow (or desert) with soft patches and tufts
   c.fillStyle=T.ground;c.fillRect(v.x0-2,v.y0-2,v.x1-v.x0+4,v.y1-v.y0+4);
@@ -1511,7 +1522,7 @@ function buildStatic(){readTok();const off=document.createElement('canvas'),k=sc
   if(TOK.dark){c.setTransform(1,0,0,1,0,0);c.fillStyle='rgba(10,24,40,.2)';c.fillRect(0,0,off.width,off.height);}
   staticLayer=off;}
 function resize(){const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;cssW=r.width;cssH=r.height;
-  scale=Math.max(.3,Math.min(r.width/W,r.height/H));dpr=Math.min(3,window.devicePixelRatio||1);offX=(cssW-W*scale)/2;offY=(cssH-H*scale)/2;
+  scale=Math.max(.3,Math.min(r.width/W,r.height/H));dpr=Math.min(dprCap(),window.devicePixelRatio||1);offX=(cssW-W*scale)/2;offY=(cssH-H*scale)/2;
   cv.style.width=cssW+'px';cv.style.height=cssH+'px';cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssH*dpr);buildStatic();}
 addEventListener('resize',resize);
 function refreshScreen(){const s=app.dataset.screen;if(s==='home')renderHome();else if(s==='world')renderWorld();else if(s==='holes')renderHoles();}
@@ -1533,7 +1544,7 @@ function drawPost(c,p,t){const k=Math.max(0,1-(G.ht-(p.hit??-9))*6),r=p.r*(1+k*.
    case'top':wedges(c,x,y,r,['#2f6fd0','#e0473e','#ffd23f','#ffffff','#2b2b2b'],rot*4);c.beginPath();c.arc(x,y,r*.25,0,7);c.fillStyle='#fff';c.fill();c.beginPath();c.arc(x,y,r,0,7);c.strokeStyle='rgba(0,0,0,.25)';c.lineWidth=1.5;c.stroke();break;
    case'taiko':c.beginPath();c.arc(x,y,r,0,7);c.fillStyle='#c0392b';c.fill();c.beginPath();c.arc(x,y,r*.8,0,7);c.fillStyle='#f6e7c8';c.fill();
      for(let i=0;i<3;i++){const a=i/3*Math.PI*2+t;c.beginPath();c.arc(x+Math.cos(a)*r*.32,y+Math.sin(a)*r*.32,r*.17,0,7);c.fillStyle='#c0392b';c.fill();}break;
-   case'pop':{const glow=k>0;c.save();if(glow){c.shadowColor=T.mover;c.shadowBlur=18;}c.beginPath();c.arc(x,y,r,0,7);c.fillStyle='#fff';c.fill();c.restore();
+   case'pop':{const glow=k>0;c.save();if(glow&&!LOWQ){c.shadowColor=T.mover;c.shadowBlur=18;}c.beginPath();c.arc(x,y,r,0,7);c.fillStyle='#fff';c.fill();c.restore();
      c.beginPath();c.arc(x,y,r-2,0,7);c.strokeStyle=T.mover;c.lineWidth=4;c.stroke();c.beginPath();c.arc(x,y,r*.48,0,7);c.fillStyle=glow?'#ffd60a':T.mover;c.fill();break;}
    case'carousel':wedges(c,x,y,r,['#ffb3c7','#9fe0c9','#a9cdfa','#ffe08a','#d4b8f5','#ffc59e'],rot);c.beginPath();c.arc(x,y,r*.28,0,7);c.fillStyle='#f5c542';c.fill();
      c.beginPath();c.arc(x,y,r,0,7);c.strokeStyle='#f5c542';c.lineWidth=3;c.stroke();break;
@@ -1764,7 +1775,7 @@ function drawHat(c,h){const t=nowS();
    case'crown':c.beginPath();[[-7,-14.5],[-7.4,-20.5],[-3.6,-17.2],[0,-22],[3.6,-17.2],[7.4,-20.5],[7,-14.5]].forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.closePath();c.fillStyle=h.col2;c.fill();
      c.fillStyle=h.col;c.fillRect(-7,-16,14,2.2);c.fillStyle='#e2483d';c.beginPath();c.arc(0,-18,1.3,0,7);c.fill();c.fillStyle='#3f7fd6';c.beginPath();c.arc(-4.2,-16.9,.9,0,7);c.arc(4.2,-16.9,.9,0,7);c.fill();
      {const p=(t*.8)%1;star4(c,-6+p*12,-20+Math.sin(p*Math.PI)*-2,1.6*Math.sin(p*Math.PI),'#ffffff');}break;
-   case'halo':{const y=-25+Math.sin(t*2)*1.3;c.save();c.shadowColor=h.col;c.shadowBlur=8;c.lineWidth=2.4;c.strokeStyle=h.col;c.beginPath();c.ellipse(0,y,8,2.6,0,0,7);c.stroke();c.restore();
+   case'halo':{const y=-25+Math.sin(t*2)*1.3;c.save();if(!LOWQ){c.shadowColor=h.col;c.shadowBlur=8;}c.lineWidth=2.4;c.strokeStyle=h.col;c.beginPath();c.ellipse(0,y,8,2.6,0,0,7);c.stroke();c.restore();
      c.lineWidth=.9;c.strokeStyle=h.col2;c.beginPath();c.ellipse(0,y-.3,8,2.6,0,Math.PI*1.1,Math.PI*1.9);c.stroke();break;}
    case'rainbowcloud':{const y=-28+Math.sin(t*1.6)*1.2,cols=['#ff5e5e','#ffa94d','#ffe066','#69db7c','#4dabf7','#9775fa'];
      cols.forEach((col,i)=>{c.strokeStyle=col;c.lineWidth=1.3;c.beginPath();c.arc(0,y+3,9.6-i*1.2,Math.PI,0);c.stroke();});
@@ -1856,7 +1867,7 @@ function drawBallSkin(c,x,y,rad,s,t,spin){t=t??nowS();spin=spin||0;
 const TRAIL_LEN={basic:12,common:14,fine:16,rare:20,epic:24,legend:30};
 const trailCap=s=>TRAIL_LEN[s.r]||14;
 function drawBallTrail(c,trail,s,R){const n=trail.length,t=nowS();if(!n)return;const T=s.trail||'white';
-  const glow=s.r==='legend'||s.r==='epic';if(glow){c.save();c.shadowBlur=s.r==='legend'?10:6;c.shadowColor=T==='fire'?'#ff7a2a':T==='ice'?'#9fe6ff':T==='bolt'?'#b49bff':T==='star'?'#ffe066':T==='prism'?'#ff8fd8':'#ffffff';}
+  const glow=s.r==='legend'||s.r==='epic';if(glow){c.save();if(!LOWQ)c.shadowBlur=s.r==='legend'?10:6;c.shadowColor=T==='fire'?'#ff7a2a':T==='ice'?'#9fe6ff':T==='bolt'?'#b49bff':T==='star'?'#ffe066':T==='prism'?'#ff8fd8':'#ffffff';}
   for(let i=0;i<n;i++){const q=trail[i],k=(i+1)/n,x=q[0],y=q[1];let col='#ffffff',al=k*.35,rr2=R*(.35+.6*k);
     switch(T){
      case'lemon':col='#ffe45c';al=k*.5;break;
@@ -1906,7 +1917,7 @@ function drawMark(c,m,age,i){if(age>MARK_LIFE)return;const a=Math.min(1,(MARK_LI
   c.restore();}
 function drawMarks(c){if(!G.marks||!G.marks.length)return;const t=nowS();G.marks=G.marks.filter(m=>t-m.t<MARK_LIFE);G.marks.forEach((m,i)=>drawMark(c,m,t-m.t,i));}
 function dropMark(b){const sk=myLook().ball;if(!sk.mark)return;G.marks=G.marks||[];const L=G.marks[G.marks.length-1];if(L&&Math.hypot(b.x-L.x,b.y-L.y)<7)return;
-  G.marks.push({x:b.x,y:b.y,t:nowS(),k:sk.mark,a:Math.atan2(b.vy||0,b.vx||1)});if(G.marks.length>160)G.marks.shift();}
+  G.marks.push({x:b.x,y:b.y,t:nowS(),k:sk.mark,a:Math.atan2(b.vy||0,b.vx||1)});if(G.marks.length>(LOWQ?60:160))G.marks.shift();}
 // v0.22: cuter explorer. CHAR_STYLE picks proportions (classic = up to v0.13).
 const CHAR_STYLES={classic:{hr:8.6,hy:-8,bs:1,by:0,ex:1.35,ey:1.35,gap:3,eyeY:-.2,bl:1.9,blY:2.6,bx:5,shine:false,hands:false},
   chibi:{hr:10.6,hy:-9.4,bs:.82,by:2.4,ex:1.55,ey:2.05,gap:3.5,eyeY:.6,bl:2.3,blY:3.4,bx:6.2,shine:true,hands:true},
@@ -2151,13 +2162,16 @@ $('missions').addEventListener('click',e=>{const ov=$('missions');if(e.target===
   const b=e.target.closest('[data-claim],[data-claim2],[data-bonus]');if(!b||b.disabled)return;const d=SAVE.daily;
   if(b.dataset.bonus){d.bonus=true;SAVE.caddie=(SAVE.caddie||0)+BONUS_CAD;save();addCoins(BONUS_COINS);sfx.win();renderMissions();showToast(`+${BONUS_COINS} 코인 · 캐디 가이드 +${BONUS_CAD}`,1200);return;}
   const i=+(b.dataset.claim??b.dataset.claim2),m=d.list[i],def=MISSIONS[m.id];
-  const give=mult=>{m.claimed=true;if(def.cad)SAVE.caddie=(SAVE.caddie||0)+def.cad;save();addCoins(def.r*mult);sfx.sink();renderMissions();if(def.cad)showToast(`캐디 가이드 +${def.cad}`,1000);};
+  const give=mult=>{m.claimed=true;logEv('mission_claim',{id:m.id,x:mult});if(def.cad)SAVE.caddie=(SAVE.caddie||0)+def.cad;save();addCoins(def.r*mult);sfx.sink();renderMissions();if(def.cad)showToast(`캐디 가이드 +${def.cad}`,1000);};
   if(b.dataset.claim2!==undefined)showRewarded('데일리 미션 2배',()=>give(2));else give(1);});
 
 // ---------- shop ----------
 let shopTab='hat';
-const PACKS=[{id:'c1000',name:'코인 1,000',price:'₩1,200',coins:1000},{id:'c6000',name:'코인 6,000 (+20%)',price:'₩5,900',coins:6000},{id:'noads',name:'광고 제거 + 3,000코인',price:'₩5,900',coins:3000,desc:'전면 광고가 사라지고, 광고 보상은 광고 없이 바로 받아요. 3,000코인도 드려요.'}];
-function goShop(){show('shop');renderShop();if(TOSS)loadTossProducts();}
+// v0.35 lineup: a once-only starter pack for the first purchase, and bigger packs so one purchase can buy any legend item (max 15,000)
+const PACKS=[{id:'starter',name:'첫 구매 스타터 팩',price:'₩3,300',coins:5000,cad:5,once:true,desc:'5,000코인 + 캐디 가이드 5개 · 한 번만 살 수 있어요',best:'최고 혜택'},
+  {id:'c1000',name:'코인 1,000',price:'₩1,200',coins:1000},{id:'c6000',name:'코인 6,000 (+20%)',price:'₩5,900',coins:6000},
+  {id:'c15000',name:'코인 15,000 (+50%)',price:'₩12,000',coins:15000,desc:'전설 아이템도 한 번에'},{id:'c45000',name:'코인 45,000 (+90%)',price:'₩29,000',coins:45000,desc:'꾸미기를 마음껏'},{id:'noads',name:'광고 제거 + 3,000코인',price:'₩5,900',coins:3000,desc:'전면 광고가 사라지고, 광고 보상은 광고 없이 바로 받아요. 3,000코인도 드려요.'}];
+function goShop(){show('shop');renderShop();logEv('shop_view',{tab:shopTab,coins:SAVE.coins||0});if(TOSS)loadTossProducts();}
 
 // ---------- Toss in-app purchase (v0.22) ----------
 // Products and prices come from the Apps-in-Toss console (SKUs in toss/src/config.js); only registered packs are shown, with the
@@ -2173,7 +2187,7 @@ const sellable=p=>PAID_ITEMS&&(p.id!=='noads'||ADS_ON)&&(!TOSS||!!tossItem(p));
 const packName=p=>TOSS&&tossItem(p)?esc(tossItem(p).displayName||p.name):p.name;
 const packPrice=p=>TOSS&&tossItem(p)?esc(tossItem(p).displayAmount):p.price;
 const ledger=()=>SAVE.iap||(SAVE.iap={});
-function applyPack(p,s){if(p.id==='noads')SAVE.noAds=s>0;if(p.coins)SAVE.coins=Math.max(0,(SAVE.coins||0)+s*p.coins);}
+function applyPack(p,s){if(p.id==='noads')SAVE.noAds=s>0;if(p.once)SAVE['own_'+p.id]=s>0?1:0;if(p.cad)SAVE.caddie=Math.max(0,(SAVE.caddie||0)+s*p.cad);if(p.coins)SAVE.coins=Math.max(0,(SAVE.coins||0)+s*p.coins);}
 function iapRefresh(){syncCoins();syncBanner(app.dataset.screen);if(app.dataset.screen==='shop')renderShop();}
 function grantOrder(orderId,id){const L=ledger();if(L[orderId])return true;const p=PACKS.find(q=>q.id===id);if(!p)return false;
   applyPack(p,1);L[orderId]={id,t:Date.now()};save();iapRefresh();return true;}
@@ -2193,7 +2207,7 @@ function tossPurchase(p){const a=AIT(),sku=iapSku(p.id);
   if(buying&&Date.now()-buying<5000)return;buying=Date.now(); // blocks a double tap, never locks the shop for good
   track('event','iap_start',{product:p.id});
   a.iap.buy(sku,orderId=>grantOrder(orderId,p.id),r=>{buying=0;track('event','iap_result',{product:p.id,result:r.ok?'ok':r.code||'error'});
-    if(r.ok){sfx.win();showToast(p.id==='noads'?'광고 제거 완료! 이제 전면 광고가 나오지 않아요':`+${p.coins.toLocaleString()} 코인`,1800);}
+    if(r.ok){sfx.win();showToast(p.id==='noads'?'광고 제거 완료! 3,000코인도 넣어 드렸어요':p.cad?`+${p.coins.toLocaleString()} 코인 · 캐디 가이드 +${p.cad}`:`+${p.coins.toLocaleString()} 코인`,1800);}
     else{if(r.code==='ITEM_ALREADY_OWNED')restorePurchases();if(r.msg)showToast(r.msg,3000);}
     if(app.dataset.screen==='shop')renderShop();});}
 function reconcile(list){const a=AIT();let n=0;
@@ -2221,17 +2235,17 @@ const shopCd=k=>Math.min(10*60000,Math.max(0,(SAVE[k]||0)+10*60000-Date.now()));
 const cdText=cd=>{if(!cd)return SAVE.noAds?'광고 없이 바로 받아요 · 10분마다':'광고를 보면 바로 받아요 · 10분마다';const t=Math.ceil(cd/1000);return`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')} 뒤 다시 받을 수 있어요`;};
 setInterval(()=>{if(app.dataset.screen!=='shop')return;document.querySelectorAll('[data-cdtext]').forEach(el=>{el.textContent=cdText(shopCd(el.dataset.cdtext));});
   document.querySelectorAll('[data-cdbtn]').forEach(b=>{b.disabled=shopCd(b.dataset.cdbtn)>0;});},1000);
-function renderShop(){syncCoins();if(app.dataset.screen!=='shop')closeTryOn();const L=myLook();drawAvatarCanvas($('shopPreview'),L,'idle',true);$('shopLook').textContent=[L.char.name,L.char.id==='kid'&&L.hat.id!=='none'?L.hat.name:null,L.outfit.name,L.ball.name].filter(Boolean).join(' · ');
+function renderShop(){syncCoins();if(shopTab!=='coin')G.coinItem=null;if(app.dataset.screen!=='shop')closeTryOn();const L=myLook();drawAvatarCanvas($('shopPreview'),L,'idle',true);$('shopLook').textContent=[L.char.name,L.char.id==='kid'&&L.hat.id!=='none'?L.hat.name:null,L.outfit.name,L.ball.name].filter(Boolean).join(' · ');
   [...$('shopTabs').children].forEach(b=>b.setAttribute('aria-pressed',b.dataset.tab===shopTab));const body=$('shopBody');
   if(shopTab==='item'){const cd=shopCd('adCaddieAt');
     body.innerHTML=`<div class="card packs"><div class="pack"><canvas class="cadav" data-cadav="1"></canvas><div><b>캐디 가이드 · 보유 ${SAVE.caddie||0}개</b><span>홀컵 근처에서 캐디가 맞은편에서 라인과 세기를 봐 줘요. 솔로·9홀 라운드에서 한 샷에 1개</span></div></div>
       ${SHOP_AD_ITEMS?`<div class="pack"><canvas class="cadav" data-cadav="1"></canvas><div><b>캐디 가이드 1개</b><span data-cdtext="adCaddieAt">${cdText(cd)}</span></div><button class="pill press" data-cadad="1" data-cdbtn="adCaddieAt" ${cd?'disabled':''}>${SAVE.noAds?'바로 받기':'광고 보기'}</button></div>`:''}
       ${CADDIE_ITEMS.map(it=>`<div class="pack"><canvas class="cadav" data-cadav="1"></canvas><div><b>캐디 가이드 ${it.n}개</b><span>${it.n>1?'1개씩 사는 것보다 100코인 싸요':'바로 지급'}</span></div><button class="pill press" data-cad="${it.id}">${COIN}${it.price}</button></div>`).join('')}</div>
       <p class="note">PVP와 타임어택에서는 공정한 경쟁을 위해 쓸 수 없어요.</p>`;body.querySelectorAll('[data-cadav]').forEach(cv2=>drawAvatarCanvas(cv2,CADDIE_LOOK,'happy',true));return;}
-  if(shopTab==='coin'){const cd=shopCd('adCoinAt');
+  if(shopTab==='coin'){const cd=shopCd('adCoinAt'),need=G.coinItem?Math.max(0,G.coinItem.price-(SAVE.coins||0)):0,rec=need>0?(PACKS.filter(p=>p.coins&&!p.once&&p.coins>=need&&sellable(p)).sort((a,b)=>a.coins-b.coins)[0]||{}).id:null;
     const rows=(SHOP_AD_ITEMS?[`<div class="pack"><span class="coinbig">${COIN}</span><div><b>무료 코인 100</b><span data-cdtext="adCoinAt">${cdText(cd)}</span></div><button class="pill press" data-free="1" data-cdbtn="adCoinAt" ${cd?'disabled':''}>${SAVE.noAds?'바로 받기':'광고 보기'}</button></div>`]:[])
-      .concat(PACKS.filter(p=>sellable(p)||(p.id==='noads'&&SAVE.noAds)).sort((a,b)=>(b.id==='noads')-(a.id==='noads')).map(p=>`<div class="pack"><span class="coinbig">${p.id==='noads'?NOADS:COIN}</span><div><b>${packName(p)}</b><span>${p.desc||'바로 지급'}</span></div>${p.id==='noads'&&SAVE.noAds?'<span class="pill alt off">구매함</span>':`<button class="pill press" data-iap="${p.id}">${packPrice(p)}</button>`}</div>`));
-    body.innerHTML=(rows.length?`<div class="card packs">${rows.join('')}</div>`:'')+
+      .concat(PACKS.filter(p=>(sellable(p)&&!(p.once&&SAVE['own_'+p.id]))||(p.id==='noads'&&SAVE.noAds)).sort((a,b)=>(b.id==='noads')-(a.id==='noads')).map(p=>`<div class="pack${p.id===rec?' rec':''}${p.once?' starter':''}"><span class="coinbig">${p.id==='noads'?NOADS:COIN}</span><div><b>${packName(p)}${p.best?` <i class="ptag">${p.best}</i>`:''}${p.id===rec?' <i class="ptag">추천</i>':''}</b><span>${p.desc||'바로 지급'}</span></div>${p.id==='noads'&&SAVE.noAds?'<span class="pill alt off">구매함</span>':`<button class="pill press" data-iap="${p.id}">${packPrice(p)}</button>`}</div>`));
+    body.innerHTML=(G.coinItem?(need>0?`<p class="needline">${esc(G.coinItem.name)}까지 <b>${need.toLocaleString()}코인</b> 모자라요</p>`:`<p class="needline ok">이제 ${esc(G.coinItem.name)}을(를) 살 수 있어요</p>`):'')+(rows.length?`<div class="card packs">${rows.join('')}</div>`:'')+
       (!TOSS&&!ANDROID?(PAID_ITEMS?'<p class="note">결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.</p>':'')
         :(PACKS.some(sellable)?'':`<p class="note">코인은 홀을 클리어하거나 ${ADS_ON?'미션·광고 보상':'미션 보상'}으로 모아요.</p>`)+((PAID_ITEMS&&tossIapOk())||Object.keys(ledger()).length?'<button class="link" data-hist="1">구매 내역 보기</button>':''));
     return;}
@@ -2254,7 +2268,7 @@ let shopRaf=0;function shopAnimStart(){if(shopRaf||reduce)return;const loop=()=>
 $('shopTabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(!b)return;sfx.tap();shopTab=b.dataset.tab;renderShop();});
 // v0.29: tapping an item you don't own opens a try-on sheet: your explorer wearing it, then 구매 or how many coins are missing
 let tryItem=null;
-function openTryOn(slot,item){tryItem={slot,item};const sh=$('tryOnSheet');sh.hidden=false;$('tryCv').classList.toggle('fly',slot==='ball');renderTryOn();if(slot==='ball'&&!ballFly)ballFly=requestAnimationFrame(ballFlight);}
+function openTryOn(slot,item){tryItem={slot,item};if(!SAVE.owned[slot].includes(item.id))logEv((SAVE.coins||0)<item.price?'item_short':'item_view',{slot,id:item.id,rar:item.r,price:item.price,coins:SAVE.coins||0});const sh=$('tryOnSheet');sh.hidden=false;$('tryCv').classList.toggle('fly',slot==='ball');renderTryOn();if(slot==='ball'&&!ballFly)ballFly=requestAnimationFrame(ballFlight);}
 // v0.31: tapping a ball shows it flying across a green with its own trail (looping)
 let ballFly=0;
 function ballFlight(){const cv=$('tryCv');if(!tryItem||tryItem.slot!=='ball'||$('tryOnSheet').hidden){ballFly=0;return;}
@@ -2278,8 +2292,8 @@ function renderTryOn(){if(!tryItem)return;const {slot,item}=tryItem;
   else{m.textContent=`보유 ${have.toLocaleString()} 코인 · 구매하면 ${(have-item.price).toLocaleString()} 남아요`;m.className='trymsg';b.hidden=false;b.textContent=`${item.price.toLocaleString()} 코인으로 구매하고 ${slot==='ball'?'쓰기':'입기'}`;}}
 function closeTryOn(){tryItem=null;$('tryOnSheet').hidden=true;}
 $('tryX').onclick=closeTryOn;$('tryClose').onclick=closeTryOn;$('tryOnSheet').addEventListener('click',e=>{if(e.target.id==='tryOnSheet')closeTryOn();});
-$('tryCoins').onclick=()=>{closeTryOn();shopTab='coin';renderShop();window.scrollTo(0,0);const sc=$('scr-shop');if(sc)sc.scrollTop=0;sfx.tap();};
-$('tryBuy').onclick=()=>{if(!tryItem)return;const {slot,item}=tryItem;if(SAVE.owned[slot].includes(item.id)){SAVE.equip[slot]=item.id;save();sfx.tap();closeTryOn();renderShop();showToast(`${item.name} 장착!`,900);return;}if((SAVE.coins||0)<item.price){renderTryOn();return;}
+$('tryCoins').onclick=()=>{if(tryItem){G.coinItem=tryItem.item;logEv('coin_short_to_shop',{id:tryItem.item.id,need:Math.max(0,tryItem.item.price-(SAVE.coins||0))});}closeTryOn();shopTab='coin';renderShop();window.scrollTo(0,0);const sc=$('scr-shop');if(sc)sc.scrollTop=0;sfx.tap();};
+$('tryBuy').onclick=()=>{if(!tryItem)return;const {slot,item}=tryItem;if(SAVE.owned[slot].includes(item.id)){SAVE.equip[slot]=item.id;save();sfx.tap();closeTryOn();renderShop();showToast(`${item.name} 장착!`,900);return;}if((SAVE.coins||0)<item.price){renderTryOn();return;}logEv('item_buy',{slot,id:item.id,rar:item.r,price:item.price});
   SAVE.coins-=item.price;if(!SAVE.owned[slot].includes(item.id))SAVE.owned[slot].push(item.id);SAVE.equip[slot]=item.id;save();sfx.win();closeTryOn();renderShop();showToast(`${item.name} 장착!`,900);};
 setInterval(()=>{if(tryItem&&tryItem.slot!=='ball'&&!$('tryOnSheet').hidden&&RAR[tryItem.item.r].o>=4)drawAvatarCanvas($('tryCv'),tryLook(),'happy',true);},120);
 $('shopBody').addEventListener('click',e=>{const it=e.target.closest('[data-item]'),fr=e.target.closest('[data-free]'),ia=e.target.closest('[data-iap]'),cb=e.target.closest('[data-cad]'),ca=e.target.closest('[data-cadad]');
@@ -2302,14 +2316,14 @@ const holesDone=()=>CHAPTERS.reduce((a,_,ci)=>a+chDone(ci),0);
 const FEAT={mission:{n:3,name:'미션'},ta:{n:5,name:'타임어택'},pvp:{n:7,name:'PVP'},round:{n:9,name:'9홀 라운드'}};
 function featOpen(k){if(SAVE.unlockAll)return true;return k==='round'?CHAPTERS.some((_,ci)=>chDone(ci)===9):holesDone()>=FEAT[k].n;}
 function featLockMsg(k){return k==='round'?`나라 하나의 9홀을 모두 클리어하면 열려요 (${Math.max(...CHAPTERS.map((_,ci)=>chDone(ci)))}/9)`:`홀 ${FEAT[k].n}개를 클리어하면 ${FEAT[k].name}이(가) 열려요 (${Math.min(holesDone(),FEAT[k].n)}/${FEAT[k].n})`;}
-function featGate(k){if(featOpen(k)){if(!SAVE.seen[k]){SAVE.seen[k]=true;save();renderDots();}return true;}sfx.aww();showToast(featLockMsg(k),1600);return false;}
+function featGate(k){if(featOpen(k)){if(!SAVE.seen[k]){SAVE.seen[k]=true;save();renderDots();logEv('feature_first_open',{feat:k,holes:holesDone()});}return true;}logEv('feature_locked_tap',{feat:k,holes:holesDone()});sfx.aww();showToast(featLockMsg(k),1600);return false;}
 function renderDots(){document.querySelectorAll('[data-ndot]').forEach(d=>{const k=d.dataset.ndot;d.hidden=!(featOpen(k)&&!SAVE.seen[k]);});}
-function announceFeats(){if(SAVE.ann.__mig){Object.keys(FEAT).forEach(k=>{if(featOpen(k))SAVE.ann[k]=true;});delete SAVE.ann.__mig;save();}const fresh=Object.keys(FEAT).filter(k=>featOpen(k)&&!SAVE.ann[k]);if(!fresh.length)return;fresh.forEach(k=>SAVE.ann[k]=true);save();
+function announceFeats(){if(SAVE.ann.__mig){Object.keys(FEAT).forEach(k=>{if(featOpen(k))SAVE.ann[k]=true;});delete SAVE.ann.__mig;save();}const fresh=Object.keys(FEAT).filter(k=>featOpen(k)&&!SAVE.ann[k]);if(!fresh.length)return;fresh.forEach(k=>{SAVE.ann[k]=true;logEv('feature_unlock',{feat:k,holes:holesDone()});});save();
   setTimeout(()=>{if(app.dataset.screen==='home'){sfx.star&&sfx.star();showToast(`새로 열렸어요 · ${fresh.map(k=>FEAT[k].name).join(', ')}`,2000);}},450);}
 function startTour(ci){clearTimeout(G.demoTimer);G.mode='tour';G.ci=ci;G.tour={ci,idx:0,scores:[]};G.runT=0;result.hidden=true;show('game');
   requestAnimationFrame(()=>{resize();loadHole(ci,0);startTurn();showToast('9홀 라운드 시작',1000);});}
 function tourNext(){if(G.mode!=='tour'||app.dataset.screen!=='game')return;const tr=G.tour;if(tr.idx<8){tr.idx++;loadHole(tr.ci,tr.idx);startTurn();showToast(`HOLE ${tr.idx+1} / 9`,800);return;}
-  G.state='result';G.paused=true;G.resultKind='tour';const ch=CHAPTERS[tr.ci],tot=tr.scores.reduce((a,b)=>a+b,0),par=ch.holes.reduce((a,h)=>a+h.par,0),t=G.runT;
+  G.state='result';G.paused=true;G.resultKind='tour';const ch=CHAPTERS[tr.ci],tot=tr.scores.reduce((a,b)=>a+b,0),par=ch.holes.reduce((a,h)=>a+h.par,0),t=G.runT;logEv('tour_end',{ch:ch.id,strokes:tot,par,time:Math.round(t)});
   SAVE.tour=SAVE.tour||{};const prev=SAVE.tour[ch.id],better=!prev||tot<prev.s||(tot===prev.s&&t<prev.t);if(better)SAVE.tour[ch.id]={s:tot,t};
   const coins=60+Math.max(0,par-tot)*15+(better?40:0);addCoins(coins);G.pendingDouble=coins;missionTrack('round');if(better)sfx.win();
   resultPanel.innerHTML=xb('holes')+`<p class="eyebrow center">${ch.name} · 9홀 라운드</p><p class="verdict">${tot}타 <span class="dim">(${fmtD(tot-par)})</span><small>${fmtT(t)} · 파 ${par}${prev?` · 이전 최고 ${prev.s}타`:''}</small></p>
@@ -2358,7 +2372,7 @@ function startTaRun(){taEnsure();if(taLeft()<=0){goTa();return;}SAVE.ta.used++;s
 $('taStart').onclick=()=>{sfx.tap();startTaRun();};
 function taNext(){if(G.mode!=='ta'||app.dataset.screen!=='game')return;const run=G.taRun;if(run.idx<2){run.idx++;const x=run.holes[run.idx];loadHole(x.ci,x.hi);startTurn();showToast(`HOLE ${run.idx+1} / 3`,700);return;}
   G.state='result';G.paused=true;G.resultKind='ta';const tot=run.scores.reduce((a,b)=>a+b,0),t=+G.runT.toFixed(1),prev=SAVE.ta.best,better=!prev||tot<prev.s||(tot===prev.s&&t<prev.t);
-  if(better)SAVE.ta.best={s:tot,t};save();addCoins(20);const b=taBoard(todayKey(),SAVE.ta.best),left=taLeft();if(better)sfx.win();
+  if(better)SAVE.ta.best={s:tot,t};save();addCoins(20);logEv('ta_end',{strokes:tot,time:t,best:better?1:0});const b=taBoard(todayKey(),SAVE.ta.best),left=taLeft();if(better)sfx.win();
   resultPanel.innerHTML=xb('taBoard')+`<p class="eyebrow center">오늘의 타임어택</p><p class="verdict">${tot}타 · ${fmtT(t)}<small>파 ${b.par} · ${run.scores.join(' / ')}타</small></p>
     ${better?`<p class="unlock-note">새 최고 기록! 현재 ${b.myRank}위 / ${b.n}명</p>`:`<p class="unlock-note">최고 기록 ${prev.s}타 · ${fmtT(prev.t)} 유지 · ${b.myRank}위</p>`}
     <p class="coin-gain">+20 코인 · 참가 보상</p>
@@ -2382,7 +2396,14 @@ function frame(now){const dt=Math.min(.05,(now-(lastT||now))/1000);lastT=now;
   hioUpdate(dt);caddieUpdate(dt*(G.paused?1:G.ts));syncCaddieBtn();if(G.state==='sunk')G.sinkT+=dt;G.shake=Math.max(0,G.shake-dt*30);
   if(!G.paused)pvpFrame(dt*G.ts);
   if((G.mode==='tour'||G.mode==='ta')&&app.dataset.screen==='game'&&['aim','swing','roll','splash'].includes(G.state)&&(G.mode==='ta'||!G.paused)){G.runT+=dt;$('timeVal').textContent=fmtT(G.runT);}
-  const s=app.dataset.screen;if(s==='game'||s==='title')draw(dt);requestAnimationFrame(frame);}
+  const s=app.dataset.screen;if(s==='game'||s==='title')draw(dt);if(s==='game')perfWatch(now);requestAnimationFrame(frame);}
+// v0.35 low-end phones: if gameplay runs under ~40 fps for two 2-second windows in a row, switch to light graphics for good
+// (canvas resolution x1.5 max, no glow blur, fewer ground marks, water animated at 15 fps). Saved, so the next launch starts light.
+const PW={t0:0,n:0,bad:0,last:0};
+function perfWatch(now){if(LOWQ||G.paused||document.hidden)return;const gap=now-(PW.last||now);PW.last=now;if(gap>=1000){PW.t0=now;PW.n=0;return;}
+  if(!PW.t0){PW.t0=now;PW.n=0;return;}PW.n++;const span=now-PW.t0;if(span<2000)return;const fps=PW.n*1000/span;PW.t0=now;PW.n=0;
+  PW.bad=fps<40?PW.bad+1:0;if(PW.bad>=2)setLowQ(true,Math.round(fps));}
+function setLowQ(on,fps){if(LOWQ===on)return;LOWQ=on;SAVE.lowQ=on?1:0;save();resize();if(on)logEv('low_quality',{fps:fps||0});}
 function tick(){if(G.state!=='aim'&&G.state!=='roll')return;const b=G.ball,ev={};step(hole,b,G.ht,ev);
   if(ev.sunk){b.x=hole.cup[0];b.y=hole.cup[1];b.vx=b.vy=0;onSunk();return;}
   if(ev.water){onWater(ev.quick);return;}
@@ -2550,7 +2571,7 @@ const VR={on:false,rec:null,chunks:[],mime:'',
 
 
 // ---------------- animated water hazards (waves, glints, foam) and puddle ripples ----------------
-function drawWater(c,h,now){const sp=reduce?.25:1,t=now*sp;
+function drawWater(c,h,now){if(LOWQ)now=Math.floor(now/66)*66;const sp=reduce?.25:1,t=now*sp;
   for(const s of h.surfaces){const [x,y,w,hh]=s.r;
     if(s.t==='water'){c.save();rr(c,x+3,y+5,w-6,hh-8,10);c.clip();
       // slow light band drifting across the pond
@@ -2627,7 +2648,7 @@ if(SAVE.unlockAll){SAVE.unlockAll=false;save();}
 readTok();syncSwitches();syncCoins();dailyEnsure();taEnsure();resize();enterTitle();requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{buildStatic();refreshScreen();});
 
-window.__golf={applyPack,PACKS,key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
+window.__golf={setLowQ,isLowQ:()=>LOWQ,PW,EVLOG,logEv,applyPack,PACKS,key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
   setStars(ci,n){CHAPTERS[ci].holes.forEach((_,hi)=>SAVE.stars[key(ci,hi)]=n);save();},
   aimVec,startSwing,showMul,VR,MISSIONS,CD,callCaddie,syncCaddieBtn,startReplay,endReplay,RP,hioFx,
   iap:{restore:restorePurchases,history:openHistory,products:()=>tossItems,ledger:()=>SAVE.iap,save,load:loadTossProducts},
