@@ -355,6 +355,10 @@ td.name,th.name{text-align:left;font-weight:700}
 .card.daily.locked{opacity:.6;padding:14px 16px}.card.daily.locked b{font-size:14px;display:flex;gap:6px;align-items:center}.card.daily.locked svg{width:14px;height:14px}
 .htile .p.boss{color:var(--lose);font-weight:800}.htile:has(.p.boss){box-shadow:0 0 0 2px color-mix(in srgb,var(--lose) 55%,transparent),var(--shadow)}
 .teeline{font-size:12px;color:var(--label2)}.teeline.got{color:var(--tint);font-weight:700}.price.star{color:var(--star);font-weight:800}.unlock-note.tee{background:color-mix(in srgb,var(--star) 18%,var(--fill))}
+.giftmodal{align-items:stretch;text-align:center;position:relative}.giftstage{position:relative;height:250px;cursor:pointer;touch-action:manipulation}
+#giftCv{position:absolute;inset:0;width:100%;height:100%}#giftItem{position:absolute;left:50%;top:6px;width:150px;height:150px;transform:translateX(-50%);animation:giftPop .55s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes giftPop{from{transform:translate(-50%,60px) scale(.2);opacity:0}to{transform:translate(-50%,0) scale(1);opacity:1}}
+.giftname{font-family:var(--display);font-size:22px;color:var(--label);line-height:1.25}.giftname small{display:block;font-family:var(--font);font-size:13px;font-weight:800;margin-bottom:2px}
 .needline{font-size:14px;color:var(--label);background:var(--fill);border-radius:14px;padding:10px 14px;margin:0}.needline b{color:var(--lose)}.needline.ok{color:var(--tint);font-weight:700}
 .ptag{white-space:nowrap;display:inline-block;font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--lose);border-radius:8px;padding:1px 6px;vertical-align:2px;margin-left:4px}
 .pack.rec{background:color-mix(in srgb,var(--gold) 14%,transparent)}.pack.starter{background:color-mix(in srgb,var(--tint) 9%,transparent)}
@@ -504,7 +508,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.38</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.39</p>
     </div>
   </section>
   <section class="overlay bottom" id="tryOnSheet" hidden>
@@ -531,6 +535,11 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
     </div>
   </section>
   <section class="overlay" id="result" hidden><div class="modal" id="resultPanel"></div></section>
+  <section class="overlay" id="giftOv" hidden style="z-index:11"><div class="modal giftmodal"><button class="xbtn" id="giftX" aria-label="닫기"></button>
+    <p class="eyebrow center">홀인원 기념 선물</p><h3 id="giftTitle">캐디의 선물이 도착했어요!</h3>
+    <div class="giftstage" id="giftStage"><canvas id="giftCv" aria-label="선물 상자"></canvas><canvas id="giftItem" hidden aria-hidden="true"></canvas></div>
+    <p class="giftname" id="giftName" hidden></p><p class="note" id="giftNote">상자를 눌러서 열어 보세요</p>
+    <div class="row2" id="giftBtns" hidden><button class="btn btn-plain press" id="giftOk">확인</button><button class="btn btn-primary press" id="giftEquip">바로 장착하기</button></div></div></section>
   <section class="overlay bottom" id="missions" hidden><div class="sheet" id="missionSheet" style="max-height:92%;overflow-y:auto"></div></section>
   <div id="rotateNote" role="dialog" aria-label="화면을 세로로 돌려 주세요">
     <button class="xbtn" id="rotateX" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2 2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
@@ -1075,11 +1084,11 @@ function verdictText(n,par){if(n===1)return'홀인원!';const d=n-par;return d<=
 function starsFor(n,par){if(n==null)return 0;const d=n-par;return d<=-1?3:d===0?2:d===1?1:0;}
 
 function finishMine(n,sunk){G.myDone=true;const tok=G.turnId;if(G.mode!=='attract'){const first=G.mode==='solo'&&sunk&&starsOf(G.ci,G.holeIdx)===undefined;logEv('hole_end',{mode:G.mode,ch:CHAPTERS[G.ci].id,hole:G.holeIdx+1,strokes:n,par:hole.par,sunk:sunk?1:0,first:first?1:0,holes:holesDone()+(first?1:0)});if(first&&G.firstRun&&G.ci===0&&G.holeIdx===0)logEv('tutorial_done');holeStats(n,sunk);}
-  if(G.mode==='solo'){G.scores[G.holeIdx]=n;setTimeout(()=>{if(tok===G.turnId)showHoleResult();},n===1&&sunk?3000:1300);}
+  if(G.mode==='solo'){G.scores[G.holeIdx]=n;setTimeout(()=>{if(tok===G.turnId)afterGift(()=>{if(tok===G.turnId)showHoleResult();});},n===1&&sunk?3000:1300);}
   else if(G.mode==='pvp'){G.match.my[G.match.idx]=n;}
-  else if(G.mode==='tour'){G.tour.scores[G.tour.idx]=n;updateHUD();setTimeout(()=>{if(tok===G.turnId)tourNext();},n===1&&sunk?3000:1300);}
-  else if(G.mode==='ta'){G.taRun.scores[G.taRun.idx]=n;setTimeout(()=>{if(tok===G.turnId)taNext();},n===1&&sunk?2600:1000);}
-  else if(G.mode==='daily'){setTimeout(()=>{if(tok===G.turnId)showDailyResult(n,sunk);},n===1&&sunk?3000:1300);}}
+  else if(G.mode==='tour'){G.tour.scores[G.tour.idx]=n;updateHUD();setTimeout(()=>{if(tok===G.turnId)afterGift(()=>{if(tok===G.turnId)tourNext();});},n===1&&sunk?3000:1300);}
+  else if(G.mode==='ta'){G.taRun.scores[G.taRun.idx]=n;setTimeout(()=>{if(tok===G.turnId)afterGift(()=>{if(tok===G.turnId)taNext();});},n===1&&sunk?2600:1000);}
+  else if(G.mode==='daily'){setTimeout(()=>{if(tok===G.turnId)afterGift(()=>{if(tok===G.turnId)showDailyResult(n,sunk);});},n===1&&sunk?3000:1300);}}
 function onSunk(){const b=G.ball,attract=G.mode==='attract',hio=!attract&&G.strokes===1;recEnd('sunk');G.state='sunk';sfx.sink();setMood('happy',2.6);if(!attract)G.slowT=Math.max(G.slowT,.55);
   if(hio){hioFx();SAVE.hio=(SAVE.hio||0)+1;save();hioGift();}else pop(attract?'홀인원!':verdictText(G.strokes,hole.par),hole.cup[0],hole.cup[1]-34,true);
   if(CD.on){CD.mood='happy';CD.moodT=2.4;if(!hio){CD.say='나이스 퍼트!';CD.sayT=2;}if(!hio)caddieLeave(1800);}G.caddieOn=false;
@@ -1108,7 +1117,7 @@ function nextDemo(){clearTimeout(G.demoTimer);if(G.mode!=='attract')return;
 // ---------------- screens ----------------
 const SCREENS=['title','home','world','holes','pvp','shop','ta'];
 let shownScreen='';
-function show(name){if(name!=='shop'&&tryItem)closeTryOn();app.dataset.screen=name;SCREENS.forEach(s=>$('scr-'+s).hidden=s!==name);pauseEl.hidden=true;syncBanner(name);syncTabbar(name);syncCoins();
+function show(name){if(name!=='shop'&&tryItem)closeTryOn();if(name!=='game'&&typeof closeGiftBox==='function')closeGiftBox(true);app.dataset.screen=name;SCREENS.forEach(s=>$('scr-'+s).hidden=s!==name);pauseEl.hidden=true;syncBanner(name);syncTabbar(name);syncCoins();
   if(name!=='game'&&name!=='title')G.paused=true;
   swipeBack(name==='home'||name==='title');if(name!==shownScreen){shownScreen=name;track('screen',name+'_screen',name==='game'?{mode:G.mode}:{});}}
 function enterTitle(){G.mode='attract';G.paused=false;show('title');result.hidden=true;requestAnimationFrame(()=>{resize();nextDemo();});}
@@ -2466,13 +2475,54 @@ function hioGift(){if(G.mode==='attract'||G.state==='replay')return;const k=G.mo
   let g=null;if(!SAVE.hioG[k]){SAVE.hioG[k]=1;const n=Object.keys(SAVE.hioG).length;g=hioGiftFor(n);
     if(g.kind==='set'){g.items.forEach(([k,it])=>SAVE.owned[k].push(it.id));}else if(g.kind==='outfit'||g.kind==='ball'){SAVE.owned[g.kind].push(g.item.id);}else if(g.kind==='coins')SAVE.coins=(SAVE.coins||0)+g.n;else SAVE.caddie=(SAVE.caddie||0)+g.n;
     save();syncCoins();logEv('hio_gift',{n,gift:g.item?g.item.id:g.kind});}
-  G.hioGift=g;const tok=G.turnId;
-  setTimeout(()=>{if(tok!==G.turnId||app.dataset.screen!=='game')return;const [tx,ty]=caddieSpot(),v=view();
+  G.hioGift=g;if(g){G.giftComing=true;setTimeout(giftAbort,2600);}const tok=G.turnId;
+  setTimeout(()=>{if(tok!==G.turnId||app.dataset.screen!=='game'){giftAbort();return;}const [tx,ty]=caddieSpot(),v=view();
     if(!CD.on){CD.on=true;CD.x=tx<180?v.x0-24:v.x1+24;CD.y=ty;caddieMove(tx,ty,'in');CD.dur=Math.min(CD.dur,.7);}
     CD.gift=true;CD.giftT=0;CD.mood='happy';CD.moodT=3;CD.say=g?'홀인원 기념 선물이에요!':'또 홀인원! 대단해요!';CD.sayT=1.1;
     tone(880,.08,'triangle',.12);setTimeout(()=>tone(1175,.12,'triangle',.12),90);
-    setTimeout(()=>{if(tok!==G.turnId||!CD.on)return;CD.giftOpen=!!g;CD.say=g?`🎁 ${g.label}`:'축하해요!';CD.sayT=1.6;if(g){sfx.win();for(let i=0;i<2;i++)G.parts.push({ring:true,x:CD.x,y:CD.y-30,life:.5+i*.3,c:'#ffd60a'});}},1050);
+    setTimeout(()=>{if(tok!==G.turnId||!CD.on){giftAbort();return;}CD.say=g?`🎁 ${g.label}`:'축하해요!';CD.sayT=1.6;if(g){CD.gift=false;openGiftBox(g);}},1050);
     caddieLeave(2900);},450);}
+// v0.39 gift box: after a hole-in-one gift the caddie hands over a box; the player taps it to open and the item pops out.
+// While the box is open the game flow (result screen / next hole) waits and resumes when the box is closed.
+const GB={st:'',t0:0,raf:0,g:null};
+function giftAbort(){if(G.giftComing&&!G.giftOpen){G.giftComing=false;const f=G.afterGift;G.afterGift=null;if(f)f();}}
+function afterGift(fn){if(G.giftOpen||G.giftComing){G.afterGift=fn;}else fn();}
+function openGiftBox(g){GB.g=g;GB.st='closed';GB.t0=performance.now();G.giftComing=false;G.giftOpen=true;G.pauseBeforeGift=G.paused;G.paused=true;
+  $('giftTitle').textContent='캐디의 선물이 도착했어요!';$('giftItem').hidden=true;$('giftName').hidden=true;$('giftBtns').hidden=true;$('giftNote').hidden=false;$('giftNote').textContent='상자를 눌러서 열어 보세요';
+  $('giftOv').hidden=false;cancelAnimationFrame(GB.raf);const loop=()=>{if($('giftOv').hidden)return;drawGiftBox();GB.raf=requestAnimationFrame(loop);};GB.raf=requestAnimationFrame(loop);logEv('gift_box_show',{gift:g.item?g.item.id:g.kind});}
+function tapGiftBox(){if(GB.st!=='closed')return;GB.st='opening';GB.t0=performance.now();tone(660,.06,'square',.06);setTimeout(()=>tone(880,.06,'square',.06),120);
+  setTimeout(()=>{if(GB.st!=='opening')return;GB.st='open';GB.t0=performance.now();sfx.win();showGiftItem();},560);}
+function showGiftItem(){const g=GB.g,cv=$('giftItem');cv.hidden=false;cv.style.animation='none';void cv.offsetWidth;cv.style.animation='';
+  const L=myLook(),cap=HATS.find(o=>o.id==='hiocap'),ball=BALLS.find(o=>o.id==='hioball');
+  if(g.kind==='set'){const look=Object.assign({},L,{hat:cap,char:CHARS[0]});drawAvatarCanvas(cv,look,'happy',true);const d=Math.min(3,window.devicePixelRatio||1),c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);drawBallSkin(c,cv.clientWidth-26,cv.clientHeight-26,15,ball,nowS());}
+  else if(g.kind==='outfit'){drawAvatarCanvas(cv,Object.assign({},L,{outfit:g.item}),'happy',true);}
+  else if(g.kind==='caddie'){drawAvatarCanvas(cv,Object.assign({char:CHARS[0]},CADDIE_LOOK),'happy',true);}
+  else{const d=Math.min(3,window.devicePixelRatio||1),w=cv.clientWidth,h=cv.clientHeight;cv.width=w*d;cv.height=h*d;const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);
+    for(let i=0;i<5;i++){c.fillStyle=i%2?'#f2b01e':'#ffd257';c.beginPath();c.ellipse(w/2,h*.72-i*12,34,11,0,0,7);c.fill();c.strokeStyle='#c98a0c';c.lineWidth=1.5;c.stroke();}}
+  const rar=g.item?RAR[g.item.r]:null;$('giftTitle').textContent=g.kind==='set'?'모자와 공을 받았어요!':g.item?'새 아이템을 받았어요!':'선물을 받았어요!';
+  $('giftName').innerHTML=`${rar?`<small style="color:${rar.c}">${rar.n}</small>`:''}${esc(g.label)}`;$('giftName').hidden=false;$('giftNote').textContent=g.item?'꾸미기에서 언제든 바꿀 수 있어요':g.kind==='caddie'?'홀컵 근처에서 캐디가 라인을 봐 줘요':'코인으로 꾸미기를 사 보세요';
+  $('giftEquip').hidden=!g.item;$('giftBtns').hidden=false;}
+function drawGiftBox(){const cv=$('giftCv'),d=Math.min(3,window.devicePixelRatio||1),w=cv.clientWidth||300,h=cv.clientHeight||250;if(cv.width!==Math.round(w*d)){cv.width=Math.round(w*d);cv.height=Math.round(h*d);}
+  const c=cv.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);const t=(performance.now()-GB.t0)/1000,cx=w/2,by=h-40;
+  // soft glow rings (no rays)
+  if(GB.st==='open'){for(let i=0;i<3;i++){const r=((t*70+i*40)%120)+30;c.strokeStyle=`rgba(255,200,40,${Math.max(0,.5-r/260)})`;c.lineWidth=6;c.beginPath();c.arc(cx,by-60,r,0,7);c.stroke();}
+    for(let i=0;i<14;i++){const a=i*2.39996,rr2=40+((t*50+i*17)%90);star4(c,cx+Math.cos(a)*rr2,by-70+Math.sin(a)*rr2*.6,3+2*Math.sin(t*6+i),i%3?'#ffd257':'#ffffff');}}
+  let ox=0,oy=0,rot=0;if(GB.st==='closed'){oy=-Math.abs(Math.sin(t*3))*8;rot=Math.sin(t*6)*.04;}else if(GB.st==='opening'){ox=Math.sin(t*60)*4;rot=Math.sin(t*50)*.08;}
+  c.fillStyle='rgba(0,0,0,.12)';c.beginPath();c.ellipse(cx,by+6,62,10,0,0,7);c.fill();
+  c.save();c.translate(cx+ox,by+oy);c.rotate(rot);
+  rr(c,-56,-80,112,80,10);c.fillStyle='#e23b4a';c.fill();c.fillStyle='rgba(0,0,0,.08)';c.fillRect(-56,-30,112,30);c.fillStyle='#ffd34d';c.fillRect(-10,-80,20,80);
+  const lt=GB.st==='open'?Math.min(1,t/.45):0;c.save();c.globalAlpha=GB.st==='open'?Math.max(0,1-Math.max(0,t-.35)/.35):1;c.translate(lt*100,-80-Math.sin(lt*Math.PI)*40+lt*60);c.rotate(lt*1.4);
+  rr(c,-62,-26,124,28,8);c.fillStyle='#ff5a68';c.fill();c.fillStyle='#ffd34d';c.fillRect(-10,-26,20,28);
+  c.beginPath();c.ellipse(-16,-34,18,10,-.45,0,7);c.ellipse(16,-34,18,10,.45,0,7);c.fill();c.beginPath();c.arc(0,-30,7,0,7);c.fillStyle='#f2b01e';c.fill();c.restore();
+  if(GB.st==='closed'){c.fillStyle='#ffffff';c.font=`700 15px ${FONT}`;c.textAlign='center';c.fillText('TAP!',0,-42+Math.sin(t*5)*2);}
+  c.restore();}
+function closeGiftBox(silent){if(!G.giftOpen&&$('giftOv').hidden)return;$('giftOv').hidden=true;cancelAnimationFrame(GB.raf);G.giftOpen=false;G.giftComing=false;
+  if(!silent){G.paused=!!G.pauseBeforeGift;const f=G.afterGift;G.afterGift=null;if(f)f();}else G.afterGift=null;}
+$('giftX').innerHTML=XSVG;$('giftX').onclick=()=>{sfx.tap();const unopened=GB.st!=='open',g=GB.g;GB.st='';closeGiftBox();if(unopened&&g)setTimeout(()=>showToast(g.item?`${g.label}는 꾸미기에 넣어 뒀어요`:`${g.label}를 받았어요`,1600),200);};
+$('giftStage').onclick=()=>{if(GB.st==='closed')tapGiftBox();};
+$('giftOk').onclick=()=>{sfx.tap();closeGiftBox();};
+$('giftEquip').onclick=()=>{const g=GB.g;if(g&&g.kind==='set'){g.items.forEach(([k,it])=>SAVE.equip[k]=it.id);SAVE.equip.hat='hiocap';SAVE.equip.ball='hioball';}else if(g&&g.item){SAVE.equip[g.kind]=g.item.id;}
+  save();sfx.win();showToast('장착했어요!',900);logEv('gift_equip',{gift:g.item?g.item.id:g.kind});closeGiftBox();};
 function starTeeCheck(){let got=[];TOUR_TEES.forEach(t=>{const ci=CHAPTERS.findIndex(c=>c.id===t.starCh);if(ci<0||SAVE.owned.outfit.includes(t.id))return;
   if(chStars(ci)>=27){SAVE.owned.outfit.push(t.id);got.push(t);logEv('star_tee',{ch:t.starCh});}});if(got.length)save();return got;}
 function featOpen(k){if(SAVE.unlockAll)return true;return k==='round'?CHAPTERS.some((_,ci)=>chDone(ci)===9):holesDone()>=FEAT[k].n;}
@@ -2598,7 +2648,7 @@ function callCaddie(){const [tx,ty]=caddieSpot(),v=view();CD.on=true;CD.x=tx<180
   G.caddieOn=true;CD.say='제가 라인 봐 드릴게요!';CD.sayT=2.2;tone(988,.08,'triangle',.1);setTimeout(()=>tone(1318,.12,'triangle',.1),90);
   syncCaddieBtn(true);}
 function caddieLeave(delay){if(!CD.on)return;const tok=G.turnId;setTimeout(()=>{if(tok!==G.turnId||!CD.on||CD.phase==='out')return;const v=view();caddieMove(CD.x<180?v.x0-30:v.x1+30,CD.y,'out');},delay||0);}
-function caddieReset(){CD.on=false;CD.phase='';CD.gift=false;CD.giftOpen=false;G.caddieOn=false;G.hioGift=null;}
+function caddieReset(){CD.on=false;CD.phase='';CD.gift=false;CD.giftOpen=false;G.caddieOn=false;G.hioGift=null;try{closeGiftBox(true);}catch(e){}}
 function caddieUpdate(dt){if(!CD.on)return;if(CD.phase==='in'||CD.phase==='out'){CD.t+=dt/CD.dur;const u=Math.min(1,CD.t);CD.x=CD.fx+(CD.tx-CD.fx)*u;CD.y=CD.fy+(CD.ty-CD.fy)*u;
     if(u>=1){if(CD.phase==='out'){CD.on=false;CD.phase='';}else CD.phase='stand';}}
   if(CD.sayT>0)CD.sayT-=dt;if(CD.moodT>0){CD.moodT-=dt;if(CD.moodT<=0)CD.mood='idle';}}
@@ -2817,7 +2867,7 @@ if(SAVE.unlockAll){SAVE.unlockAll=false;save();}
 readTok();syncSwitches();syncCoins();dailyEnsure();taEnsure();resize();enterTitle();requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{buildStatic();refreshScreen();});
 
-window.__golf={onSunk,hioGift,hioGiftFor,CD,LONG,mirrorHole,dailyPick,dailyHoleObj,startDaily,dailyState,setLowQ,isLowQ:()=>LOWQ,PW,EVLOG,logEv,applyPack,PACKS,key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
+window.__golf={openGiftBox,tapGiftBox,closeGiftBox,GB,onSunk,hioGift,hioGiftFor,CD,LONG,mirrorHole,dailyPick,dailyHoleObj,startDaily,dailyState,setLowQ,isLowQ:()=>LOWQ,PW,EVLOG,logEv,applyPack,PACKS,key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
   setStars(ci,n){CHAPTERS[ci].holes.forEach((_,hi)=>SAVE.stars[key(ci,hi)]=n);save();},
   aimVec,startSwing,showMul,VR,MISSIONS,CD,callCaddie,syncCaddieBtn,startReplay,endReplay,RP,hioFx,
   iap:{restore:restorePurchases,history:openHistory,products:()=>tossItems,ledger:()=>SAVE.iap,save,load:loadTossProducts},
