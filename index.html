@@ -504,7 +504,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.37</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.38</p>
     </div>
   </section>
   <section class="overlay bottom" id="tryOnSheet" hidden>
@@ -1838,9 +1838,10 @@ const BALLS=[
   {id:'star',name:'별똥별 공',r:'legend',price:10000,col:'#fff3b0',col2:'#e0a91f',pat:'star',trail:'star',mark:'star'},
   {id:'prism',name:'무지개 공',r:'legend',price:14000,col:'#ffffff',col2:'#ff8fc0',pat:'prism',trail:'prism',mark:'prism'}];
 OUTFITS.push(...TOUR_TEES);
-// v0.37 hole-in-one gifts (handed over by the caddie; fixed rewards, no random draw): 1st new-hole HIO = tee, 5th = ball, 10th = 500 coins, otherwise a caddie guide
-OUTFITS.push({id:'hio_tee',name:'홀인원 기념 티',r:'legend',price:0,col:'#fff6dc',col2:'#e0a000',pat:'tour',emb:'flag',hioN:1});
-BALLS.push({id:'hioball',name:'홀인원 공',r:'legend',price:0,col:'#fff3c4',col2:'#e0a000',pat:'hio',trail:'hio',hioN:5});
+// v0.37 hole-in-one gifts (handed over by the caddie; fixed rewards, no random draw). v0.38: 1st new-hole HIO = cap + ball set, 3rd = tee, 10th = 500 coins, otherwise a caddie guide
+OUTFITS.push({id:'hio_tee',name:'홀인원 기념 티',r:'legend',price:0,col:'#fff6dc',col2:'#e0a000',pat:'tour',emb:'flag',hioN:3});
+HATS.push({id:'hiocap',name:'홀인원 기념 모자',r:'legend',price:0,col:'#f2b51f',col2:'#ffffff',hioN:1});
+BALLS.push({id:'hioball',name:'홀인원 공',r:'legend',price:0,col:'#fff3c4',col2:'#e0a000',pat:'hio',trail:'hio',hioN:1});
 const COSMETIC={char:CHARS,hat:HATS,outfit:OUTFITS,ball:BALLS};
 // v0.29: higher leagues dress fancier (rarer items get more weight as lv goes 0 -> 1)
 const oppPick=(list,lv=0)=>{const w=list.map(i=>[6,6,4,2,1,.4][RAR[i.r].o]*Math.pow(1+6*lv,RAR[i.r].o/4)),tot=w.reduce((a,b)=>a+b,0);let r=Math.random()*tot;for(let k=0;k<list.length;k++){r-=w[k];if(r<=0)return list[k];}return list[0];};
@@ -1853,6 +1854,10 @@ function drawHat(c,h){const t=nowS();
    case'none':break;
    case'headband':rr(c,-8.9,-14.2,17.8,3.2,1.6);c.fillStyle=h.col;c.fill();c.fillStyle=h.col2;c.fillRect(-8.9,-13.1,17.8,1);
      c.beginPath();c.ellipse(-9.6,-11.8,1.6,3,.5,0,7);c.ellipse(-10.6,-10.4,1.4,2.6,.9,0,7);c.fillStyle=h.col;c.fill();break;
+   case'hiocap':{c.beginPath();c.ellipse(0,-14.6,8.6,6.8,0,Math.PI,0);const g=c.createLinearGradient(-8,-21,8,-14);g.addColorStop(0,'#ffd95a');g.addColorStop(1,h.col);c.fillStyle=g;c.fill();
+     c.beginPath();c.ellipse(6.8,-13.6,6.6,2.4,0,0,7);c.fillStyle=h.col2;c.fill();c.strokeStyle='#e0a000';c.lineWidth=.5;c.stroke();
+     c.fillStyle='#ffffff';c.beginPath();c.arc(0,-17.2,2.6,0,7);c.fill();c.fillStyle='#e23b4a';c.fillRect(-.3,-19,.6,3.4);c.beginPath();c.moveTo(.3,-19);c.lineTo(2.1,-18.3);c.lineTo(.3,-17.6);c.closePath();c.fill();
+     c.fillStyle=`rgba(255,255,255,${.35+.25*Math.sin(t*3)})`;c.beginPath();c.ellipse(-3.4,-18.6,2.4,1,-.5,0,7);c.fill();c.beginPath();c.arc(0,-21,1.3,0,7);c.fillStyle='#e0a000';c.fill();break;}
    case'cap':c.beginPath();c.ellipse(0,-14.6,8.4,6.6,0,Math.PI,0);c.fillStyle=h.col2;c.fill();c.beginPath();c.ellipse(6.6,-13.6,6.4,2.3,0,0,7);c.fillStyle=h.col;c.fill();
      c.beginPath();c.arc(0,-20.8,1.3,0,7);c.fillStyle=h.col;c.fill();break;
    case'visor':rr(c,-8.8,-16,17.6,3,1.5);c.fillStyle=h.col;c.fill();c.beginPath();c.ellipse(6.4,-14.2,7,2.5,0,0,7);c.fillStyle=h.col2;c.fill();
@@ -2451,15 +2456,15 @@ const FEAT={daily:{n:4,name:'오늘의 홀'},mission:{n:3,name:'미션'},ta:{n:5
 const isRewardItem=it=>!!(it.starCh||it.hioN);
 const rewardTag=it=>it.starCh?'★27 보상':'홀인원 선물';
 function rewardMsg(it){if(it.starCh){const ci=CHAPTERS.findIndex(c=>c.id===it.starCh);return`${CHAPTERS[ci].name}에서 별 27개를 모두 모으면 받아요 (★${chStars(ci)}/27)`;}
-  const n=Object.keys(SAVE.hioG||{}).length;return`새 홀에서 홀인원을 ${it.hioN}번 하면 캐디가 선물해요 (지금 ${n}번)`;}
-function hioGiftFor(n){const tee=OUTFITS.find(o=>o.id==='hio_tee'),ball=BALLS.find(o=>o.id==='hioball');
-  if(n===1&&!SAVE.owned.outfit.includes(tee.id))return{kind:'outfit',item:tee,label:tee.name};
-  if(n===5&&!SAVE.owned.ball.includes(ball.id))return{kind:'ball',item:ball,label:ball.name};
+  const n=Object.keys(SAVE.hioG||{}).length;return it.hioN===1?'첫 홀인원을 하면 캐디가 모자와 공을 함께 선물해요':`새 홀에서 홀인원을 ${it.hioN}번 하면 캐디가 선물해요 (지금 ${n}번)`;}
+function hioGiftFor(n){const tee=OUTFITS.find(o=>o.id==='hio_tee'),ball=BALLS.find(o=>o.id==='hioball'),cap=HATS.find(o=>o.id==='hiocap');
+  if(n>=1&&(!SAVE.owned.hat.includes(cap.id)||!SAVE.owned.ball.includes(ball.id)))return{kind:'set',items:[['hat',cap],['ball',ball]].filter(([k,it])=>!SAVE.owned[k].includes(it.id)),item:cap,label:'홀인원 기념 모자 + 홀인원 공'};
+  if(n>=3&&!SAVE.owned.outfit.includes(tee.id))return{kind:'outfit',item:tee,label:tee.name};
   if(n===10)return{kind:'coins',n:500,label:'500코인'};return{kind:'caddie',n:1,label:'캐디 가이드 1개'};}
 // called on every hole-in-one: the caddie runs out with a gift box. A gift is given once per hole (daily hole: once per day).
 function hioGift(){if(G.mode==='attract'||G.state==='replay')return;const k=G.mode==='daily'?'daily-'+todayKey():key(G.ci,G.holeIdx);SAVE.hioG=SAVE.hioG||{};
   let g=null;if(!SAVE.hioG[k]){SAVE.hioG[k]=1;const n=Object.keys(SAVE.hioG).length;g=hioGiftFor(n);
-    if(g.kind==='outfit'||g.kind==='ball'){SAVE.owned[g.kind].push(g.item.id);}else if(g.kind==='coins')SAVE.coins=(SAVE.coins||0)+g.n;else SAVE.caddie=(SAVE.caddie||0)+g.n;
+    if(g.kind==='set'){g.items.forEach(([k,it])=>SAVE.owned[k].push(it.id));}else if(g.kind==='outfit'||g.kind==='ball'){SAVE.owned[g.kind].push(g.item.id);}else if(g.kind==='coins')SAVE.coins=(SAVE.coins||0)+g.n;else SAVE.caddie=(SAVE.caddie||0)+g.n;
     save();syncCoins();logEv('hio_gift',{n,gift:g.item?g.item.id:g.kind});}
   G.hioGift=g;const tok=G.turnId;
   setTimeout(()=>{if(tok!==G.turnId||app.dataset.screen!=='game')return;const [tx,ty]=caddieSpot(),v=view();
@@ -2610,7 +2615,8 @@ function drawCaddie(c){if(!CD.on)return;const now=performance.now()/1000,b=G.bal
     rr(c,-7,-4,14,11,2);c.fillStyle='#e23b4a';c.fill();c.fillStyle='#ffd34d';c.fillRect(-1.3,-4,2.6,11);
     c.save();c.translate(0,lid);c.rotate(CD.giftOpen?-f*.5:0);rr(c,-8,-7,16,4,1.5);c.fillStyle='#ff5a68';c.fill();c.fillStyle='#ffd34d';c.fillRect(-1.3,-7,2.6,4);
     c.beginPath();c.ellipse(-2.6,-8.4,2.6,1.6,-.5,0,7);c.ellipse(2.6,-8.4,2.6,1.6,.5,0,7);c.fill();c.restore();
-    if(CD.giftOpen){const g=G.hioGift;if(g&&g.item&&g.kind==='ball')drawBallSkin(c,0,-14,6.5,g.item,nowS());else if(g&&g.item&&g.kind==='outfit'){c.save();c.translate(0,-16);c.scale(.7,.7);drawOutfit(c,g.item);c.restore();}
+    if(CD.giftOpen){const g=G.hioGift;if(g&&g.kind==='set'){c.save();c.translate(-5,-4);c.scale(.8,.8);drawHat(c,HATS.find(o=>o.id==='hiocap'));c.restore();drawBallSkin(c,6,-14,4.6,BALLS.find(o=>o.id==='hioball'),nowS());}
+      else if(g&&g.item&&g.kind==='ball')drawBallSkin(c,0,-14,6.5,g.item,nowS());else if(g&&g.item&&g.kind==='outfit'){c.save();c.translate(0,-16);c.scale(.7,.7);drawOutfit(c,g.item);c.restore();}
       else{c.fillStyle='#ffd34d';c.beginPath();c.arc(0,-13,4.5,0,7);c.fill();c.fillStyle='#b8860b';c.font=`800 6px ${FONT}`;c.textAlign='center';c.fillText(g&&g.kind==='caddie'?'C':'₩',0,-11);}}
     c.restore();}
   if(CD.phase==='stand'&&CD.mood!=='happy'){c.save();c.translate(x-f*10,y+jy);c.rotate(-f*.35);rr(c,-3.5,-5,7,9,1.5);c.fillStyle='#fff';c.fill();c.strokeStyle='#2f7d5a';c.lineWidth=1;c.stroke();c.restore();}
