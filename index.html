@@ -324,7 +324,8 @@ td.name,th.name{text-align:left;font-weight:700}
 .mul.cad{left:auto;right:10px;top:10px;bottom:auto;transform:none;display:flex;align-items:center;gap:8px;background:#2f7d5a;color:#fff;box-shadow:0 3px 0 #1e5a40,var(--shadow);padding:8px 12px 8px 14px}
 .mul.cad b{font-weight:400}
 .mul.cad.tut{animation:cadBlink .7s ease-in-out infinite;background:#f2b01e;box-shadow:0 3px 0 #b8860b,0 0 0 4px rgba(255,214,10,.45),var(--shadow)}.mul.cad.tut .ad{font-weight:800}
-@keyframes cadBlink{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.08);filter:brightness(1.18)}}.mul.cad .cnt{background:#fff;color:#2f7d5a;border-radius:999px;min-width:24px;text-align:center;padding:1px 7px;font-size:14px}.mul.cad .ad{font-size:12px;opacity:.92;font-family:inherit}
+@keyframes cadBlink{0%,100%{transform:scale(1);filter:brightness(1)}50%{transform:scale(1.08);filter:brightness(1.18)}}.mul.cad .cnt{background:#fff;color:#2f7d5a;border-radius:999px;min-width:24px;text-align:center;padding:1px 7px;font-size:14px}.langbtn{min-width:104px;height:36px;border-radius:999px;background:var(--surface);box-shadow:var(--shadow);font-weight:700;font-size:14px;color:var(--label)}
+.mul.cad .ad{font-size:12px;opacity:.92;font-family:inherit}
 .vidprev{display:block;width:100%;max-height:44vh;object-fit:contain;border-radius:16px;background:#1d1d1f;margin:4px 0}
 .btn-gold{background:linear-gradient(#ffe066,#ffb800);color:#4a3000;box-shadow:0 3px 0 #c98a00}
 .cadav{width:40px;height:40px;flex:0 0 40px;border-radius:50%;background:#e3f1e8}
@@ -507,10 +508,11 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
       <h3>설정</h3>
       <div class="group">
         <div class="test-row"><div><b>효과음</b><span>샷, 벽, 홀컵 소리</span></div><button class="switch" role="switch" id="soundSw" aria-checked="true" aria-label="효과음"></button></div>
+        <div class="test-row" id="langRow"><div><b>언어</b><span>앱에 표시할 언어</span></div><button class="langbtn press" id="langBtn" translate="no"></button></div>
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.44</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.45</p>
     </div>
   </section>
   <section class="overlay bottom" id="tryOnSheet" hidden>
@@ -561,6 +563,65 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
   <div id="toast" hidden></div>
 </div>
 
+<script id="i18n">
+// v0.45 i18n: Korean source text is translated at runtime (DOM text, a few attributes, canvas text).
+// Toss always stays Korean. Elsewhere: saved choice ('holecup.lang') → device language (ko* → Korean, else English).
+// The EN table is keyed by the Korean segment; {0},{1}… are template slots whose captured values are translated too.
+(()=>{
+'use strict';
+const EN=/*EN_BEGIN*/{"(홀인원 보너스 +":"(Hole-in-One bonus +","+ 캐디 {0}":"+ Caddie {0}","+ 캐디 가이드 {0}":"+ Caddie Guide {0}","+1 도전":"+1 Try","+1 벌타":"+1 penalty","+100 코인":"+100 coins","+20 코인 · 참가 보상":"+20 coins · Entry reward","+{0} 코인":"+{0} coins","+{0} 코인 · 연속 {1}일째{2}":"+{0} coins · Day {1} streak{2}","+{0} 코인 · 캐디 가이드 +{1}":"+{0} coins · Caddie Guide +{1}","+{0} 코인 받음":"Got +{0} coins","+{0} 코인{1}":"+{0} coins{1}","/ {0}명":"/ {0} players","11~30위 150":"#11~30 150","1~9홀 연속 도전":"Holes 1–9 in a row","1개씩 사는 것보다 100코인 싸요":"Save 100 coins vs. buying singly","1번 부르기":"Call 1×","1위 1,000":"#1 1,000","1홀 차례":"Up next: Hole 1","1홀부터 다시":"Restart from Hole 1","1홀부터 시작":"Start from Hole 1","2~3위 500":"#2~3 500","2층 버스":"Double-Decker","3홀 대결":"3-Hole Duel","3홀을 연속으로 쳐요. 타수가 적을수록 위, 같으면 더 빨리 끝낸 사람이 위예요.":"Play 3 holes in a row. Fewest strokes wins; ties go to the faster finisher.","4~10위 300":"#4~10 300","5,000코인 + 캐디 가이드 5개 · 한 번만 살 수 있어요":"5,000 coins + 5 Caddie Guides · One-time offer","500코인":"500 coins","9홀 라운드":"9-Hole Round","9홀 라운드 1번 완주":"Finish a 9-Hole Round","9홀 라운드 시작":"Start 9-Hole Round","9홀 라운드가 열렸어요":"9-Hole Round unlocked!","9홀 완주":"Finish 9 holes","9홀을 모두 클리어하면 열려요":"Clear all 9 holes to unlock","AD · 테스트":"AD · TEST","AI 상대 {0}의 기록이 준비됐어요":"AI rival {0} has posted a score","AI 상대가 코스를 치는 중…":"AI rival is playing the course…","Google Play 스토어를 업데이트하면 구매할 수 있어요":"Update the Google Play Store to buy this","PVP 1번 이기기":"Win 1 PVP match","PVP 대전":"PVP Match","PVP와 타임어택에서는 공정한 경쟁을 위해 쓸 수 없어요.":"Not available in PVP or Time Attack, to keep it fair.","{0} / 9홀":"{0} / 9 holes","{0} / 9홀 클리어":"{0} / 9 holes cleared","{0} / {1} · 보상 {2}":"{0} / {1} · Reward {2}","{0} / {1} · 보상 {2}코인{3}":"{0} / {1} · Reward {2} coins{3}","{0} / {1} 보유":"{0} / {1} owned","{0} 9홀 + ★{1} 필요 ({2}/9 · ★{3})":"{0} 9 holes + ★{1} needed ({2}/9 · ★{3})","{0} · 3홀 대결":"{0} · 3-Hole Duel","{0} · 9홀 라운드":"{0} · 9-Hole Round","{0} · {1} 기념 티":"{0} · {1} Souvenir Tee","{0} · {1}승 {2}패":"{0} · {1}W {2}L","{0} · {1}타 / 파 {2}":"{0} · {1} strokes / Par {2}","{0} · {1}홀":"{0} · Hole {1}","{0} · {1}홀{2}":"{0} · Hole {1}{2}","{0} · 다시 돌아서 최소타를 줄여 보세요":"{0} · Replay to lower your best score","{0} · 실제 결제는 일어나지 않아요. 출시 때 스토어 결제로 연결돼요.":"{0} · No real payment is made. Store billing connects at launch.","{0} · 파 {1}{2}":"{0} · Par {1}{2}","{0} 계정 기준이라 기기를 바꿔도 같아요. 환불된 상품은 회수돼요.":"Tied to your {0} account, so it carries across devices. Refunded items are removed.","{0} 기념 티":"{0} Souvenir Tee","{0} 뒤 다시 받을 수 있어요":"Available again in {0}","{0} 리그 · 트로피 {1}":"{0} League · {1} trophies","{0} 완주":"{0} complete","{0} 장착!":"{0} equipped!","{0} 지급 (테스트)":"{0} granted (test)","{0} 코인으로 구매하고 {1}":"Buy for {0} coins and {1}","{0}+{1} 코인 더":"{0}+{1} more coins","{0}{1}홀 클리어 시":"Clear {0}{1} holes","{0}까지":"Until {0}","{0}까지 트로피 {1}":"Trophies to {0}: {1}","{0}는 꾸미기에 넣어 뒀어요":"{0} is saved in Style","{0}를 받았어요":"You got {0}","{0}를 받았어요!":"You got {0}!","{0}번":"{0}×","{0}시간 {1}분":"{0}h {1}m","{0}에서 9홀 클리어 + ★{1}을 모으면 {2}이(가) 열려요 ({3}/9홀 · ★{4}/{5})":"Clear 9 holes + get ★{1} in {0} to unlock {2} ({3}/9 holes · ★{4}/{5})","{0}에서 ★{1}개 모으면 열림 (★{2}/{3})":"Unlocks at ★{1} in {0} (★{2}/{3})","{0}에서 별 27개를 모두 모으면 받아요 (★{1}/27)":"Collect all 27 stars in {0} to get it (★{1}/27)","{0}위":"#{0}","{0}코인":"{0} coins","{0}코인 2배로 받기 ({1}코인{2})":"Double {0} coins ({1} coins{2})","{0}타":"{0} strokes","{0}타 : {1}타 · {2}":"{0} : {1} shots · {2}","{0}타 · {1}":"{0} strokes · {1}","{0}파 {1}":"{0}Par {1}","{0}홀":"{0} holes","{0}홀 {1}개를 클리어하면 열려요":"Clear {1} holes in {0} to unlock","{0}홀 · {1}타 · 파 {2} 대비 {3}{4} · ★ {5} / 27":"Hole {0} · {1} strokes · {3}{4} vs Par {2} · ★ {5} / 27","{0}홀 차례":"Up next: Hole {0}","{0}홀부터 시작":"Start from Hole {0}","}으로 모아요.":"} to collect.","· 꾸미기에서 쓸 수 있어요":"· Use it in Style","· 맛보기(아직 안 연 나라)":"· Preview (locked country)","· 연속 {0}일":"· {0}-day streak","· 이전 최고 {0}타":"· Prev best {0} strokes","← 바람":"← Wind","★27 달성! {0}를 받았어요 · 꾸미기에서 입어 보세요":"★27 done! You got {0} · Try it on in Style","★27 보상":"★27 Reward","가까워요! 첫 캐디는 무료로 봐 드릴게요":"So close! Your first Caddie's on the house","가레산스이":"Zen Garden","가속 패드 · 회전목마":"Boost Pad · Carousel","가지고 있는 공이에요":"You own this ball","같은 3홀을 쳐서 타수가 적은 쪽이 이겨요.":"Play the same 3 holes. Fewer strokes wins.","개구리 모자":"Frog Hat","개선문":"Arc de Triomphe","개선문 로터리":"Arc Roundabout","갠지스 순례":"Ganges Pilgrimage","거울":"Mirror","결과 코인 2배":"2× Coins","결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.":"Test payments only. No real money is charged; store billing is connected at launch.","결제하기":"Pay","경기 종료 전면 광고":"End-of-match interstitial","계단 마을":"Stair Village","계단 우물":"Stepwell","계속 치기":"Keep Playing","고급":"Premium","고양이 귀":"Cat Ears","곤돌라":"Gondola","골드":"Gold","골목길":"Back Alley","공":"Ball","공 근처를 꾹 누르고":"Press and hold near the ball","공룡 모자":"Dino Hat","공유 창에서 저장할 곳을 골라 주세요":"Pick where to save in the share sheet","공을 누르면 날아가는 궤적을 볼 수 있어요. 희귀할수록 궤적이 길고 화려해요. 불꽃·얼음·번개·별똥별·무지개 공은 지나간 자리에 흔적이 남아요. 실력에는 영향이 없어요.":"Tap a ball to preview its flight trail. Rarer balls have longer, flashier trails. Fire, Ice, Lightning, Shooting Star and Rainbow balls leave a mark where they pass. No effect on skill.","광고 보고":"Watch Ad","광고 보고 벌타 취소":"Watch ad to undo penalty","광고 보기":"Watch Ad","광고 없이 바로":"Instant, no ads","광고 없이 바로 받아요 · 10분마다":"Instant, no ads · every 10 min","광고 제거 + 3,000코인":"Remove Ads + 3,000 coins","광고 제거 완료! 3,000코인도 넣어 드렸어요":"Ads removed! Plus 3,000 coins for you","광고 한 편 보고 이어서 갈게요":"Watch one ad and we'll continue","광고로 한 번 더":"Again with Ad","광고를 끝까지 보면 보상을 받아요":"Watch the full ad to get the reward","광고를 보면 바로":"Watch ad, get it now","광고를 보면 바로 받아요 · 10분마다":"Watch an ad to get it · every 10 min","광고를 보면 한 번 더":"Watch an ad for one more","광고를 보면 한 번 더 (하루 {0}번까지)":"Watch an ad for one more (up to {0}×/day)","광고를 불러오고 있어요. 잠시 후 다시 눌러 주세요":"Loading ad. Tap again in a moment","광고를 불러오지 못했어요. 잠시 후 다시 눌러 주세요":"Couldn't load ad. Tap again in a moment","교토 정원":"Kyoto Garden","구매 내역":"Purchase History","구매 내역을 불러오지 못했어요. 잠시 후 다시 시도해 주세요":"Couldn't load purchases. Please try again soon","구매 내역이 없어요":"No purchases yet","구매 완료":"Purchased","구매한 상품 {0}개를 지급했어요":"Delivered {0} purchased items","구매함":"Owned","굴러가유":"Rollin' Along","그랜드 캐니언":"Grand Canyon","그리스":"Greece","그린위의별":"Star on the Green","그만 보기 (보상 없음)":"Stop watching (no reward)","그만두기":"Quit","그만두면 이번 라운드 기록은 남지 않아요.":"If you quit, this round won't be saved.","금각사 연못":"Golden Pavilion Pond","기권하고 나가기":"Forfeit & Leave","기기에 저장":"Save to Device","기둥 숲":"Pillar Forest","기본":"Basic","기본 공":"Basic Ball","기사 갑옷":"Knight Armor","기자 사막":"Giza Desert","꽁꽁 개구리":"Frozen Frog","꽃 머리띠":"Flower Crown","꾸미기":"Style","꾸미기 · {0}":"Style · {0}","꾸미기를 마음껏":"Style all you want","꾸미기에서 언제든 바꿀 수 있어요":"Change anytime in Style","꿀단지 곰":"Honey Pot Bear","나":"Me","나라 하나의 9홀을 모두 클리어하면 열려요 ({0}/9)":"Clear all 9 holes of one country to unlock ({0}/9)","나라마다 9홀을 모두 클리어하고 ★15개를 모으면 다음 나라가 열려요.":"Clear all 9 holes and get ★15 in a country to unlock the next.","나이스 퍼트!":"Nice putt!","나일강":"Nile","나일강 따라":"Along the Nile","남은 도전 {0} / {1}":"Tries left {0} / {1}","남은 도전 {0}번":"{0} tries left","내 리그":"My League","내 원정대원":"My Explorer","내 최고 기록":"My Best","내일 다시 도전할 수 있어요":"Try again tomorrow","내일 새 홀이 열려요. 매일 치면 연속 보너스가 커져요 (최대 7일)":"New hole tomorrow. Play daily to grow your streak bonus (up to 7 days)","네덜란드":"Netherlands","네온 미로":"Neon Maze","네온 스트립":"Neon Strip","네온 터널":"Neon Tunnel","노란 원이 뜨게 당겨 보세요":"Pull until the yellow circle appears","노을 여우":"Sunset Fox","농구공":"Basketball","놓으면 샷!":"Release to shoot!","다시 도전":"Try Again","다시 도전 ({0})":"Try Again ({0})","다시 라운드":"Replay Round","다시 치기":"Replay","다음 나라 · {0}":"Next Country · {0}","다음 홀":"Next Hole","다음부터는 오른쪽 위 캐디 버튼으로 불러요 · 1개 {0}코인":"Next time, use the Caddie button (top right) · {0} coins each","다음엔 꼭!":"Next time for sure!","다음엔 들어갈 거예요":"It'll drop next time","다이아":"Diamond","닫기":"Close","달 문":"Moon Gate","달 문 · 용 회전":"Moon Gate · Dragon Spin","대결 시작":"Start Duel","대나무 숲":"Bamboo Forest","대운하":"Grand Canal","더 세게!":"Harder!","더블 보기":"Double Bogey","데일리 미션":"Daily Missions","데일리 미션 2배":"Daily Missions 2×","도리이 문":"Torii Gate","도리이 포털 · 타이코 북":"Torii Portal · Taiko Drum","도전":"Challenge","도전 +1":"Try +1","도전하기":"Try It","도토리 다람":"Acorn Squirrel","돌담 지그재그":"Stone Wall Zigzag","돌아가기":"Go Back","두 개의 도리이":"Twin Torii","두 척의 곤돌라":"Twin Gondolas","둑":"Dike","뒤로 당겨요":"Pull back","들어가라~!":"Get in there~!","등불 거리":"Lantern Street","등불 마름모":"Lantern Diamond","디귿자 길":"C-Bend","딱 좋아요!":"Just right!","땀 밴드":"Sweatband","또 홀인원! 대단해요!":"Another Hole-in-One! Amazing!","라벤더 토끼 잠옷":"Lavender Bunny PJs","라벤더 토끼 후드":"Lavender Bunny Hoodie","라스베이거스":"Las Vegas","라스베이거스 대로":"Las Vegas Blvd","라운드 · {0} / 9 · 누적 {1}":"Round · {0} / 9 · Total {1}","라운드 시작":"Start Round","랭킹":"Leaderboard","랭킹 보기":"View Leaderboard","랭킹의 다른 참가자는 실제 사람이 아니라 날짜마다 만든 가상 참가자예요. 순위 보상은 다음 날 처음 접속할 때 지급돼요.":"Other Leaderboard players aren't real people; they're virtual players made each day. Rank rewards arrive on your first login the next day.","런던":"London","런던 순환선":"London Loop","런던 아이":"London Eye","레만 호수":"Lake Geneva","레몬 공":"Lemon Ball","로비":"Lobby","로비로":"To Lobby","로비에 왔어요! 월드·미션·상점은 여기서":"Welcome to the Lobby! World, Missions & Shop are here","로비에 왔어요! 홀을 깰수록 새 메뉴가 열려요":"Welcome to the Lobby! Clear holes to unlock menus","루브르 피라미드":"Louvre Pyramid","루트 66":"Route 66","리알토 다리":"Rialto Bridge","리플레이":"Replay","리플레이 영상":"Replay Video","마당 첫 퍼트":"First Backyard Putt","마린 줄무늬":"Navy Stripes","마법사 모자":"Wizard Hat","마테호른":"Matterhorn","만리장성":"Great Wall","만리장성 끝까지":"Great Wall End to End","매일 자정에 다시 채워져요":"Refills daily at midnight","멀리건 · 벌타 취소":"Mulligan · Undo Penalty","멀리건 · 벙커 샷 무르기":"Mulligan · Undo Bunker Shot","메인 메뉴":"Main Menu","멜빵 바지":"Overalls","모두 완료 보너스":"All-Clear Bonus","모래 바람":"Sand Gust","모래폭풍":"Sandstorm","모래폭풍 · 유사":"Sandstorm · Quicksand","모자":"Hat","모자 없음":"No Hat","모자라요":"Not enough","모자와 공을 받았어요!":"You got a hat and a ball!","모자와 옷은 플레이할 때도 보여요.":"Hats and outfits show while you play.","몽글 양 잠옷":"Fluffy Sheep PJs","몽글 양 후드":"Fluffy Sheep Hoodie","몽마르트 언덕":"Montmartre Hill","무굴 정원":"Mughal Garden","무료 체험 중":"Free Trial","무료 코인 100":"100 Free Coins","무승부":"Draw","무지개 공":"Rainbow Ball","무지개 구름":"Rainbow Cloud","무지개 옷":"Rainbow Outfit","물·유사에 안 빠지고 3홀 클리어":"Clear 3 holes without water or quicksand","물방울 티":"Droplet Tee","미국":"USA","미끄러운 다리":"Slippery Bridge","미니골프 코스":"Mini Golf Course","미니골프광":"Minigolf Nut","미션":"Missions","미션 보상":"mission rewards","미션 완료!":"Mission Complete!","미션·광고 보상":"mission & ad rewards","민트 공":"Mint Ball","민트 공룡 잠옷":"Mint Dino PJs","밀짚모자":"Straw Hat","바닷바람":"Sea Breeze","바닷바람 · 기둥":"Sea Breeze · Pillars","바람 →":"Wind →","바람개비":"Pinwheel","바로 받기":"Claim Now","바로 장착하기":"Equip Now","바로 지급":"Instant","반사 연못":"Reflecting Pond","받기":"Claim","받음":"Claimed","버디 이하 3번":"Birdie or better 3×","버디 찬스! 첫 캐디는 무료로 봐 드릴게요":"Birdie chance! Your first Caddie is on the house","버디!":"Birdie!","버디헌터":"Birdie Hunter","버킷햇":"Bucket Hat","버킷햇 · 하늘 티":"Bucket Hat · Sky Tee","번개 공":"Lightning Ball","벌타 취소":"Undo Penalty","벌타 취소!":"Penalty Undone!","벙커 샷 무르기":"Undo Bunker Shot","벙커 탈출! 다시 쳐요":"Out of the bunker! Shoot again","벙커!":"Bunker!","벙커에 빠졌어요":"Stuck in a bunker","벙커에 빠졌어요. 광고를 보면 이 샷을 무를 수 있어요":"Stuck in a bunker. Watch an ad to undo this shot","벚꽃 길":"Cherry Blossom Path","벚꽃 티":"Blossom Tee","베네치아":"Venice","베네치아 운하 일주":"Venice Canal Loop","베레모":"Beret","베르사유 정원":"Versailles Gardens","베이징":"Beijing","벽에 튕기면 돌아갈 수 있어요":"Bounce off walls to get back","별똥별 공":"Shooting Star Ball","별을 더 모으면 코인을 더 받아요":"Collect more stars for more coins","병아리 우비":"Chick Raincoat","병아리 후드":"Chick Hoodie","보기":"Bogey","보내기를 취소했어요":"Send canceled","보냈어요!":"Sent!","보너스 레인":"Bonus Lane","보상 받기":"Claim Reward","보상형 광고":"Rewarded Ad","보스":"Boss","보스 ·":"Boss ·","보스 홀 · 파 5 롱홀":"Boss Hole · Par 5 long hole","보유 {0} 코인 · 구매하면 {1} 남아요":"You have {0} coins · {1} left after purchase","보유 캐디 {0}개 · 코인 {1}":"Caddies: {0} · Coins: {1}","복숭아 공":"Peach Ball","부메랑":"Boomerang","부메랑 · 점프 패드":"Boomerang · Jump Pad","분수 광장":"Fountain Plaza","불꽃 공":"Fire Ball","불러오는 중…":"Loading…","붉은 바위":"Red Rock","브론즈":"Bronze","비니":"Beanie","비슷한 실력":"Similar Skill","빅벤":"Big Ben","빗길":"Rainy Road","빙하 · 시계 바늘 · 케이블카":"Glacier · Clock Hands · Cable Car","빙하 미끄럼":"Glacier Slide","빠따신":"Putt God","사막 입구":"Desert Gate","사서 바로 불러요":"Buy & call now","산마르코 광장":"St. Mark's Square","산악 열차":"Mountain Train","산토리니":"Santorini","산호초":"Coral Reef","상대":"Rival","상대 {0}타 홀아웃":"Rival holed out in {0}","상대 기록 불러오는 중 · {0} / 3":"Loading rival runs · {0} / 3","상대 기록을 빠르게 보는 중":"Fast-forwarding rival run","상대는 실제 사람이 아니라, AI가 같은 코스를 먼저 쳐 둔 고스트예요. 리그가 오를수록 AI도 더 잘 쳐요.":"Rivals aren't real people—they're AI ghosts that played the course first. Higher leagues mean better AI.","상자를 눌러서 열어 보세요":"Tap the box to open it","상점":"Shop","상점 · 캐디 가이드 1개":"Shop · 1 Caddie Guide","상점 무료 코인":"Shop Free Coins","새 나라가 열렸어요 · {0}":"New country unlocked · {0}","새 아이템을 받았어요!":"You got a new item!","새 최고 기록!":"New Best!","새 최고 기록! 현재 {0}위 / {1}명":"New Best! Now #{0} of {1}","새 홀에서 홀인원을 {0}번 하면 캐디가 선물해요 (지금 {1}번)":"Get {0} Hole-in-Ones on new holes for a Caddie gift (now {1})","새로 열렸어요 · {0}":"Just unlocked · {0}","새벽라운딩":"Dawn Round","샷, 벽, 홀컵 소리":"Shot, wall & cup sounds","샷을 물렀어요. 치기 전 자리에서 다시":"Shot undone. Try again from your spot","샹젤리제":"Champs-Élysées","샹젤리제 대로":"Champs-Élysées Avenue","선물 상자":"Gift Box","선물을 받았어요!":"You got a gift!","설정":"Settings","세 미션 보상을 모두 받으면 {0}코인 + 캐디 가이드 {1}개":"Claim all 3 missions for {0} coins + {1} Caddie Guides","세일러복":"Sailor Suit","센 강 다리":"Seine Bridge","셰프 모자":"Chef Hat","셰프 옷":"Chef Outfit","수박 공":"Watermelon Ball","숲 티":"Forest Tee","스위스":"Switzerland","스위스 시계":"Swiss Clock","스핑크스 골목":"Sphinx Alley","승리":"Win","시간":"Time","시계바늘 · 물웅덩이":"Clock Hands · Puddles","시계탑":"Clock Tower","시작 화면":"Title Screen","실버":"Silver","실크해트":"Top Hat","쌍 부메랑":"Twin Boomerangs","쌍둥이 풍차":"Twin Windmills","쌍룡":"Twin Dragons","썬캡":"Sun Visor","쓰기":"Use","아그라":"Agra","아기 구름용":"Baby Cloud Dragon","아기곰 잠옷":"Teddy Bear PJs","아기곰 후드":"Teddy Bear Hoodie","아깝다!":"So close!","아깝다! 다시 봐 드릴까요?":"So close! Want another look?","아슬아슬!":"Close call!","아웃백":"Outback","아웃백 입구":"Outback Gate","아웃백 횡단":"Outback Crossing","아이템":"Items","아직 기록 없음":"No record yet","아치 포털":"Arch Portal","알바트로스!":"Albatross!","알프스":"Alps","알프스 입구":"Alps Gate","알프스 종주":"Alps Traverse","암스테르담":"Amsterdam","앱에 표시할 언어":"Display language","야구 모자":"Baseball Cap","어제의 타임어택 결과":"Yesterday's Time Attack","언더그라운드":"Underground","언어":"Language","얼어붙은 연못":"Frozen Pond","얼음 공":"Ice Ball","에게해":"Aegean Sea","에펠탑":"Eiffel Tower","연꽃 길":"Lotus Path","연꽃 연못":"Lotus Pond","연못 · 연꽃 범퍼":"Pond · Lotus Bumpers","연못 징검다리":"Pond Stepping Stones","영국":"UK","영상 공유":"Share Video","영상 녹화 중…":"Recording…","영상 녹화를 시작하지 못했어요":"Couldn't start recording","영상을 보내지 못했어요":"Couldn't send video","영상을 저장하는 중…":"Saving video…","영상을 저장하지 못했어요":"Couldn't save video","영상을 저장했어요":"Video saved","영상을 저장했어요. 메신저에서 친구에게 보내 주세요":"Video saved. Send it to friends in your messenger","영웅":"Hero","오늘 도전 끝":"Done for Today","오늘 보상은 받았어요 · 최고 {0}타":"Today's reward claimed · Best: {0} strokes","오늘 완료 · 최고 {0}타 · 내일 새 홀":"Done today · Best: {0} strokes · New hole tomorrow","오늘 추가 도전을 다 썼어요":"No extra tries left today","오늘의 랭킹":"Today's Leaderboard","오늘의 타임어택":"Today's Time Attack","오늘의 홀":"Daily Hole","오늘의 홀 · {0}":"Daily Hole · {0}","오늘의 홀 · 좌우가 바뀐 코스":"Daily Hole · Mirrored Course","오벨리스크 숲":"Obelisk Forest","오페라 하우스":"Opera House","올림포스 등반":"Olympus Climb","올림피아":"Olympia","옷":"Outfit","완료":"Done","완주":"Finished","왕관":"Crown","왕의 무덤":"King's Tomb","용의 꼬리":"Dragon's Tail","우주 헬멧":"Space Helmet","우주복":"Space Suit","운하 · 곤돌라":"Canals · Gondolas","운하 골목":"Canal Alley","운하 다리":"Canal Bridge","울루루":"Uluru","원정대원":"Explorer","월드":"World","월드 투어":"World Tour","월드로":"To World","웨스트민스터":"Westminster","유사 늪":"Quicksand Bog","유사에 빠짐 · +1":"In quicksand · +1","은하수 옷":"Galaxy Suit","이 기기에서는 영상 저장을 지원하지 않아요":"Video saving isn't supported on this device","이 기기에서는 영상을 만들지 못했어요":"Couldn't make a video on this device","이 홀 다시":"Replay Hole","이글!":"Eagle!","이글아이":"Eagle Eye","이번 홀 무승부":"Hole tied","이번 홀 승리":"Hole won","이번 홀 패배":"Hole lost","이어서 쳐요 ·":"Resuming ·","이어서 치기":"Continue","이제 {0}을(를) 살 수 있어요":"You can now buy {0}","이집트":"Egypt","이탈리아":"Italy","이화원 호수":"Summer Palace Lake","인도":"India","일몰 언덕":"Sunset Hill","일반":"Common","일본":"Japan","일시정지":"Pause","입구":"Entrance","입기":"Wear","입어 본 모습":"Preview","자금성 문":"Forbidden City Gate","자전거 길":"Bike Path","자정의 빅벤":"Big Ben at Midnight","잠김":"Locked","잠시 후 다시 눌러 주세요":"Please try again in a moment","장독 · 팽이":"Jar · Top","장독대":"Jar Terrace","장착":"Equip","장착 중":"Equipped","장착 중이에요":"Equipped","장착하기":"Equip","장착했어요!":"Equipped!","저장을 취소했어요":"Save canceled","전면 광고":"Interstitial ads","전면 광고가 사라지고, 광고 보상은 광고 없이 바로 받아요. 3,000코인도 드려요.":"No more interstitial ads, and ad rewards are instant with no ads. Plus 3,000 coins!","전설":"Legendary","전설 아이템도 한 번에":"Legendary items, all at once","제가 라인 봐 드릴게요!":"I'll read the line for you!","젤라토 가게":"Gelato Shop","조금 살살!":"Easy now!","조금 오른쪽!":"A bit right!","조금 왼쪽!":"A bit left!","좋아요, 한 번 더":"Sure, once more","좌우가 바뀐 코스 · 최대 {0}코인":"Mirrored course · up to {0} coins","중국":"China","지구 공":"Earth Ball","지금 캐릭터는 동물이라 모자가 보이지 않아요. 모자는 원정대원일 때 보여요.":"Animal characters hide hats. Hats show on the Explorer.","지금은 광고를 볼 수 없어요":"No ads available right now","지금은 구매할 수 없는 상품이에요":"This item isn't available right now","지금은 무료예요! 노란 원이 뜨게 당겨 보세요":"It's free now! Pull until the yellow circle shows","지난 PVP는 중간에 나가서 패배로 기록됐어요":"You left your last PVP match, so it counted as a loss","진행 기록 초기화":"Reset Progress","진행 기록은 저장돼 있어요. 다음에 이어서 칠 수 있어요.":"Your progress is saved. You can pick up where you left off.","참가 50":"Entry 50","찾는 중":"Searching","챕터 결과":"Chapter Results","천 개의 도리이":"Thousand Torii","천단":"Temple of Heaven","천사 고리":"Angel Halo","첫 구매 스타터 팩":"First-Buy Starter Pack","첫 홀인원을 하면 캐디가 모자와 공을 함께 선물해요":"Get your first Hole-in-One and the Caddie gifts you a hat and ball","체크 셔츠":"Plaid Shirt","초기화까지 {0}":"Resets in {0}","초기화했어요":"Reset done","최고 {0}타 ({1})":"Best: {0} strokes ({1})","최고 기록 {0}타 · {1} 유지 · {2}위":"Best {0} strokes · {1} kept · #{2}","최고 리그":"Top League","최고 혜택":"Best Value","최대 타수":"Max strokes","최종 결과":"Final Results","추천":"Best","축구공":"Soccer Ball","축하해요!":"Congrats!","출구":"Exit","출시 때 이 자리에서 광고 SDK 영상이 재생돼요.":"At launch, an ad SDK video will play here.","취소":"Cancel","치즈 마을":"Cheese Village","치즈 시장":"Cheese Market","친구에게 보내기":"Send to a Friend","칩샷마스터":"Chip Shot Master","캐디":"Caddie","캐디 가이드":"Caddie Guide","캐디 가이드 +1":"Caddie Guide +1","캐디 가이드 +{0}":"Caddie Guide +{0}","캐디 가이드 1개":"1 Caddie Guide","캐디 가이드 1회":"1 Caddie Guide","캐디 가이드 {0}개":"{0} Caddie Guides","캐디 가이드 {0}개 구매 · 1개 바로 사용":"Bought {0} Caddie Guides · 1 used now","캐디 가이드 · 보유 {0}개":"Caddie Guide · Have {0}","캐디 가이드 구매 · 바로 불렀어요":"Caddie Guide bought · Caddie's here","캐디 가이드 무료 체험 · 오른쪽 위 버튼":"Free Caddie Guide trial · top-right button","캐디의 선물이 도착했어요!":"A gift from your Caddie has arrived!","캐릭터":"Character","캐릭터를 바꿔도 실력은 같아요. 모자·옷과 함께 꾸밀 수 있어요.":"Characters never change skill. Mix them with hats and outfits.","캥거루 점프":"Kangaroo Hop","케이블카":"Cable Car","코끼리 행렬":"Elephant Parade","코스":"Course","코스 선택":"Select Course","코인":"Coins","코인 1,000":"1,000 coins","코인 15,000 (+50%)":"15,000 coins (+50%)","코인 45,000 (+90%)":"45,000 coins (+90%)","코인 6,000 (+20%)":"6,000 coins (+20%)","코인 얻으러 가기":"Get Coins","코인으로 꾸미기를 사 보세요":"Use coins to buy Style items","코인은 홀을 클리어하거나 {0}으로 모아요.":"Earn coins by clearing holes or from {0}.","코인이 {0}개 모자라요 (보유 {1})":"Need {0} more coins (have {1})","코인이 {0}개 모자라요 · 코인 탭으로 갈게요":"Need {0} more coins · Going to Coins tab","코인이 모자라요. 홀을 클리어하거나 미션 보상으로 모을 수 있어요.":"Not enough coins. Earn more by clearing holes or Missions.","콜로세움":"Colosseum","크레타 미로":"Cretan Maze","타":"strokes","타로 넣었어!":"strokes to sink it!","타수":"Strokes","타워 브리지":"Tower Bridge","타이코 북":"Taiko Drum","타임어택":"Time Attack","타임어택 1번 도전":"1 Time Attack run","타임어택 · {0} / 3 · {1}":"Time Attack · {0} / 3 · {1}","타임어택 시작!":"Time Attack, go!","타임어택 중에는 일시정지해도 시간이 흘러요.":"In Time Attack, the clock keeps running even when paused.","타임어택 추가 도전":"Extra Time Attack run","타지마할":"Taj Mahal","태양의 신전":"Sun Temple","탭하여 시작":"Tap to Start","턱시도":"Tuxedo","테스트 결제":"Test Purchase","토마토 티":"Tomato Tee","토스":"Toss","토스 계정 기준이라 기기를 바꿔도 같아요. 환불된 상품은 회수돼요.":"Tied to your Toss account, so it carries across devices. Refunded items are removed.","토스 앱을 최신 버전으로 업데이트하면 구매할 수 있어요":"Update the Toss app to buy this","튤립 길":"Tulip Lane","튤립 밭":"Tulip Field","트라팔가 광장":"Trafalgar Square","트로피 {0}":"Trophies {0}","특이하고 예쁠수록 희귀해요. 영웅·전설 아이템은 움직여요.":"Quirkier and prettier means rarer. Hero & Legendary items are animated.","파":"Par","파 {0}":"Par {0}","파 {0} · {1}타":"Par {0} · {1} strokes","파 {0} · 도전하면 랭킹에 올라가요":"Par {0} · Play to get on the Leaderboard","파 {0} · 한 번에 돌아서 최소 타수 기록을 세워요":"Par {0} · Play it all in one go for the fewest shots","파 이하로 4홀 끝내기":"Finish 4 holes at Par or better","파란 반투명 공이 상대 고스트예요. 같이 출발합니다":"The see-through blue ball is your rival's ghost. You start together","파르테논":"Parthenon","파리":"Paris","파세이브":"Par Saver","판다 공":"Panda Ball","패배":"Loss","팽이 마당":"Spinning Top Yard","퍼팅요정":"Putt Fairy","펭귄 잠옷":"Penguin PJs","펭귄 후드":"Penguin Hoodie","펭펭":"Pengpeng","포함)":"included)","폰을 세로로 돌려 주세요":"Please turn your phone upright","풍차":"Windmill","풍차 · 튤립 밭":"Windmill · Tulip Field","풍차 마을":"Windmill Village","풍차 마을 순례":"Windmill Village Tour","프랑스":"France","플래티넘":"Platinum","플레이":"Play","피라미드 언덕":"Pyramid Hill","피사의 사탑":"Leaning Tower of Pisa","핀볼 레인":"Pinball Lane","핀볼 범퍼 · 회전 원판":"Pinball bumpers · Spinners","하늘 티":"Sky Tee","하얀 골목":"White Alley","한 번 더":"Once More","한 번 더 누르면 별과 트로피가 모두 지워져요":"Tap again to erase all stars and trophies","한 판 더":"Play Again","한국":"Korea","한국 · HOLE 1 / 9":"Korea · HOLE 1 / 9","한국 · 한옥마을":"Korea · Hanok Village","한복 저고리":"Hanbok Jacket","한옥 대문":"Hanok Gate","한옥 마을 한 바퀴":"Hanok Village Loop","한옥마을":"Hanok Village","한옥마을 · ★ 0 / 27":"Hanok Village · ★ 0 / 27","한타만더":"One More Shot","합":"Tot","합계":"Total","합계 {0} : {1}":"Total {0} : {1}","해바라기 티":"Sunflower Tee","해적 모자":"Pirate Hat","향신료 시장":"Spice Market","현재 {0}위 / {1}명 · 이대로면 내일 {2}코인":"Now #{0} / {1} players · {2} coins tomorrow if you hold","호주":"Australia","홀":"Hole","홀 5개 클리어":"Clear 5 holes","홀 {0}개를 클리어하면 {1}이(가) 열려요 ({2}/{3})":"Clear {0} holes to unlock {1} ({2}/{3})","홀 {0}개를 클리어하면 열려요":"Clear {0} holes to unlock","홀 사이 전면 광고 (4홀마다)":"Interstitial ads between holes (every 4)","홀은 1번부터 차례로 열려요. 앞 홀을 클리어하면 다음 홀을 칠 수 있어요.":"Holes unlock in order from Hole 1. Clear a hole to play the next.","홀인원 1번":"1 Hole-in-One","홀인원 공":"Hole-in-One Ball","홀인원 기념 모자":"Hole-in-One Hat","홀인원 기념 모자 + 홀인원 공":"Hole-in-One Hat + Hole-in-One Ball","홀인원 기념 선물":"Hole-in-One Gift","홀인원 기념 선물이에요!":"A Hole-in-One gift for you!","홀인원 기념 티":"Hole-in-One Tee","홀인원 리플레이":"Hole-in-One Replay","홀인원 선물":"Hole-in-One Gift","홀인원 영상":"Hole-in-One Video","홀인원 영상 공유":"Share Hole-in-One Video","홀인원!":"Hole-in-One!","홀인원이에요!!":"It's a Hole-in-One!!","홀인원장인":"Ace Master","홀컵 가장자리 타고 넣기 1번":"Rim-roll sink 1×","홀컵 근처에서 캐디가 라인과 세기를 봐 줘요. 노란 원이 뜨게 당기면 쏙!":"Near the cup, your Caddie reads the line and power. Pull till the yellow circle shows, then plop!","홀컵 근처에서 캐디가 라인을 봐 줘요":"Near the cup, your Caddie reads the line","홀컵 근처에서 캐디가 맞은편에서 라인과 세기를 봐 줘요. 솔로·9홀 라운드에서 한 샷에 1개":"Near the cup, your Caddie reads line and power from across. Solo & 9-Hole Round: 1 per shot","홀컵 원정대":"Hole Cup Expedition","홀컵 원정대 v0.44":"Hole Cup Expedition v0.44","홀컵 원정대 v0.45":"Hole Cup Expedition v0.45","홀컵 원정대 · {0} {1}에서 {2}":"Hole Cup Expedition · {2} at {0} {1}","홀컵 원정대는 세로 화면에 맞춰 만들었어요":"Hole Cup Expedition is made for portrait mode","홀컵 원정대를 닫을까요?":"Close Hole Cup Expedition?","홀컵은 반대쪽이에요":"The cup's the other way","홈":"Home","홈으로":"Home","화면을 누르면 건너뛰어요":"Tap to skip","화면을 눌러 뒤로 당겼다 놓으면 샷":"Tap, pull back, and release to shoot","화면을 세로로 돌려 주세요":"Please turn your screen upright","확인":"OK","환불됨":"Refunded","황금 슈트":"Golden Suit","회전 원판":"Spinner","회전목마":"Carousel","효과음":"Sound FX","희귀":"Rare","🎁 캐디의 홀인원 선물 · {0}":"🎁 Caddie's Hole-in-One Gift · {0}","🎁 캐디의 홀인원 선물 · {0}{1}":"🎁 Caddie's Hole-in-One Gift · {0}{1}"}/*EN_END*/;
+const LK='holecup.lang',HAN=/[ㄱ-ㆎ가-힣]/;
+function pick(){if(window.__TOSS__)return 'ko';let s=null;try{s=localStorage.getItem(LK);}catch(e){}
+  if(s==='ko'||s==='en')return s;const n=(navigator.languages&&navigator.languages[0])||navigator.language||'ko';return /^ko/i.test(n)?'ko':'en';}
+const LANG=pick();
+const I18N=window.__I18N={lang:LANG,canSwitch:!window.__TOSS__,
+  set(l){if(l!=='ko'&&l!=='en')return;try{localStorage.setItem(LK,l);}catch(e){}location.reload();},
+  t:s=>s,missing:{}};
+document.documentElement.lang=LANG;
+if(LANG==='ko')return;
+const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const PLAIN=[],TPL=[];
+for(const k in EN){if(/\{\d\}/.test(k)){const parts=k.split(/\{(\d)\}/),lit=parts.filter((_,i)=>i%2===0);if(!HAN.test(lit.join('')))continue;
+    // lit[0] {a} lit[1] {b} … lit[n]; slots must be non-empty; scanned left to right (linear, no regex backtracking)
+    TPL.push({lit,order:parts.filter((_,i)=>i%2===1).map(Number),v:EN[k],len:lit.join('').length});}
+  else PLAIN.push(k);}
+function match(t,s){const L=t.lit,n=L.length-1;if(!s.startsWith(L[0])||!s.endsWith(L[n]))return null;
+  let pos=L[0].length;const end=s.length-L[n].length,g=[];if(end<pos)return null;
+  for(let i=1;i<n;i++){if(!L[i]){g.push(null);continue;}const j=s.indexOf(L[i],pos+1);if(j<0||j>=end)return null;g.push(s.slice(pos,j));pos=j+L[i].length;}
+  g.push(s.slice(pos,end));
+  // empty separators between two slots ({3}{4}): split a number from what follows, else give it all to the first slot
+  // (a slot next to another may be empty: '{0}{1}홀' also matches '7홀' when {0} was an icon that became its own element)
+  const adj=[];for(let i=0;i<g.length;i++)if(g[i]===null){adj[i]=adj[i+1]=1;const a=g[i+1]||'',m=/^([+\-−]?[\d,.]+)([\s\S]+)$/.exec(a);if(m){g[i]=m[1];g[i+1]=m[2];}else{g[i]=a;g[i+1]='';}}
+  return g.some((x,i)=>x===''&&!adj[i])?null:g;}
+TPL.sort((a,b)=>b.len-a.len);PLAIN.sort((a,b)=>b.length-a.length);
+const cache=new Map();
+function core(s){if(Object.prototype.hasOwnProperty.call(EN,s))return EN[s];
+  for(const t of TPL){const m=match(t,s);if(m){return t.v.replace(/\{(\d)\}/g,(_,i)=>{const j=t.order.indexOf(+i);return j<0?'':tr(m[j]);});}}
+  // fallback: replace known pieces inside a longer string (word start only, so '공' never eats '공유')
+  let out=s;for(const k of PLAIN){if(out.indexOf(k)<0)continue;const short=k.length<3;
+    out=out.replace(new RegExp('(^|[^\\uAC00-\\uD7A3])'+esc(k)+(short?'(?![\\uAC00-\\uD7A3])':''),'g'),(m,p)=>p+EN[k]);if(!HAN.test(out))break;}
+  out=out.replace(/([A-Za-z0-9!?)%])(에서|으로|을|를|이|가|은|는|에|로|와|과|의|도|까지|부터|만)(?=[\s.,!?·)]|$)/g,'$1');
+  if(HAN.test(out)&&Object.keys(I18N.missing).length<300)I18N.missing[s]=1;
+  return out;}
+function tr(s){if(s==null)return s;s=String(s);if(!HAN.test(s))return s;let r=cache.get(s);if(r!==undefined)return r;
+  const m=/^(\s*)([\s\S]*?)(\s*)$/.exec(s);r=m[1]+core(m[2])+m[3];if(cache.size>4000)cache.clear();cache.set(s,r);return r;}
+I18N.t=tr;
+document.title=tr(document.title);
+// canvas text (hole names, banners, floating labels…)
+const P=CanvasRenderingContext2D.prototype;
+for(const f of ['fillText','strokeText','measureText']){const o=P[f];P[f]=function(t,...a){return o.call(this,tr(t),...a);};}
+// DOM
+const ATTR=['aria-label','placeholder','title','alt'];
+function node(n){if(n.nodeType===3){const pe=n.parentNode;if(pe&&pe.nodeType===1&&(pe.nodeName==='SCRIPT'||pe.nodeName==='STYLE'||pe.getAttribute('translate')==='no'))return;const v=n.data;if(HAN.test(v)){const r=tr(v);if(r!==v)n.data=r;}return;}
+  if(n.nodeType!==1||n.nodeName==='SCRIPT'||n.nodeName==='STYLE'||n.getAttribute('translate')==='no')return;
+  for(const a of ATTR){const v=n.getAttribute(a);if(v&&HAN.test(v)){const r=tr(v);if(r!==v)n.setAttribute(a,r);}}
+  for(let c=n.firstChild;c;c=c.nextSibling)node(c);}
+function boot(){node(document.body);new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')node(m.target);
+    else if(m.type==='attributes')node(m.target);else for(const a of m.addedNodes)node(a);}})
+  .observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTR});}
+if(document.body)boot();else document.addEventListener('DOMContentLoaded',boot);
+})();
+</script>
 <script>
 (()=>{
 'use strict';
@@ -985,21 +1046,50 @@ const ANDROID=!TOSS&&!!window.__ANDROID__,HCApp=()=>window.HCApp||null;
 const trackQ=[];
 // v0.35: gameplay events for retention/funnel analysis (Toss analytics). day = days since first launch (D0, D1, D7…)
 const EVLOG=[];
-function logEv(name,p){const q=Object.assign({day:dayIdx()},p||{});if(EVLOG.length>=200)EVLOG.shift();EVLOG.push([name,q]);track('event',name,q);}
-function dayIdx(){try{return Math.max(0,Math.floor((Date.now()-(SAVE.firstAt||Date.now()))/86400000));}catch(e){return 0;}}
+function logEv(name,p){const q=Object.assign({day:dayIdx(),lang:(window.__I18N||{}).lang||'ko'},p||{});if(EVLOG.length>=200)EVLOG.shift();EVLOG.push([name,q]);track('event',name,q);}
+function dayIdx(){try{const n=NOW();return Math.max(0,Math.floor((n-(SAVE.firstAt||n))/86400000));}catch(e){return 0;}}
 addEventListener('error',e=>{try{if(typeof logEv==='function'&&!(window.__errN>5)){window.__errN=(window.__errN||0)+1;logEv('js_error',{msg:String(e.message||'').slice(0,80),line:e.lineno||0});}}catch(_){}});
-function track(type,name,p){if(!TOSS)return;const a=AIT();if(a&&a.ready&&a.track){a.track(type,name,p||{});return;}if(trackQ.length<50)trackQ.push([type,name,p||{}]);}
+function track(type,name,p){if(!TOSS){gaTrack(type,name,p||{});return;}const a=AIT();if(a&&a.ready&&a.track){a.track(type,name,p||{});return;}if(trackQ.length<50)trackQ.push([type,name,p||{}]);}
+// v0.45 (global): outside Toss the same events go to Google Analytics 4 / Firebase.
+//  - Android app: window.HCApp.logEvent(name, json) → Firebase Analytics in the Java side (when that bridge exists)
+//  - web / Pages: gtag.js with window.__GA4_ID__ (set by the build; empty = analytics off, nothing is loaded)
+// GA4 rules: event and parameter names ≤40 chars [a-z0-9_], values ≤100 chars. Screen views are sent as 'screen_view'.
+const GA_ID=TOSS?'':String(window.__GA4_ID__||'');let gaOn=false;
+function gaInit(){if(!GA_ID||gaOn||ANDROID)return;gaOn=true;window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){dataLayer.push(arguments);};
+  gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'granted'});
+  gtag('js',new Date());gtag('config',GA_ID,{send_page_view:false});gtag('set','user_properties',{app_lang:(window.__I18N||{}).lang||'ko',platform:'web'});
+  const sc=document.createElement('script');sc.async=true;sc.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);document.head.appendChild(sc);}
+function gaParams(p){const o={};for(const k in p){const v=p[k];const kk=String(k).toLowerCase().replace(/[^a-z0-9_]/g,'_').slice(0,40);o[kk]=typeof v==='number'||typeof v==='boolean'?v:String(v==null?'':v).slice(0,100);}return o;}
+function gaTrack(type,name,p){const ev=type==='screen'?'screen_view':String(name).toLowerCase().replace(/[^a-z0-9_]/g,'_').slice(0,40),q=gaParams(type==='screen'?Object.assign({screen_name:name},p):p);
+  const h=ANDROID&&HCApp();if(h&&typeof h.logEvent==='function'){try{h.logEvent(ev,JSON.stringify(q));}catch(e){}return;}
+  if(GA_ID){gaInit();try{window.gtag('event',ev,q);}catch(e){}}}
+// v0.45 (global): trusted time for 오늘의 홀, 데일리 미션, 타임어택 and shop cooldowns.
+//  NOW() = device clock + offset from a server 'Date' header (same-origin HEAD, or window.__TIME_URL__ for the Android app).
+//  Offline, a clock moved backwards never goes below the latest time already seen (SAVE.tMax), so a day can't be replayed.
+let TOFF=0,TSRC='local';
+function NOW(){let t=Date.now()+TOFF;try{if(TSRC==='local'&&SAVE&&SAVE.tMax&&t<SAVE.tMax)t=SAVE.tMax;if(SAVE&&(!SAVE.tMax||t>SAVE.tMax+60000))SAVE.tMax=t;}catch(e){}return t;}
+async function syncTime(){const h=ANDROID&&HCApp();
+  try{if(h&&typeof h.trustedTime==='function'){const v=+(await h.trustedTime());if(v>1.6e12){TOFF=v-Date.now();TSRC='app';}}}catch(e){}
+  if(TSRC==='local'){const u=window.__TIME_URL__||(/^https?:$/.test(location.protocol)&&!ANDROID?location.href.split('#')[0]:'');
+    if(u)try{const t0=Date.now(),r=await fetch(u,{method:'HEAD',cache:'no-store'}),t1=Date.now(),d=Date.parse(r.headers.get('date')||'');
+      if(d>1.6e12){TOFF=d+500+(t1-t0)/2-t1;TSRC='server';}}catch(e){}}
+  if(TSRC!=='local'){const before=SAVE.tMax||0;SAVE.tMax=Date.now()+TOFF;if(Math.abs(TOFF)>10*60000)logEv('clock_skew',{min:Math.round(TOFF/60000),src:TSRC});
+    if(Math.abs(SAVE.tMax-before)>60000&&typeof app!=='undefined'&&app.dataset.screen==='home')try{renderHome();}catch(e){}}}
 // iOS swipe-back is on only where back means "leave the mini app" (title, lobby); elsewhere it would cut a putt drag short
 function swipeBack(on){if(!TOSS)return;const a=AIT();if(a&&a.swipeBack)a.swipeBack(on);}
 // paid packs (coins, 광고 제거). Web: test purchase popup. Toss (v0.22): Apps-in-Toss in-app purchase, and only the packs
 // registered in the console show up. Set false to hide them everywhere (already-bought goods, restore and refunds keep working)
 // Android (v0.26): off until Google Play billing is connected
-const PAID_ITEMS=!ANDROID;
+// v0.45 (global): the Android app can plug Google Play Billing / AdMob into the same code paths the Toss build uses.
+// It sets window.__ANDROID_STORE__={iap:true,ads:true} before this script and installs window.AIT with the same
+// iap/ads interface (see android/GLOBAL_STORE_BRIDGE.md), then fires 'ait:ready'. Without it, Android stays ad-free and unpaid.
+const AST=ANDROID&&window.__ANDROID_STORE__||null,NATIVE=TOSS||!!AST,STORE_NAME=TOSS?'토스':'Google Play';
+const PAID_ITEMS=!ANDROID||!!(AST&&AST.iap);
 // v0.23: ads on/off. Web build: always on (test overlay). Toss build: ADS_ENABLED in toss/src/config.js, which vite puts in
 // window.__TOSS_ADS__ (off until the ad keys exist). Off → no rewarded-ad button anywhere (mulligan, result x2, missions x2, caddie,
 // time attack, shop), no interstitials, nothing preloaded, and the '광고 제거' pack is not sold (there is nothing to remove).
 // Android (v0.26): off, no ad SDK in that build yet
-const ADS_ON=TOSS?!!window.__TOSS_ADS__:!ANDROID;
+const ADS_ON=TOSS?!!window.__TOSS_ADS__:ANDROID?!!(AST&&AST.ads):true;
 document.documentElement.classList.toggle('ads-off',!ADS_ON);
 // v0.22: the shop's ad-reward items (무료 코인 100, 캐디 가이드 1개) stay hidden in the Toss build even with ads on. true brings them back.
 const SHOP_AD_ITEMS=!TOSS&&ADS_ON;
@@ -1198,7 +1288,7 @@ function startDaily(){if(!featGate('daily'))return;const c=dailyHoleObj();clearT
 function showDailyResult(n,sunk){if(G.mode!=='daily'||app.dataset.screen!=='game')return;G.state='result';G.paused=true;G.resultKind='daily';
   const st=dailyState(),stars=sunk?starsFor(n,hole.par):0,first=sunk&&!st.claimed;if(sunk&&(st.best==null||n<st.best))st.best=n;
   let coins=0,streak=SAVE.dhStreak||0;
-  if(first){const y=todayKey(new Date(Date.now()-86400000));streak=SAVE.dhLast===y?streak+1:1;SAVE.dhStreak=streak;SAVE.dhLast=st.date;st.claimed=1;
+  if(first){const y=todayKey(new Date(NOW()-86400000));streak=SAVE.dhLast===y?streak+1:1;SAVE.dhStreak=streak;SAVE.dhLast=st.date;st.claimed=1;
     coins=(stars>=3?60:stars>=2?40:30)+Math.min(streak,7)*5;addCoins(coins);}
   save();logEv('daily_end',{strokes:n,par:hole.par,sunk:sunk?1:0,first:first?1:0,streak});if(first)sfx.win();
   resultPanel.innerHTML=xb('world')+`<p class="eyebrow center">오늘의 홀</p><div class="big-stars">${[0,1,2].map(q=>q<stars?'★':'<span class="off">★</span>').join('')}</div>
@@ -1208,7 +1298,7 @@ function showDailyResult(n,sunk){if(G.mode!=='daily'||app.dataset.screen!=='game
     <div class="row2"><button class="btn btn-plain press" data-act="world">월드로</button><button class="btn btn-primary press" data-act="dailyRetry">다시 치기</button></div>`;
   result.hidden=false;}
 function renderDailyCard(){const el=$('dailyCard');if(!el)return;if(!featOpen('daily')){el.innerHTML=`<div class="card daily locked"><div><p class="eyebrow">오늘의 홀</p><b>${LOCK}홀 ${FEAT.daily.n}개를 클리어하면 열려요</b></div></div>`;return;}
-  const c=dailyHoleObj(),st=dailyState(),ch=CHAPTERS[c.ci],streak=(SAVE.dhLast===todayKey(new Date(Date.now()-86400000))||SAVE.dhLast===st.date)?SAVE.dhStreak||0:0;
+  const c=dailyHoleObj(),st=dailyState(),ch=CHAPTERS[c.ci],streak=(SAVE.dhLast===todayKey(new Date(NOW()-86400000))||SAVE.dhLast===st.date)?SAVE.dhStreak||0:0;
   el.innerHTML=`<button class="card daily press" id="dailyBtn" style="--acc:${ch.theme.acc}"><i class="ndot" data-ndot="daily" hidden></i><canvas id="dailyArt" aria-hidden="true"></canvas><div><p class="eyebrow">오늘의 홀 · ${ch.name}</p><b>${esc(c.h.name)}</b>
     <span>${st.claimed?`오늘 완료 · 최고 ${st.best}타 · 내일 새 홀`:`좌우가 바뀐 코스 · 최대 ${60+Math.min(streak+1,7)*5}코인`}${streak?` · 연속 ${streak}일`:''}</span></div>${st.claimed?'<span class="pill alt off">완료</span>':'<span class="pill">도전</span>'}</button>`;
   drawArt($('dailyArt'),ch.theme.art);renderDots();}
@@ -1245,7 +1335,9 @@ function newSolo(ci,hi){if(!holeOpen(ci,hi))hi=firstOpen(ci);clearTimeout(G.demo
   requestAnimationFrame(()=>{resize();loadHole(ci,hi);startTurn();});}
 
 // ---------------- settings / unlock ----------------
-function syncSwitches(){$('soundSw').setAttribute('aria-checked',!!SAVE.sound);}
+function syncSwitches(){$('soundSw').setAttribute('aria-checked',!!SAVE.sound);
+  const I=window.__I18N,lr=$('langRow');if(lr){lr.hidden=!(I&&I.canSwitch);if(I)$('langBtn').textContent=I.lang==='en'?'English ▾':'한국어 ▾';}}
+$('langBtn').onclick=()=>{const I=window.__I18N;if(!I||!I.canSwitch)return;sfx.tap();logEv('lang_switch',{to:I.lang==='en'?'ko':'en'});I.set(I.lang==='en'?'ko':'en');};
 
 $('soundSw').onclick=()=>{SAVE.sound=!SAVE.sound;save();syncSwitches();sfx.tap();};
 $('settingsBtn').onclick=()=>{syncSwitches();const r=$('resetBtn');r.dataset.arm='0';r.textContent='진행 기록 초기화';settingsEl.hidden=false;};
@@ -1254,8 +1346,8 @@ $('settingsClose').onclick=()=>{settingsEl.hidden=true;if(app.dataset.screen==='
 
 settingsEl.addEventListener('click',e=>{if(e.target===settingsEl)settingsEl.hidden=true;});
 $('resetBtn').onclick=()=>{const b=$('resetBtn');if(b.dataset.arm!=='1'){b.dataset.arm='1';b.textContent='한 번 더 누르면 별과 트로피가 모두 지워져요';return;}
-  b.dataset.arm='0';SAVE=Object.assign(freshSave(),{sound:SAVE.sound,lowQ:SAVE.lowQ||0});save();logEv('progress_reset');settingsEl.hidden=true;renderHome();showToast('초기화했어요',900);
-  if(TOSS)setTimeout(restorePurchases,1000);}; // paid goods (광고 제거, 코인 팩) come back from the Toss order history
+  b.dataset.arm='0';SAVE=Object.assign(freshSave(),{sound:SAVE.sound,lowQ:SAVE.lowQ||0,tMax:SAVE.tMax||0});save();logEv('progress_reset');settingsEl.hidden=true;renderHome();showToast('초기화했어요',900);
+  if(NATIVE)setTimeout(restorePurchases,1000);}; // paid goods (광고 제거, 코인 팩) come back from the Toss order history
 
 // ---------------- PVP ----------------
 const NICKS=['퍼팅요정','버디헌터','홀인원장인','새벽라운딩','파세이브','그린위의별','빠따신','이글아이','칩샷마스터','굴러가유','한타만더','미니골프광'];
@@ -2247,8 +2339,8 @@ function drawChar(c){const now=performance.now()/1000,dir=CH.dir,[ox,oy]=stanceO
 //  ECONOMY · ADS · DAILY MISSIONS · SHOP · 9-HOLE ROUND · DAILY TIME ATTACK
 //  Ad calls go through adShow(); swap its body for the real SDK (AdMob, AppLovin, 앱인토스 광고 등) at launch.
 // =====================================================================
-const todayKey=(d=new Date())=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-const msToMidnight=()=>{const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);return m-n;};
+const todayKey=(d=new Date(NOW()))=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const msToMidnight=()=>{const n=new Date(NOW()),m=new Date(n);m.setHours(24,0,0,0);return m-n;};
 const fmtHM=ms=>{const m=Math.floor(ms/60000);return`${Math.floor(m/60)}시간 ${m%60}분`;};
 const fmtT=s=>{const m=Math.floor(s/60),r=s-m*60;return`${m}:${r<10?'0':''}${r.toFixed(1)}`;};
 const fmtD=d=>d===0?'E':(d>0?'+':'')+d;
@@ -2262,7 +2354,7 @@ function addCoins(n){SAVE.coins=(SAVE.coins||0)+n;save();syncCoins();}
 const ADS={inter:0,rew:0};
 const XSVG='<svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
 const xb=(act,extra='')=>`<button class="xbtn" aria-label="닫기" ${act?`data-act="${act}"`:''} ${extra}>${XSVG}</button>`;
-function adShow(kind,placement,cb){if(TOSS){tossAd(kind,placement,cb);return;}const ov=$('adOv'),secs=kind==='rewarded'?3:2;let done=false;
+function adShow(kind,placement,cb){if(NATIVE){tossAd(kind,placement,cb);return;}const ov=$('adOv'),secs=kind==='rewarded'?3:2;let done=false;
   ov.innerHTML=`<div class="modal adcard">${xb('',kind==='rewarded'?'id="adX"':'id="adX" disabled')}<p class="adtag">AD · 테스트</p>
     <svg class="adring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" fill="none" stroke="#2c2c30" stroke-width="8"/><circle id="adArc" cx="50" cy="50" r="42" fill="none" stroke="#ffd257" stroke-width="8" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264" transform="rotate(-90 50 50)"/><text id="adNum" x="50" y="61" text-anchor="middle" font-size="30" fill="#fff">${secs}</text></svg>
     <b class="adtitle">${kind==='rewarded'?'보상형 광고':'전면 광고'}</b><p class="adnote">${placement}<br>출시 때 이 자리에서 광고 SDK 영상이 재생돼요.</p>
@@ -2289,7 +2381,7 @@ const adP=()=>SAVE.noAds?'':'광고 보고 ';
 function showRewarded(placement,onReward){if(SAVE.noAds){track('event','ad_skipped',{where:placement});onReward();return;}if(!ADS_ON){showToast('지금은 광고를 볼 수 없어요',1400);return;}adShow('rewarded',placement,ok=>{if(ok)onReward();});}
 function maybeInter(placement,then){const now=Date.now();if(!ADS_ON||SAVE.noAds||now-ADS.inter<150000||now-ADS.rew<45000){then();return;}
   // v0.21: tell the player an ad is coming (Toss checklist: no interstitial at a moment the user cannot expect)
-  const a=AIT();if(TOSS&&!(a&&a.ads.ready('interstitial'))){adShow('inter',placement,()=>then());return;}
+  const a=AIT();if(NATIVE&&!(a&&a.ads.ready('interstitial'))){adShow('inter',placement,()=>then());return;}
   if(ADS.pending)return;ADS.pending=true;showToast('광고 한 편 보고 이어서 갈게요',900);setTimeout(()=>{ADS.pending=false;adShow('inter',placement,()=>then());},900);}
 // v0.12: banner ad slot removed for now. Set BANNER_ON=true to bring it back on these screens.
 const BANNER_ON=false,BANNER_SCREENS=['home','world','holes','shop','ta'];
@@ -2330,7 +2422,7 @@ let shopTab='hat';
 const PACKS=[{id:'starter',name:'첫 구매 스타터 팩',price:'₩3,300',coins:5000,cad:5,once:true,desc:'5,000코인 + 캐디 가이드 5개 · 한 번만 살 수 있어요',best:'최고 혜택'},
   {id:'c1000',name:'코인 1,000',price:'₩1,200',coins:1000},{id:'c6000',name:'코인 6,000 (+20%)',price:'₩5,900',coins:6000},
   {id:'c15000',name:'코인 15,000 (+50%)',price:'₩12,000',coins:15000,desc:'전설 아이템도 한 번에'},{id:'c45000',name:'코인 45,000 (+90%)',price:'₩29,000',coins:45000,desc:'꾸미기를 마음껏'},{id:'noads',name:'광고 제거 + 3,000코인',price:'₩5,900',coins:3000,desc:'전면 광고가 사라지고, 광고 보상은 광고 없이 바로 받아요. 3,000코인도 드려요.'}];
-function goShop(){show('shop');renderShop();logEv('shop_view',{tab:shopTab,coins:SAVE.coins||0});if(TOSS)loadTossProducts();}
+function goShop(){show('shop');renderShop();logEv('shop_view',{tab:shopTab,coins:SAVE.coins||0});if(NATIVE)loadTossProducts();}
 
 // ---------- Toss in-app purchase (v0.22) ----------
 // Products and prices come from the Apps-in-Toss console (SKUs in toss/src/config.js); only registered packs are shown, with the
@@ -2342,9 +2434,9 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const iapSku=id=>{const a=AIT();return a&&a.iap?a.iap.sku(id):null;};
 const tossIapOk=()=>{const a=AIT();return !!(a&&a.iap&&a.iap.ok());};
 const tossItem=p=>tossItems[iapSku(p.id)]||null;
-const sellable=p=>PAID_ITEMS&&(p.id!=='noads'||ADS_ON)&&(!TOSS||!!tossItem(p));
-const packName=p=>TOSS&&tossItem(p)?esc(tossItem(p).displayName||p.name):p.name;
-const packPrice=p=>TOSS&&tossItem(p)?esc(tossItem(p).displayAmount):p.price;
+const sellable=p=>PAID_ITEMS&&(p.id!=='noads'||ADS_ON)&&(!NATIVE||!!tossItem(p));
+const packName=p=>NATIVE&&tossItem(p)?esc(tossItem(p).displayName||p.name):p.name;
+const packPrice=p=>NATIVE&&tossItem(p)?esc(tossItem(p).displayAmount):p.price;
 const ledger=()=>SAVE.iap||(SAVE.iap={});
 function applyPack(p,s){if(p.id==='noads')SAVE.noAds=s>0;if(p.once)SAVE['own_'+p.id]=s>0?1:0;if(p.cad)SAVE.caddie=Math.max(0,(SAVE.caddie||0)+s*p.cad);if(p.coins)SAVE.coins=Math.max(0,(SAVE.coins||0)+s*p.coins);}
 function iapRefresh(){syncCoins();syncBanner(app.dataset.screen);if(app.dataset.screen==='shop')renderShop();}
@@ -2361,7 +2453,7 @@ async function loadTossProducts(force){const a=AIT();if(!PAID_ITEMS||!a||!a.iap|
 // v0.23: dev server only (npm run dev) — QR test builds no longer show it
 // v0.25 launch: the developer-only in-app purchase diagnostics (iapDiagNote) were removed
 function tossPurchase(p){const a=AIT(),sku=iapSku(p.id);
-  if(!a||!a.iap||!a.iap.ok()){showToast('토스 앱을 최신 버전으로 업데이트하면 구매할 수 있어요',2400);return;}
+  if(!a||!a.iap||!a.iap.ok()){showToast((TOSS?'토스 앱을 최신 버전으로 업데이트하면 구매할 수 있어요':'Google Play 스토어를 업데이트하면 구매할 수 있어요'),2400);return;}
   if(!sku||!tossItems[sku]){showToast('지금은 구매할 수 없는 상품이에요',1600);return;}
   if(buying&&Date.now()-buying<5000)return;buying=Date.now(); // blocks a double tap, never locks the shop for good
   track('event','iap_start',{product:p.id});
@@ -2381,7 +2473,7 @@ async function restorePurchases(){const a=AIT();if(!a||!a.iap||!a.iap.ok()||rest
   restoring=false;if(n){showToast(`구매한 상품 ${n}개를 지급했어요`,2200);track('event','iap_restore',{count:n});}}
 async function openHistory(){const a=AIT();if(!a||!a.iap)return;sfx.tap();G.resultKind='iap';
   resultPanel.innerHTML=xb('histClose')+`<h3>구매 내역</h3><div class="card packs" id="histList"><div class="pack"><div><span>불러오는 중…</span></div></div></div>
-    <p class="note center">토스 계정 기준이라 기기를 바꿔도 같아요. 환불된 상품은 회수돼요.</p>`;result.hidden=false;
+    <p class="note center">${STORE_NAME} 계정 기준이라 기기를 바꿔도 같아요. 환불된 상품은 회수돼요.</p>`;result.hidden=false;
   const box=$('histList');
   try{const list=(await a.iap.history()).slice().sort((x,y)=>String(y.date).localeCompare(String(x.date)));reconcile(list);if(!box.isConnected)return;
     box.innerHTML=list.length?list.map(o=>{const id=a.iap.productOf(o.sku),p=id&&PACKS.find(q=>q.id===id),it=tossItems[o.sku],ref=o.status==='REFUNDED',
@@ -2390,7 +2482,7 @@ async function openHistory(){const a=AIT();if(!a||!a.iap)return;sfx.tap();G.resu
       :'<div class="pack"><div><span>구매 내역이 없어요</span></div></div>';}
   catch(e){if(box.isConnected)box.innerHTML='<div class="pack"><div><span>구매 내역을 불러오지 못했어요. 잠시 후 다시 시도해 주세요</span></div></div>';}}
 // v0.24: shop ad cooldowns count down live (m:ss) and a clock set back never locks the button for more than 10 minutes
-const shopCd=k=>Math.min(10*60000,Math.max(0,(SAVE[k]||0)+10*60000-Date.now()));
+const shopCd=k=>Math.min(10*60000,Math.max(0,(SAVE[k]||0)+10*60000-NOW()));
 const cdText=cd=>{if(!cd)return SAVE.noAds?'광고 없이 바로 받아요 · 10분마다':'광고를 보면 바로 받아요 · 10분마다';const t=Math.ceil(cd/1000);return`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')} 뒤 다시 받을 수 있어요`;};
 setInterval(()=>{if(app.dataset.screen!=='shop')return;document.querySelectorAll('[data-cdtext]').forEach(el=>{el.textContent=cdText(shopCd(el.dataset.cdtext));});
   document.querySelectorAll('[data-cdbtn]').forEach(b=>{b.disabled=shopCd(b.dataset.cdbtn)>0;});},1000);
@@ -2405,7 +2497,7 @@ function renderShop(){syncCoins();if(shopTab!=='coin')G.coinItem=null;if(app.dat
     const rows=(SHOP_AD_ITEMS?[`<div class="pack"><span class="coinbig">${COIN}</span><div><b>무료 코인 100</b><span data-cdtext="adCoinAt">${cdText(cd)}</span></div><button class="pill press" data-free="1" data-cdbtn="adCoinAt" ${cd?'disabled':''}>${SAVE.noAds?'바로 받기':'광고 보기'}</button></div>`]:[])
       .concat(PACKS.filter(p=>(sellable(p)&&!(p.once&&SAVE['own_'+p.id]))||(p.id==='noads'&&SAVE.noAds)).sort((a,b)=>(b.id==='noads')-(a.id==='noads')).map(p=>`<div class="pack${p.id===rec?' rec':''}${p.once?' starter':''}"><span class="coinbig">${p.id==='noads'?NOADS:COIN}</span><div><b>${packName(p)}${p.best?` <i class="ptag">${p.best}</i>`:''}${p.id===rec?' <i class="ptag">추천</i>':''}</b><span>${p.desc||'바로 지급'}</span></div>${p.id==='noads'&&SAVE.noAds?'<span class="pill alt off">구매함</span>':`<button class="pill press" data-iap="${p.id}">${packPrice(p)}</button>`}</div>`));
     body.innerHTML=(G.coinItem?(need>0?`<p class="needline">${esc(G.coinItem.name)}까지 <b>${need.toLocaleString()}코인</b> 모자라요</p>`:`<p class="needline ok">이제 ${esc(G.coinItem.name)}을(를) 살 수 있어요</p>`):'')+(rows.length?`<div class="card packs">${rows.join('')}</div>`:'')+
-      (!TOSS&&!ANDROID?(PAID_ITEMS?'<p class="note">결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.</p>':'')
+      (!NATIVE&&!ANDROID?(PAID_ITEMS?'<p class="note">결제는 테스트용이에요. 실제 돈은 나가지 않고, 출시 때 스토어 결제로 연결돼요.</p>':'')
         :(PACKS.some(sellable)?'':`<p class="note">코인은 홀을 클리어하거나 ${ADS_ON?'미션·광고 보상':'미션 보상'}으로 모아요.</p>`)+((PAID_ITEMS&&tossIapOk())||Object.keys(ledger()).length?'<button class="link" data-hist="1">구매 내역 보기</button>':''));
     return;}
   const list=COSMETIC[shopTab],slot=shopTab,owned=SAVE.owned[slot],have=list.filter(i=>owned.includes(i.id)).length;
@@ -2460,12 +2552,12 @@ $('shopBody').addEventListener('click',e=>{const it=e.target.closest('[data-item
   if(e.target.closest('[data-hist]')){openHistory();return;}
   if(cb){const x=CADDIE_ITEMS.find(q=>q.id===cb.dataset.cad);if((SAVE.coins||0)<x.price){sfx.aww();showToast(`코인이 ${x.price-(SAVE.coins||0)}개 모자라요 · 코인 탭으로 갈게요`,1400);shopTab='coin';renderShop();return;}
     SAVE.coins-=x.price;SAVE.caddie=(SAVE.caddie||0)+x.n;save();sfx.win();renderShop();showToast(`캐디 가이드 +${x.n}`,900);return;}
-  if(ca&&!ca.disabled){showRewarded('상점 · 캐디 가이드 1개',()=>{SAVE.adCaddieAt=Date.now();SAVE.caddie=(SAVE.caddie||0)+1;save();renderShop();showToast('캐디 가이드 +1',900);});return;}
+  if(ca&&!ca.disabled){showRewarded('상점 · 캐디 가이드 1개',()=>{SAVE.adCaddieAt=NOW();SAVE.caddie=(SAVE.caddie||0)+1;save();renderShop();showToast('캐디 가이드 +1',900);});return;}
   if(it){const slot=shopTab,list=COSMETIC[slot],item=list.find(i=>i.id===it.dataset.item);
     if(slot!=='ball'&&SAVE.owned[slot].includes(item.id)){SAVE.equip[slot]=item.id;save();sfx.tap();renderShop();return;}
     sfx.tap();openTryOn(slot,item);return;}
-  if(fr&&!fr.disabled){showRewarded('상점 무료 코인',()=>{SAVE.adCoinAt=Date.now();addCoins(100);renderShop();showToast('+100 코인',900);});return;}
-  if(ia){const p=PACKS.find(q=>q.id===ia.dataset.iap);if(TOSS){sfx.tap();tossPurchase(p);return;}G.resultKind='iap';G.iap=p;
+  if(fr&&!fr.disabled){showRewarded('상점 무료 코인',()=>{SAVE.adCoinAt=NOW();addCoins(100);renderShop();showToast('+100 코인',900);});return;}
+  if(ia){const p=PACKS.find(q=>q.id===ia.dataset.iap);if(NATIVE){sfx.tap();tossPurchase(p);return;}G.resultKind='iap';G.iap=p;
     resultPanel.innerHTML=xb('iapCancel')+`<h3>테스트 결제</h3><p class="verdict" style="font-size:24px">${p.name}<small>${p.price} · 실제 결제는 일어나지 않아요. 출시 때 스토어 결제로 연결돼요.</small></p>
       <div class="row2"><button class="btn btn-plain press" data-act="iapCancel">취소</button><button class="btn btn-primary press" data-act="iapOk">결제하기</button></div>`;result.hidden=false;}});
 
@@ -2584,7 +2676,7 @@ function renderTa(){taEnsure();const d=todayKey(),hs=taHoles(d),best=SAVE.ta.bes
       <span>${best?`현재 ${b.myRank}위 / ${b.n}명 · 이대로면 내일 ${rankReward(b.myRank)}코인`:`파 ${b.par} · 도전하면 랭킹에 올라가요`}</span></div></div>
     <div class="mrow"><div><b>남은 도전 ${Math.max(0,left)} / ${TA_FREE+SAVE.ta.ad}</b><span>${ADS_ON?`광고를 보면 한 번 더 (하루 ${TA_AD_MAX}번까지)`:'매일 자정에 다시 채워져요'}</span></div><button class="pill alt press" id="taAd" ${SAVE.ta.ad>=TA_AD_MAX?'disabled':''}>+1 도전</button></div>`;
   const top=b.rows.slice(0,10),meRow=b.rows.find(x=>x.me),showMe=meRow&&b.myRank>10;
-  const row=(x,k)=>`<div class="lb-row ${x.me?'me':''}"><span class="lb-rank">${k}</span><span class="lb-av" style="background:${x.color}">${x.me?'나':x.name[0]}</span><span class="lb-name">${x.name}</span><span class="lb-s">${x.s}타</span><span class="lb-t">${fmtT(x.t)}</span></div>`;
+  const row=(x,k)=>`<div class="lb-row ${x.me?'me':''}"><span class="lb-rank">${k}</span><span class="lb-av" style="background:${x.color}">${x.me?'나':[...(window.__I18N?window.__I18N.t(x.name):x.name)][0]}</span><span class="lb-name">${x.name}</span><span class="lb-s">${x.s}타</span><span class="lb-t">${fmtT(x.t)}</span></div>`;
   $('taBoard').innerHTML=top.map((x,i)=>row(x,i+1)).join('')+(showMe?`<div class="lb-gap">···</div>`+row(meRow,b.myRank):'');
   $('taRewards').innerHTML=['1위 1,000','2~3위 500','4~10위 300','11~30위 150','참가 50'].map(s=>`<span>${COIN}${s}</span>`).join('');
   const st=$('taStart');st.disabled=left<=0;st.innerHTML=left>0?`<span>도전하기</span><small>남은 도전 ${left}번</small>`:`<span>오늘 도전 끝</span><small>${ADS_ON?'광고를 보면 한 번 더':'내일 다시 도전할 수 있어요'}</small>`;}
@@ -2797,7 +2889,7 @@ const VR={on:false,rec:null,chunks:[],mime:'',
       <button class="btn btn-gold press" data-act="vidsend">친구에게 보내기</button>
       <div class="row2"><button class="btn btn-plain press" data-act="vidsave">기기에 저장</button><button class="btn btn-plain press" data-act="vidback">돌아가기</button></div>`;result.hidden=false;},
   closeSheet(){if(VR.prev!=null){resultPanel.innerHTML=VR.prev;VR.prev=null;}result.hidden=false;},
-  shareText(){const r=VR.last.rec;return `홀컵 원정대 · ${CHAPTERS[r.ci].name} ${CHAPTERS[r.ci].holes[r.hi].name}에서 ${r.n===1?'홀인원!':r.n+'타로 넣었어!'}`;},
+  shareText(){const r=VR.last.rec,T=window.__I18N;if(T&&T.lang==='en'){const c=CHAPTERS[r.ci];return `Hole Cup Expedition · ${T.t(c.name)} ${T.t(c.holes[r.hi].name)}: ${r.n===1?'Hole-in-One!':'sank it in '+r.n+' strokes!'}`;}return `홀컵 원정대 · ${CHAPTERS[r.ci].name} ${CHAPTERS[r.ci].holes[r.hi].name}에서 ${r.n===1?'홀인원!':r.n+'타로 넣었어!'}`;},
   async share(){const L=VR.last;if(!L)return;sfx.tap();
     // Android (v0.26): the system share sheet (KakaoTalk, messages, save to Drive…); the web view has no navigator.share
     if(ANDROID){const h=HCApp(),res=h?await h.shareFile(L.blob,L.name,VR.shareText()):'fail';if(res!=='shared')showToast('영상을 보내지 못했어요',1400);return;}
@@ -2871,14 +2963,14 @@ if(TOSS||ANDROID){
     // v0.22: Toss checklist - closing the mini app asks first (back on the lobby/title opens the confirm sheet)
     if(scr==='home'||scr==='title'){$('exitAsk').hidden=false;return true;}
     const back=document.querySelector(`#scr-${scr} .navbar .back`);if(back)back.click();else goHome();return true;};
-  if(TOSS){
-  const onReady=()=>{const a=AIT();if(!a)return;trackQ.splice(0).forEach(e=>a.track(...e));
+  if(NATIVE){
+  const onReady=()=>{const a=AIT();if(!a)return;if(TOSS)trackQ.splice(0).forEach(e=>a.track(...e));
     if(ADS_ON&&!SAVE.noAds)a.ads.load('interstitial');
-    a.swipeBack(app.dataset.screen==='home'||app.dataset.screen==='title');
+    if(a.swipeBack)a.swipeBack(app.dataset.screen==='home'||app.dataset.screen==='title');
     // in-app purchase: console products, then unfinished orders, new-phone restore and refunds
     Promise.resolve(loadTossProducts(true)).catch(()=>{}).then(restorePurchases); // v0.22: products first, so SKU links are ready for restore
     // v0.25 launch: no test hook in any Toss build
-    setTimeout(()=>{try{delete window.__golf;}catch(e){window.__golf=undefined;}},0);};
+    if(TOSS)setTimeout(()=>{try{delete window.__golf;}catch(e){window.__golf=undefined;}},0);};
   if(window.AIT&&window.AIT.ready)onReady();else addEventListener('ait:ready',onReady,{once:true});
   }
   // Android (v0.26): no test hook in the store build (debug builds keep it for the emulator check in CI)
@@ -2901,11 +2993,12 @@ if(SAVE.unlockAll){SAVE.unlockAll=false;save();}
 readTok();syncSwitches();syncCoins();dailyEnsure();taEnsure();resize();enterTitle();requestAnimationFrame(frame);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{buildStatic();refreshScreen();});
 
-window.__golf={cadTutCheck,openCadBuy,callCaddie,syncCaddieBtn,openGiftBox,tapGiftBox,closeGiftBox,GB,onSunk,hioGift,hioGiftFor,CD,LONG,mirrorHole,dailyPick,dailyHoleObj,startDaily,dailyState,setLowQ,isLowQ:()=>LOWQ,PW,EVLOG,logEv,applyPack,PACKS,key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
+window.__golf={NOW,syncTime,timeInfo:()=>({TOFF,TSRC}),gaTrack,gaParams,todayKey,openCadBuy,callCaddie,syncCaddieBtn,openGiftBox,tapGiftBox,closeGiftBox,GB,onSunk,hioGift,hioGiftFor,CD,LONG,mirrorHole,dailyPick,dailyHoleObj,startDaily,dailyState,setLowQ,isLowQ:()=>LOWQ,PW,EVLOG,logEv,applyPack,PACKS,key,featOpen,holesDone,renderDots,FEAT,setCharStyle:k=>{CHAR_STYLE=k;},drawAvatarCanvas,COSMETIC,drawBallSkin,drawBallTrail,trailCap,drawMark,dropMark,finishMine,tourNext,taNext,renderHome,CH,GC,holeOpen,CHAPTERS,startTour,startTaRun,goTa,goShop,openMissions,missionTrack,taBoard,taHoles,addCoins,adShow,maybeInter,ADS,simulate,solveHole,_step:step,G,SAVE:()=>SAVE,show,goHome,goWorld,goHoles,newSolo,startPvp,startPvpHole,pvpPick,applyPvp,ghostGen,aiSkill,oppPick,shoot,showHoleResult,showChapterFinal,showPvpFinal,
   setStars(ci,n){CHAPTERS[ci].holes.forEach((_,hi)=>SAVE.stars[key(ci,hi)]=n);save();},
   aimVec,startSwing,showMul,VR,MISSIONS,CD,callCaddie,syncCaddieBtn,startReplay,endReplay,RP,hioFx,
   iap:{restore:restorePurchases,history:openHistory,products:()=>tossItems,ledger:()=>SAVE.iap,save,load:loadTossProducts},
   aimDebug(angDeg,pow){const b=G.ball,a=angDeg*Math.PI/180;G.aim={sx:b.x,sy:b.y,cx:b.x-Math.cos(a)*Math.pow(pow,1/POW_EXP)*PULL,cy:b.y-Math.sin(a)*Math.pow(pow,1/POW_EXP)*PULL,id:-1};}};
+setTimeout(syncTime,300);document.addEventListener('visibilitychange',()=>{if(!document.hidden)syncTime();});
 })();
 </script>
 
