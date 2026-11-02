@@ -510,7 +510,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.43</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.44</p>
     </div>
   </section>
   <section class="overlay bottom" id="tryOnSheet" hidden>
@@ -987,6 +987,7 @@ const trackQ=[];
 const EVLOG=[];
 function logEv(name,p){const q=Object.assign({day:dayIdx()},p||{});if(EVLOG.length>=200)EVLOG.shift();EVLOG.push([name,q]);track('event',name,q);}
 function dayIdx(){try{return Math.max(0,Math.floor((Date.now()-(SAVE.firstAt||Date.now()))/86400000));}catch(e){return 0;}}
+addEventListener('error',e=>{try{if(typeof logEv==='function'&&!(window.__errN>5)){window.__errN=(window.__errN||0)+1;logEv('js_error',{msg:String(e.message||'').slice(0,80),line:e.lineno||0});}}catch(_){}});
 function track(type,name,p){if(!TOSS)return;const a=AIT();if(a&&a.ready&&a.track){a.track(type,name,p||{});return;}if(trackQ.length<50)trackQ.push([type,name,p||{}]);}
 // iOS swipe-back is on only where back means "leave the mini app" (title, lobby); elsewhere it would cut a putt drag short
 function swipeBack(on){if(!TOSS)return;const a=AIT();if(a&&a.swipeBack)a.swipeBack(on);}
@@ -1003,7 +1004,7 @@ document.documentElement.classList.toggle('ads-off',!ADS_ON);
 // v0.22: the shop's ad-reward items (무료 코인 100, 캐디 가이드 1개) stay hidden in the Toss build even with ads on. true brings them back.
 const SHOP_AD_ITEMS=!TOSS&&ADS_ON;
 const store={read(){try{return JSON.parse(localStorage.getItem('holecup.v3')||'{}')}catch(e){return{}}},write(v){try{localStorage.setItem('holecup.v3',JSON.stringify(v))}catch(e){}}};
-const freshSave=()=>({stars:{},sound:true,unlockAll:false,trophies:0,pvpW:0,pvpL:0,coins:0,owned:{hat:['bucket','none'],outfit:['blue'],ball:['white'],char:['kid']},equip:{hat:'bucket',outfit:'blue',ball:'white',char:'kid'},noAds:false,cleared:0,daily:null,ta:null,tour:{},adCoinAt:0,pendingTa:null,caddie:0,adCaddieAt:0,hio:0,iap:{}});
+const freshSave=()=>({stars:{},sound:true,unlockAll:false,trophies:0,pvpW:0,pvpL:0,coins:0,owned:{hat:['bucket','none'],outfit:['blue'],ball:['white'],char:['kid']},equip:{hat:'bucket',outfit:'blue',ball:'white',char:'kid'},noAds:false,cleared:0,daily:null,ta:null,tour:{},adCoinAt:0,pendingTa:null,caddie:0,adCaddieAt:0,hio:0,iap:{},seen:{},ann:{},firstAt:Date.now()});
 let SAVE=Object.assign(freshSave(),store.read());
 // v0.22: repair broken or old save fields instead of crashing on boot (each field falls back to its fresh value)
 (function fixSave(){const F=freshSave(),obj=v=>v&&typeof v==='object'&&!Array.isArray(v),num=v=>typeof v==='number'&&isFinite(v);
@@ -1019,7 +1020,7 @@ let SAVE=Object.assign(freshSave(),store.read());
     if(!SAVE.owned.hat.includes('none'))SAVE.owned.hat.push('none');
     if(!obj(SAVE.tour))SAVE.tour={};
     if(!num(SAVE.firstAt)||SAVE.firstAt>Date.now())SAVE.firstAt=Date.now();
-    if(!obj(SAVE.seen)||!obj(SAVE.ann)){const old=!obj(SAVE.seen)&&SAVE.onboarded;SAVE.seen=obj(SAVE.seen)?SAVE.seen:{};SAVE.ann=obj(SAVE.ann)?SAVE.ann:{};
+    const RAW=store.read();if(!obj(RAW.seen)||!obj(SAVE.seen)||!obj(SAVE.ann)){const old=!obj(RAW.seen)&&SAVE.onboarded;SAVE.seen=obj(RAW.seen)?RAW.seen:{};SAVE.ann=obj(RAW.ann)?RAW.ann:{};
       if(old){const d=SAVE.daily,t=SAVE.ta;if(d&&d.list.some(m=>m&&(m.claimed||m.p>0)))SAVE.seen.mission=true;if(t&&(t.best||t.used))SAVE.seen.ta=true;
         if((SAVE.pvpW||0)+(SAVE.pvpL||0)>0)SAVE.seen.pvp=true;if(Object.keys(SAVE.tour).length)SAVE.seen.round=true;SAVE.ann={__mig:1};}}
   }catch(e){try{localStorage.setItem('holecup.backup',JSON.stringify(SAVE));}catch(_){}SAVE=freshSave();}})();
@@ -1212,14 +1213,15 @@ function renderDailyCard(){const el=$('dailyCard');if(!el)return;if(!featOpen('d
     <span>${st.claimed?`오늘 완료 · 최고 ${st.best}타 · 내일 새 홀`:`좌우가 바뀐 코스 · 최대 ${60+Math.min(streak+1,7)*5}코인`}${streak?` · 연속 ${streak}일`:''}</span></div>${st.claimed?'<span class="pill alt off">완료</span>':'<span class="pill">도전</span>'}</button>`;
   drawArt($('dailyArt'),ch.theme.art);renderDots();}
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#dailyBtn')){sfx.tap();startDaily();}});
-function renderWorld(){syncSwitches();renderDailyCard();
+function renderWorld(){syncSwitches();
   $('worldList').innerHTML=CHAPTERS.map((ch,ci)=>{const open=unlocked(ci),s=chStars(ci),d=chDone(ci);
     const meta=open?`<div class="bar" style="--acc:${ch.theme.acc}"><i style="width:${Math.round(s/27*100)}%"></i></div><div class="cell-meta"><b>★ ${s} / 27</b><span>${d===9?'완주':`${d} / 9홀`}</span></div><span class="teeline${s>=27?' got':''}">${s>=27?'받음':'★27 보상'} · ${ch.name} 기념 티</span>`
       :`<span class="lock">${LOCK}${lockNote(ci)}</span>`;
     return`<button class="card cell press ${open?'':'locked'}" data-ci="${ci}" ${open?'':'aria-disabled="true"'}>
       <canvas data-art="${ci}"></canvas>
       <div class="cell-body"><p class="eyebrow">Chapter ${ci+1} · ${ch.gimmick}</p><b>${ch.name}<span>${ch.place}</span></b>${meta}</div>${open?CHEV:''}</button>`;}).join('');
-  $('worldList').querySelectorAll('[data-art]').forEach(c=>drawArt(c,CHAPTERS[+c.dataset.art].theme.art));}
+  $('worldList').querySelectorAll('[data-art]').forEach(c=>drawArt(c,CHAPTERS[+c.dataset.art].theme.art));
+  try{renderDailyCard();}catch(e){$('dailyCard').innerHTML='';logEv('js_error',{where:'daily_card',msg:String(e&&e.message||e).slice(0,80)});}}
 $('worldList').addEventListener('click',e=>{const c=e.target.closest('[data-ci]');if(!c)return;const ci=+c.dataset.ci;
   if(!unlocked(ci)){sfx.aww();if(c.animate&&!reduce)c.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:260});return;}
   sfx.tap();goHoles(ci);});
@@ -1252,7 +1254,7 @@ $('settingsClose').onclick=()=>{settingsEl.hidden=true;if(app.dataset.screen==='
 
 settingsEl.addEventListener('click',e=>{if(e.target===settingsEl)settingsEl.hidden=true;});
 $('resetBtn').onclick=()=>{const b=$('resetBtn');if(b.dataset.arm!=='1'){b.dataset.arm='1';b.textContent='한 번 더 누르면 별과 트로피가 모두 지워져요';return;}
-  b.dataset.arm='0';SAVE=Object.assign(freshSave(),{sound:SAVE.sound});save();settingsEl.hidden=true;renderHome();showToast('초기화했어요',900);
+  b.dataset.arm='0';SAVE=Object.assign(freshSave(),{sound:SAVE.sound,lowQ:SAVE.lowQ||0});save();logEv('progress_reset');settingsEl.hidden=true;renderHome();showToast('초기화했어요',900);
   if(TOSS)setTimeout(restorePurchases,1000);}; // paid goods (광고 제거, 코인 팩) come back from the Toss order history
 
 // ---------------- PVP ----------------
@@ -2537,9 +2539,9 @@ function starTeeCheck(){let got=[];TOUR_TEES.forEach(t=>{const ci=CHAPTERS.findI
   if(chStars(ci)>=27){SAVE.owned.outfit.push(t.id);got.push(t);logEv('star_tee',{ch:t.starCh});}});if(got.length)save();return got;}
 function featOpen(k){if(SAVE.unlockAll)return true;return k==='round'?CHAPTERS.some((_,ci)=>chDone(ci)===9):holesDone()>=FEAT[k].n;}
 function featLockMsg(k){return k==='round'?`나라 하나의 9홀을 모두 클리어하면 열려요 (${Math.max(...CHAPTERS.map((_,ci)=>chDone(ci)))}/9)`:`홀 ${FEAT[k].n}개를 클리어하면 ${FEAT[k].name}이(가) 열려요 (${Math.min(holesDone(),FEAT[k].n)}/${FEAT[k].n})`;}
-function featGate(k){if(featOpen(k)){if(!SAVE.seen[k]){SAVE.seen[k]=true;save();renderDots();logEv('feature_first_open',{feat:k,holes:holesDone()});}return true;}logEv('feature_locked_tap',{feat:k,holes:holesDone()});sfx.aww();showToast(featLockMsg(k),1600);return false;}
-function renderDots(){const tt=document.querySelector('.tabbar [data-tabgo="ta"]');if(tt)tt.classList.toggle('locked',!featOpen('ta'));document.querySelectorAll('[data-ndot]').forEach(d=>{const k=d.dataset.ndot;d.hidden=!(featOpen(k)&&(!SAVE.seen[k]||(k==='daily'&&!dailyDone())));});}
-function announceFeats(){if(SAVE.ann.__mig){Object.keys(FEAT).forEach(k=>{if(featOpen(k))SAVE.ann[k]=true;});delete SAVE.ann.__mig;save();}const fresh=Object.keys(FEAT).filter(k=>featOpen(k)&&!SAVE.ann[k]);if(!fresh.length)return;fresh.forEach(k=>{SAVE.ann[k]=true;logEv('feature_unlock',{feat:k,holes:holesDone()});});save();
+function featGate(k){SAVE.seen=SAVE.seen||{};if(featOpen(k)){if(!SAVE.seen[k]){SAVE.seen[k]=true;save();renderDots();logEv('feature_first_open',{feat:k,holes:holesDone()});}return true;}logEv('feature_locked_tap',{feat:k,holes:holesDone()});sfx.aww();showToast(featLockMsg(k),1600);return false;}
+function renderDots(){SAVE.seen=SAVE.seen||{};const tt=document.querySelector('.tabbar [data-tabgo="ta"]');if(tt)tt.classList.toggle('locked',!featOpen('ta'));document.querySelectorAll('[data-ndot]').forEach(d=>{const k=d.dataset.ndot;d.hidden=!(featOpen(k)&&(!SAVE.seen[k]||(k==='daily'&&!dailyDone())));});}
+function announceFeats(){SAVE.ann=SAVE.ann||{};if(SAVE.ann.__mig){Object.keys(FEAT).forEach(k=>{if(featOpen(k))SAVE.ann[k]=true;});delete SAVE.ann.__mig;save();}const fresh=Object.keys(FEAT).filter(k=>featOpen(k)&&!SAVE.ann[k]);if(!fresh.length)return;fresh.forEach(k=>{SAVE.ann[k]=true;logEv('feature_unlock',{feat:k,holes:holesDone()});});save();
   setTimeout(()=>{if(app.dataset.screen==='home'){sfx.star&&sfx.star();showToast(`새로 열렸어요 · ${fresh.map(k=>FEAT[k].name).join(', ')}`,2000);}},450);}
 function startTour(ci){clearTimeout(G.demoTimer);G.mode='tour';G.ci=ci;G.tour={ci,idx:0,scores:[]};G.runT=0;result.hidden=true;show('game');
   requestAnimationFrame(()=>{resize();loadHole(ci,0);startTurn();showToast('9홀 라운드 시작',1000);});}
