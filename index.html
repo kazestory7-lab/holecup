@@ -508,7 +508,7 @@ td.good{color:var(--win);font-weight:700} td.bad{color:var(--lose)}
         <button class="danger" id="resetBtn">진행 기록 초기화</button>
       </div>
       <button class="btn btn-plain press" id="settingsClose">닫기</button>
-      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.41</p>
+      <p class="ver" style="text-align:center;margin:0">홀컵 원정대 v0.42</p>
     </div>
   </section>
   <section class="overlay bottom" id="tryOnSheet" hidden>
@@ -1737,9 +1737,9 @@ function draw(dt){const c=ctx,h=hole,t=G.ht;
       G.guide={good,along,off,lat,sd,x:b.x+ca*sd,y:b.y+sa*sd};
       if(sd<GUIDE_R*1.6){const gx=G.guide.x,gy=G.guide.y;
       c.setLineDash([2,6]);c.lineWidth=2;c.strokeStyle='rgba(255,255,255,.55)';c.beginPath();c.moveTo(b.x+ca*(len+14),b.y+sa*(len+14));if(sd>len+14)c.lineTo(gx,gy);c.stroke();c.setLineDash([]);
-      c.lineWidth=3;c.strokeStyle='rgba(0,0,0,.3)';c.beginPath();c.arc(gx,gy,6,0,7);c.stroke();c.lineWidth=2.2;c.strokeStyle=good?'#34c759':'#fff';c.beginPath();c.arc(gx,gy,6,0,7);c.stroke();
-      c.fillStyle=good?'#34c759':'#fff';c.beginPath();c.arc(gx,gy,2,0,7);c.fill();
-      if(good){const pl=.5+.5*Math.sin(G.ht*8);c.lineWidth=3;c.strokeStyle=`rgba(52,199,89,${.55+pl*.4})`;c.beginPath();c.arc(hole.cup[0],hole.cup[1],CUP_R+LIP+2+pl*2,0,7);c.stroke();}}}
+      const gr=good?8:6;c.lineWidth=good?5:3;c.strokeStyle='rgba(0,0,0,.35)';c.beginPath();c.arc(gx,gy,gr,0,7);c.stroke();c.lineWidth=good?3.2:2.2;c.strokeStyle=good?'#ffd60a':'#fff';c.beginPath();c.arc(gx,gy,gr,0,7);c.stroke();
+      c.fillStyle=good?'#ffd60a':'#fff';c.beginPath();c.arc(gx,gy,good?3:2,0,7);c.fill();
+      if(good){const pl=.5+.5*Math.sin(G.ht*8),rr0=CUP_R+LIP+3+pl*2.5;c.lineWidth=6;c.strokeStyle='rgba(0,0,0,.28)';c.beginPath();c.arc(hole.cup[0],hole.cup[1],rr0,0,7);c.stroke();c.lineWidth=4;c.strokeStyle=`rgba(255,214,10,${.7+pl*.3})`;c.beginPath();c.arc(hole.cup[0],hole.cup[1],rr0,0,7);c.stroke();}}}
     c.lineWidth=3.5;c.strokeStyle='rgba(255,255,255,.35)';c.beginPath();c.arc(b.x,b.y,14,0,7);c.stroke();
     c.strokeStyle=col;c.beginPath();c.arc(b.x,b.y,14,-Math.PI/2,-Math.PI/2+a.pow*Math.PI*2);c.stroke();
     const lx=b.x-(CH.x-b.x)/STANCE*30,ly=b.y-(CH.y-b.y)/STANCE*30+4;c.font=`400 15px ${FONTD}`;c.lineWidth=3;c.strokeStyle='rgba(0,0,0,.35)';c.textAlign='center';
@@ -2681,7 +2681,7 @@ function drawCaddie(c){if(!CD.on)return;const now=performance.now()/1000,b=G.bal
   if(say){c.font=`400 14px ${FONTD}`;const sw=c.measureText(say).width+18,sx=Math.max(view().x0+sw/2+4,Math.min(view().x1-sw/2-4,x)),sy=y-70+jy;
     rr(c,sx-sw/2,sy-14,sw,26,13);c.fillStyle='#fff';c.fill();c.lineWidth=1.5;c.strokeStyle='rgba(47,125,90,.6)';c.stroke();
     c.beginPath();c.moveTo(x-5,sy+11);c.lineTo(x,sy+19);c.lineTo(x+5,sy+11);c.closePath();c.fillStyle='#fff';c.fill();
-    c.fillStyle=G.guide&&G.guide.good&&G.aim?'#1f8a4c':'#2a2a22';c.fillText(say,sx,sy+5);}
+    c.fillStyle=G.guide&&G.guide.good&&G.aim?'#c27c00':'#2a2a22';c.fillText(say,sx,sy+5);}
   c.textAlign='left';}
 let cadLast='';
 function syncCaddieBtn(force){const bt=$('caddieBtn');if(!bt)return;const b=G.ball,near=Math.hypot(hole.cup[0]-b.x,hole.cup[1]-b.y)<GUIDE_R;
